@@ -1,0 +1,21 @@
+{
+  "name": "vuepress-plugin-versioning",
+  "version": "1.0.0",
+  "description": "Versioning plugin for VuePress",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vuepress",
+    "titanium",
+    "versioning",
+    "version"
+  ],
+  "author": "Axway Appcelerator",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@vuepress/shared-utils": "^1.0.0-alpha.40",
+    "fs-extra": "^7.0.1"
+  }
+}

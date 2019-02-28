@@ -1,0 +1,18 @@
+{
+  "name": "titanium-docgen",
+  "version": "1.0.0",
+  "description": "Various generators to format Titanium API documentation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Axway Appcelerator",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "colors": "^1.3.3",
+    "ejs": "^2.6.1",
+    "js-yaml": "^3.12.2",
+    "markdown-it": "^8.4.2",
+    "node-appc": "^0.2.49"
+  }
+}

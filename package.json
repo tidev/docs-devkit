@@ -1,0 +1,7 @@
+{
+	"name": "doc-devkit",
+	"description": "Tooling for Axway Appcelerator open source documentation",
+	"devDependencies": {
+		"lerna": "^3.13.0"
+	}
+}

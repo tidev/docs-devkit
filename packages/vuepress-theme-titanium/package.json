@@ -1,0 +1,18 @@
+{
+  "name": "vuepress-theme-titanium",
+  "version": "1.0.0",
+  "description": "VuePress theme for Titanium projects",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Axway Appcelerator",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@vuepress/plugin-nprogress": "^1.0.0-alpha.40",
+    "@vuepress/plugin-search": "^1.0.0-alpha.40",
+    "docsearch.js": "^2.6.2",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.2"
+  }
+}

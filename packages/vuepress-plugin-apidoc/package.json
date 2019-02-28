@@ -1,0 +1,27 @@
+{
+  "name": "vuepress-plugin-apidoc",
+  "version": "1.0.0",
+  "description": "Plugin for VuePress to render API reference documentation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vuepress",
+    "titanium",
+    "api",
+    "docs"
+  ],
+  "author": "Axway Appcelerator",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@vuepress/shared-utils": "^1.0.0-alpha.40",
+    "fs-extra": "^7.0.1",
+    "simple-git": "^1.107.0",
+    "titanium-docgen": "^1.0.0"
+  },
+  "peerDependencies": {
+    "vuex": "^3.1.0",
+    "vuex-router-sync": "^5.0.0"
+  }
+}
