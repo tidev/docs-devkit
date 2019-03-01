@@ -7,10 +7,10 @@ const versionManager = require('./lib/version-manager');
 module.exports = (options, context) => {
   const pluginName = 'titanium/versioning';
 
-  const versionedSourceDir = path.resolve(context.sourceDir, '..', 'versioned_docs');
+  const versionedSourceDir = path.resolve(context.sourceDir, '..', 'website', 'versioned_docs');
   context.versionedSourceDir = versionedSourceDir;
 
-  const pagesSourceDir = options.pagesSourceDir || path.resolve(context.sourceDir, '..', 'pages');
+  const pagesSourceDir = options.pagesSourceDir || path.resolve(context.sourceDir, '..', 'website', 'pages');
 
   const versionsFilePath = path.join(context.sourceDir, '.vuepress', 'versions.json');
   versionManager.loadVersions(versionsFilePath);
@@ -19,6 +19,10 @@ module.exports = (options, context) => {
   const defaultPluginOptions = {
     name: pluginName,
 
+    /**
+     * Rewrites the sidebar configurations and prefixes the page identifiers with the respective
+     * version they are part of.
+     */
     ready() {
       const currentSidebarConfigPath = path.join(context.sourceDir, '.vuepress', 'sidebar.config.js');
       if (versions.length === 0) {
@@ -74,6 +78,9 @@ module.exports = (options, context) => {
       }
     },
 
+    /**
+     * Extends the cli with new commands to manage versions
+     */
     extendCli(cli) {
       cli
         .command('version <targetDir> <version>', '')
@@ -104,7 +111,34 @@ module.exports = (options, context) => {
 
           logger.success(`Created snapshot of ${context.sourceDir} as version ${version} in ${versionDestPath}`);
         });
-    }
+    },
+
+    /**
+     * Adds additional pages from versioned docs as well as unversioned extra pages.
+     */
+    async additionalPages () {
+      const patterns = ['**/*.md', '**/*.vue', '!.vuepress', '!node_modules']
+
+      const addPages = (pageFiles, basePath) => {
+        const pages = []
+        pageFiles.map(relative => {
+          const filePath = path.resolve(basePath, relative)
+          versionedPages.push({
+            filePath,
+            relative
+          })
+        })
+        return pages;
+      }
+
+      const versionedPageFiles = sort(await globby(patterns, { cwd: versionedSourceDir }))
+      const versionedPages = addPages(versionedPageFiles, versionedSourceDir);
+
+      const pageFiles = sort(await globby(patterns, { cwd: pagesSourceDir }))
+      const pages = addPages(pageFiles, pagesSourceDir);
+
+      return [...versionedPages, ...pages];
+    },
   }
 
   if (versions.length === 0) {
@@ -112,23 +146,11 @@ module.exports = (options, context) => {
   }
 
   return Object.assign(defaultPluginOptions, {
-    async additionalPages () {
-      const patterns = ['**/*.md', '**/*.vue', '!.vuepress', '!node_modules']
-      const pageFiles = sort(await globby(patterns, { cwd: versionedSourceDir }))
-      const versionedPages = []
-      pageFiles.map(relative => {
-        const filePath = path.resolve(versionedSourceDir, relative)
-        versionedPages.push({
-          filePath,
-          relative
-        })
-      })
-      return versionedPages
-    },
-
+    /**
+     * Extends and updates a page with additional information for versioning support.
+     */
     extendPageData(page) {
       const currentVersion = versions[0];
-      // @todo: add options to exclude pages from versioning
       if (page.path === '/404.html') {
         return;
       }
@@ -138,13 +160,18 @@ module.exports = (options, context) => {
         if (version === currentVersion) {
           page.path = page.regularPath = page.path.replace(new RegExp(`^/${version}`), '');
         }
-      } else {
+      } else if (page._filePath.startsWith(context.sourceDir)) {
         page.version = 'next';
         page.path = page.regularPath = `/next${page.path}`;
       }
     },
 
-    // @fixme siteData is not extendable, store versions as a computed property on Vue for now
+    /**
+     * Enhances the app with a globally accessible list of available versions.
+     *
+     * @fixme ideally this should go into siteData but that is not extendable
+     * right now so store versions as a computed property on Vue
+     */
     enhanceAppFiles: [{
       name: 'versions-site-data',
       content: `export default ({ Vue }) => {
