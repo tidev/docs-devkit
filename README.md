@@ -30,7 +30,7 @@ Before you contribute read through the following guidelines.
 ## Getting Help
 
 If you have questions about our documentation devkit for VuePress, feel free to reach out on Stackoverflow or the
-`#helpme` channel on [TiSlack](http://tislack.org). In case you find a bug, create a [new issue](/issues/new)
+`#helpme` channel on [TiSlack](http://tislack.org). In case you find a bug, create a [new issue](https://github.com/appcelerator/doc-devkit/issues/new)
 or open a [new JIRA ticket](https://jira.appcelerator.org).
 
 ## License
