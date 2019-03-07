@@ -499,7 +499,89 @@ function processAPIs (api) {
 		api.methods = processAPIMembers(api.methods, 'methods', api.since, api.__addon);
 	}
 
+	processFreeFormTextField(api, 'description');
+	processFreeFormTextField(api, 'examples');
+
 	return api;
+}
+
+/**
+ * Processes the property on the giventype and resolves any file references
+ * to the actual text content.
+ *
+ * @param {Object} api Type to read the property from
+ * @param {String} propertyName Property name to operate on
+ */
+function processFreeFormTextField(api, propertyName) {
+	const fileReferencePattern = /^file:([^#]+\.md)(#.*)?$/;
+
+	const fieldContent = api[propertyName];
+	if (!fieldContent || Array.isArray(fieldContent)) {
+		return;
+	}
+
+	const fileReferenceMatch = fieldContent.match(fileReferencePattern);
+	if (fileReferenceMatch === null) {
+		return;
+	}
+
+	const yamlSourceBasePath = pathMod.dirname(pathMod.resolve(process.cwd(), api.__file));
+	const markdownSourcePath = pathMod.resolve(yamlSourceBasePath, fileReferenceMatch[1])
+	if (!fs.existsSync(markdownSourcePath)) {
+		throw new Error(`Markdown file ${markdownSourcePath} referenced in ${api.name}.${propertyName} not found.`);
+	}
+	const heading = fileReferenceMatch[2];
+	const markdownContent = fs.readFileSync(markdownSourcePath).toString();
+	if (heading) {
+		const headingOffset = markdownContent.indexOf(heading);
+		const headingLevel = heading.match(/#/g).length;
+		if (headingOffset === -1) {
+			throw new Error(`Markdown file ${markdownSourcePath} doesn't contain the heading ${heading}`);
+		}
+
+		const apiDocsTagOffset = markdownContent.indexOf('<ApiDocs/>');
+		const nextHeadingRegex = new RegExp(`^#{${headingLevel}}[^#]+$`, 'gm');
+		nextHeadingRegex.lastIndex = headingOffset + heading.length;
+		const nextHeadingMatch = nextHeadingRegex.exec(markdownContent);
+		let endOffset = nextHeadingMatch ? nextHeadingMatch.index : apiDocsTagOffset;
+		if (endOffset === -1) {
+			endOffset = markdownContent.length;
+		}
+		let fieldMarkdown = markdownContent.substring(headingOffset + heading.length, endOffset).trim();
+		if (propertyName === 'examples') {
+			api[propertyName] = convertExamples(fieldMarkdown)
+		} else {
+			api[propertyName] = fieldMarkdown.replace(/^(#{3,})/gm, (match, heading) => heading + '#');
+		}
+	} else {
+		api[propertyName] = markdownContent;
+	}
+}
+
+/**
+ * Converts structured examples from markdown back to their object representation.
+ *
+ * Each heading with a level of three considered an example and any following
+ * text is treated as the example content.
+ *
+ * @param {*} examplesMarkdown
+ */
+function convertExamples(examplesMarkdown) {
+	const examples = [];
+	const exampleTitleRegex = /^###([^#]+?)$/gm;
+	let exampleMatch = exampleTitleRegex.exec(examplesMarkdown);
+	while (exampleMatch) {
+		const exampleTitle = exampleMatch[1].trim();
+		const exampleContentStartOffset = exampleTitleRegex.lastIndex;
+		const nextExampleMatch = exampleTitleRegex.exec(examplesMarkdown);
+		const exampleContent = examplesMarkdown.substring(exampleContentStartOffset, nextExampleMatch ? nextExampleMatch.index : undefined).trim();
+		examples.push({
+			title: exampleTitle,
+			example: exampleContent
+		});
+		exampleMatch = nextExampleMatch;
+	}
+	return examples;
 }
 
 /**
