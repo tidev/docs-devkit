@@ -1,4 +1,4 @@
-# doc-devkit
+# docs-devkit
 
 > Tooling for Axway Appcelerator open source documentation
 
