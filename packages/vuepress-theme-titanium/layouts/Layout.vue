@@ -1,52 +1,49 @@
 <template>
-  <div class="main-docs-wrapper">
+  <div
+    class="theme-container"
+    :class="pageClasses"
+    @touchstart="onTouchStart"
+    @touchend="onTouchEnd"
+  >
+    <Navbar
+      v-if="shouldShowNavbar"
+      @toggle-sidebar="toggleSidebar"
+    />
+
     <div
-      class="theme-container"
-      :class="pageClasses"
-      @touchstart="onTouchStart"
-      @touchend="onTouchEnd"
+      class="sidebar-mask"
+      @click="toggleSidebar(false)"
+    ></div>
+
+    <Sidebar
+      :items="sidebarItems"
+      @toggle-sidebar="toggleSidebar"
     >
-      <Navbar
-        v-if="shouldShowNavbar"
-        @toggle-sidebar="toggleSidebar"
+      <slot
+        name="sidebar-top"
+        slot="top"
       />
+      <slot
+        name="sidebar-bottom"
+        slot="bottom"
+      />
+    </Sidebar>
 
-      <div
-        class="sidebar-mask"
-        @click="toggleSidebar(false)"
-      ></div>
+    <Home v-if="$page.frontmatter.home"/>
 
-      <Sidebar
-        :items="sidebarItems"
-        @toggle-sidebar="toggleSidebar"
-      >
-        <slot
-          name="sidebar-top"
-          slot="top"
-        />
-        <slot
-          name="sidebar-bottom"
-          slot="bottom"
-        />
-      </Sidebar>
-
-      <Home v-if="$page.frontmatter.home"/>
-
-      <Page
-        v-else
-        :sidebar-items="sidebarItems"
-      >
-        <slot
-          name="page-top"
-          slot="top"
-        />
-        <slot
-          name="page-bottom"
-          slot="bottom"
-        />
-      </Page>
-    </div>
-    <Footer/>
+    <Page
+      v-else
+      :sidebar-items="sidebarItems"
+    >
+      <slot
+        name="page-top"
+        slot="top"
+      />
+      <slot
+        name="page-bottom"
+        slot="bottom"
+      />
+    </Page>
   </div>
 </template>
 
@@ -55,7 +52,6 @@ import throttle from 'lodash.throttle'
 import nprogress from 'nprogress'
 import Vue from 'vue'
 
-import Footer from '../components/Footer.vue'
 import Home from '../components/Home.vue'
 import Page from '../components/Page.vue'
 import Navbar from '../components/Navbar.vue'
@@ -63,7 +59,7 @@ import Sidebar from '../components/Sidebar.vue'
 import { resolveSidebarItems, calculateCurrentAnchor } from '../util'
 
 export default {
-  components: { Home, Footer, Page, Sidebar, Navbar },
+  components: { Home, Page, Sidebar, Navbar },
 
   data () {
     return {

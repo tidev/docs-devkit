@@ -1,24 +1,21 @@
 <template>
-  <div class="main-docs-wrapper">
-    <div
-      class="theme-container"
-      :class="pageClasses"
-      @touchstart="onTouchStart"
-      @touchend="onTouchEnd"
-    >
-      <Navbar @toggle-sidebar="toggleSidebar" @toggle-api-sidebar="toggleApiSidebar"/>
-      <div class="sidebar-mask" @click="toggleSidebar(false); toggleApiSidebar(false)"></div>
+  <div
+    class="theme-container"
+    :class="pageClasses"
+    @touchstart="onTouchStart"
+    @touchend="onTouchEnd"
+  >
+    <Navbar @toggle-sidebar="toggleSidebar" @toggle-api-sidebar="toggleApiSidebar"/>
+    <div class="sidebar-mask" @click="toggleSidebar(false); toggleApiSidebar(false)"></div>
 
-      <Sidebar :items="sidebarItems">
-        <slot name="sidebar-top" slot="top"/>
-        <slot name="sidebar-bottom" slot="bottom"/>
-      </Sidebar>
+    <Sidebar :items="sidebarItems">
+      <slot name="sidebar-top" slot="top"/>
+      <slot name="sidebar-bottom" slot="bottom"/>
+    </Sidebar>
 
-      <ApiPage :sidebar-items="sidebarItems"/>
+    <ApiPage :sidebar-items="sidebarItems"/>
 
-      <ApiSidebar v-if="$page.metadataKey"/>
-    </div>
-    <Footer/>
+    <ApiSidebar v-if="$page.metadataKey"/>
   </div>
 </template>
 
@@ -29,13 +26,12 @@ import Vue from 'vue'
 
 import ApiPage from '../components/ApiPage.vue'
 import ApiSidebar from '../components/ApiSidebar.vue'
-import Footer from '../components/Footer.vue'
 import Navbar from '../components/Navbar.vue'
 import Sidebar from '../components/Sidebar.vue'
 import { resolveSidebarItems, calculateCurrentAnchor } from '../util'
 
 export default {
-  components: { ApiPage, ApiSidebar, Footer, Sidebar, Navbar },
+  components: { ApiPage, ApiSidebar, Sidebar, Navbar },
 
   data () {
     return {

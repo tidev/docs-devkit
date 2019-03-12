@@ -2,6 +2,7 @@ const path = require('path')
 
 // Theme API.
 module.exports = (options, ctx) => ({
+  globalLayout: './layouts/GlobalLayout.vue',
   alias () {
     const { themeConfig, siteConfig } = ctx
     // resolve algolia
