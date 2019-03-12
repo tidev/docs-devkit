@@ -13,22 +13,33 @@
 </template>
 
 <script>
-import { groupHeaders } from '../util';
+import Vue from 'vue'
 
-import ApiSidebarLink from './ApiSidebarLink.vue'
+import ApiSidebarLink from '@theme/components/ApiSidebarLink.vue'
+import { groupHeaders } from '@theme/util';
 
 export default {
   components: { ApiSidebarLink },
 
-  props: {
-    currentAnchor: Object
+  data: function () {
+    return {
+      currentAnchor: null
+    }
+  },
+
+  mounted() {
+    Vue.$vuepress.$on('apiAnchorChanged', this.onAnchorChanged)
+  },
+
+  beforeDestroy() {
+    Vue.$vuepress.store.$off('apiAnchorChanged', this.onAnchorChanged)
   },
 
   computed: {
     items() {
       const headers = groupHeaders(this.$page.headers || []);
       return headers.map(header => {
-        const currentAnchor = this.currentAnchor || { hash: this.$route.hash, path: this.$route.path };
+        const currentAnchor = this.currentAnchor || { hash: this.$route.hash !== '' ? this.$route.hash : '#' + this.$page.headers[0].slug, path: this.$route.path };
         const selfActive = currentAnchor.hash === '#' + header.slug;
         const active = selfActive || (header.children && header.children.some(c => currentAnchor.hash === '#' + c.slug));
         return {
@@ -43,6 +54,12 @@ export default {
           })
         }
       });
+    }
+  },
+
+  methods: {
+    onAnchorChanged(newAnchor) {
+      this.currentAnchor = newAnchor
     }
   }
 }

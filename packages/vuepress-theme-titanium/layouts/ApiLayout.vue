@@ -16,7 +16,7 @@
 
       <ApiPage :sidebar-items="sidebarItems"/>
 
-      <ApiSidebar :currentAnchor="currentAnchor" v-if="$page.metadataKey"/>
+      <ApiSidebar v-if="$page.metadataKey"/>
     </div>
     <Footer/>
   </div>
@@ -32,52 +32,13 @@ import ApiSidebar from '../components/ApiSidebar.vue'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/Navbar.vue'
 import Sidebar from '../components/Sidebar.vue'
-import { resolveSidebarItems } from '../util'
-
-function calculateCurrentAnchor (anchors) {
-  const l = anchors.length
-  if (anchors[0].top > 0 && anchors[0].top < 10) {
-    return anchors[0]
-  }
-
-  if (anchors[l - 1].top < 0) {
-    return anchors[l - 1]
-  }
-
-  for (let i = 0; i < l; i++) {
-    const anchor = anchors[i]
-    const nextAnchor = anchors[i + 1]
-    if (anchor.top < 0 && nextAnchor.top > 0) {
-      if (nextAnchor.top < 10) {
-        return nextAnchor
-      }
-      return anchor
-    }
-  }
-
-  return anchors[0]
-}
-
-function getAnchors (sidebarLinks) {
-  return [].slice
-    .call(document.querySelectorAll('.header-anchor'))
-    .filter(anchor => sidebarLinks.some(sidebarLink => sidebarLink.hash === anchor.hash))
-    .map(el => {
-      return {
-        el,
-        hash: decodeURIComponent(el.hash),
-        top: el.getBoundingClientRect().top - 90
-        /* AHL_TOP_OFFSET is to Subtract height of navbar & anchor's padding top */
-      }
-    })
-}
+import { resolveSidebarItems, calculateCurrentAnchor } from '../util'
 
 export default {
   components: { ApiPage, ApiSidebar, Footer, Sidebar, Navbar },
 
   data () {
     return {
-      currentAnchor: null,
       isSidebarOpen: false,
       isApiSidebarOpen: false
     }
@@ -108,6 +69,8 @@ export default {
   watch: {
     '$page': function() {
       this.$sidebarLinks = null;
+      Vue.$vuepress.$emit('anchorChanged', null);
+      Vue.$vuepress.$emit('apiAnchorChanged', null);
     }
   },
 
@@ -127,7 +90,6 @@ export default {
       this.isSidebarOpen = false
       this.isApiSidebarOpen = false
     })
-
 
     window.addEventListener('scroll', this.onScroll)
 
@@ -157,7 +119,6 @@ export default {
     },
 
     toggleApiSidebar (to) {
-      console.log('toggle')
       this.isApiSidebarOpen = typeof to === 'boolean' ? to : !this.isApiSidebarOpen
     },
 
@@ -186,11 +147,17 @@ export default {
         this.$sidebarLinks = [].slice.call(document.querySelectorAll('.api-sidebar-link'))
       }
 
-      const anchors = getAnchors(this.$sidebarLinks)
-      if (anchors.length === 0) {
-        return
+      const currentAnchor = calculateCurrentAnchor(this.$sidebarLinks)
+      if (!currentAnchor) {
+        return;
       }
-      this.currentAnchor = calculateCurrentAnchor(anchors)
+      if (!this.currentAnchor || this.currentAnchor.hash !== currentAnchor.hash) {
+        this.currentAnchor = {
+          hash: currentAnchor.hash,
+          path: this.$route.path
+        }
+        Vue.$vuepress.$emit('apiAnchorChanged', this.currentAnchor);
+      }
     }, 300)
   }
 }

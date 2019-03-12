@@ -51,16 +51,16 @@
 </template>
 
 <script>
-import Vue from 'vue'
+import throttle from 'lodash.throttle'
 import nprogress from 'nprogress'
-import Page from '../components/Page.vue'
-import { resolveSidebarItems } from '../util'
-
+import Vue from 'vue'
 
 import Footer from '../components/Footer.vue'
 import Home from '../components/Home.vue'
+import Page from '../components/Page.vue'
 import Navbar from '../components/Navbar.vue'
 import Sidebar from '../components/Sidebar.vue'
+import { resolveSidebarItems, calculateCurrentAnchor } from '../util'
 
 export default {
   components: { Home, Footer, Page, Sidebar, Navbar },
@@ -92,10 +92,9 @@ export default {
     shouldShowSidebar () {
       const { frontmatter } = this.$page
       return (
-        !frontmatter.layout &&
-        !frontmatter.home &&
-        frontmatter.sidebar !== false &&
-        this.sidebarItems.length
+        !frontmatter.home
+        && frontmatter.sidebar !== false
+        && this.sidebarItems.length
       )
     },
 
@@ -121,6 +120,13 @@ export default {
     }
   },
 
+  watch: {
+    '$page': function() {
+      this.$sidebarLinks = null;
+      Vue.$vuepress.$emit('anchorChanged', null);
+    }
+  },
+
   mounted () {
     // configure progress bar
     nprogress.configure({ showSpinner: false })
@@ -136,6 +142,12 @@ export default {
       nprogress.done()
       this.isSidebarOpen = false
     })
+
+    window.addEventListener('scroll', this.onScroll)
+  },
+
+  beforeDestroy () {
+    window.removeEventListener('scroll', this.onScroll)
   },
 
   methods: {
@@ -161,7 +173,25 @@ export default {
           this.toggleSidebar(false)
         }
       }
-    }
+    },
+
+    onScroll: throttle(function () {
+      if (!this.$sidebarLinks) {
+        this.$sidebarLinks = [].slice.call(document.querySelectorAll('.sidebar-link'))
+      }
+
+      const currentAnchor = calculateCurrentAnchor(this.$sidebarLinks)
+      if (!currentAnchor) {
+        return;
+      }
+      if (!this.currentAnchor || this.currentAnchor.hash !== currentAnchor.hash) {
+        this.currentAnchor = {
+          hash: currentAnchor.hash,
+          path: this.$route.path
+        }
+        Vue.$vuepress.$emit('anchorChanged', this.currentAnchor);
+      }
+    }, 300)
   }
 }
 </script>

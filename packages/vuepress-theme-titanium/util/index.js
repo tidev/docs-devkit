@@ -242,3 +242,40 @@ function resolveItem (item, pages, base, groupDepth = 1) {
     }
   }
 }
+
+export function calculateCurrentAnchor (sidebarLinks) {
+  const anchors = [].slice
+    .call(document.querySelectorAll('.header-anchor'))
+    .filter(anchor => sidebarLinks.some(sidebarLink => sidebarLink.hash === anchor.hash))
+    .map(el => {
+      return {
+        el,
+        hash: decodeURIComponent(el.hash),
+        top: el.getBoundingClientRect().top - 120
+      }
+    })
+  if (anchors.length === 0) {
+    return null;
+  }
+  const l = anchors.length
+  if (anchors[0].top > 0 && anchors[0].top < 10) {
+    return anchors[0]
+  }
+
+  if (anchors[l - 1].top < 0) {
+    return anchors[l - 1]
+  }
+
+  for (let i = 0; i < l; i++) {
+    const anchor = anchors[i]
+    const nextAnchor = anchors[i + 1]
+    if (anchor.top < 0 && nextAnchor.top > 0) {
+      if (nextAnchor.top < 10) {
+        return nextAnchor
+      }
+      return anchor
+    }
+  }
+
+  return anchors[0]
+}

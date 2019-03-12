@@ -1,80 +1,112 @@
 <template>
-  <div class="sidebar">
+  <aside class="sidebar">
     <NavLinks/>
     <slot name="top"/>
-    <ul class="sidebar-links" v-if="items.length">
-      <li v-for="(item, i) in items" :key="i">
-        <SidebarGroup
-          v-if="item.type === 'group'"
-          :item="item"
-          :first="i === 0"
-          :open="i === openGroupIndex"
-          :collapsable="item.collapsable || item.collapsible"
-          @toggle="toggleGroup(i)"
-        />
-        <SidebarLink v-else :item="item"/>
-      </li>
-    </ul>
+    <SidebarLinks :depth="0" :items="preparedItems"/>
     <slot name="bottom"/>
-  </div>
+  </aside>
 </template>
 
 <script>
-import SidebarGroup from './SidebarGroup.vue'
-import SidebarLink from './SidebarLink.vue'
-import NavLinks from './NavLinks.vue'
-import { isActive } from '../util'
+import Vue from 'vue'
+
+import SidebarLinks from '@theme/components/SidebarLinks.vue'
+import NavLinks from '@theme/components/NavLinks.vue'
+import { getHash, groupHeaders, hashRE, normalize } from '@theme/util'
 
 export default {
-  components: { SidebarGroup, SidebarLink, NavLinks },
-
-  props: ['items'],
-
-  data () {
+  name: 'Sidebar',
+  components: { SidebarLinks, NavLinks },
+  data: function () {
     return {
-      openGroupIndex: 0
+      currentAnchor: null,
     }
   },
-
-  created () {
-    this.refreshIndex()
+  props: ['items'],
+  mounted() {
+    Vue.$vuepress.$on('anchorChanged', this.onAnchorChanged)
   },
-
-  watch: {
-    '$route' () {
-      this.refreshIndex()
-    }
+  beforeDestroy() {
+    Vue.$vuepress.store.$off('anchorChanged', this.onAnchorChanged)
   },
-
-  methods: {
-    refreshIndex () {
-      const index = resolveOpenGroupIndex(
-        this.$route,
-        this.items
-      )
-      if (index > -1) {
-        this.openGroupIndex = index
+  computed: {
+    preparedItems() {
+      if (this.items.length === 0) {
+        return this.items;
       }
-    },
 
-    toggleGroup (index) {
-      this.openGroupIndex = index === this.openGroupIndex ? -1 : index
-    },
+      let currentAnchor = this.currentAnchor;
+      if (!currentAnchor && this.$page.headers) {
+        currentAnchor = { hash: this.$route.hash !== '' ? this.$route.hash : '#' + this.$page.headers[0].slug, path: this.$route.path };
+      } else if(!currentAnchor) {
+        currentAnchor = { path: this.$route.path }
+      }
+      const preparedItems = this.items.map(item => {
+        markActiveItem(item, currentAnchor)
+        return Object.assign({}, item);
+      })
 
-    isActive (page) {
-      return isActive(this.$route, page.regularPath)
+      return preparedItems
+    }
+  },
+  methods: {
+    onAnchorChanged(newAnchor) {
+      this.currentAnchor = newAnchor
     }
   }
 }
 
-function resolveOpenGroupIndex (route, items) {
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i]
-    if (item.type === 'group' && item.children.some(c => isActive(route, c.path))) {
-      return i
-    }
+function markActiveItem(item, currentAnchor) {
+  if (item.type === 'group') {
+    item.children.forEach(c => {
+      if (c.type === 'group') {
+        return markActiveItem(c, currentAnchor)
+      } else {
+        markActiveItemRecursive(c, currentAnchor)
+      }
+    })
+  } else {
+    markActiveItemRecursive(item, currentAnchor)
   }
-  return -1
+}
+
+function markActiveItemRecursive(item, currentAnchor) {
+  const selfActive = isActive(currentAnchor, item.path)
+  let active = selfActive
+  if (item.type === 'auto') {
+    let childActive = false;
+    for (const c of item.children) {
+      c.path = item.basePath + '#' + c.slug
+      if (markActiveItemRecursive(c, currentAnchor)) {
+        childActive = true;
+      }
+    }
+    active = selfActive || childActive
+  } else if (active && item.headers && !hashRE.test(item.path)) {
+    let childActive = false;
+    const children = groupHeaders(item.headers)
+    for (const c of children) {
+      c.path = item.path + '#' + c.slug
+      if (markActiveItemRecursive(c, currentAnchor)) {
+        childActive = true;
+      }
+    }
+    item.children = children
+    active = selfActive || childActive
+  }
+  item.active = active
+  return active
+}
+
+function isActive (currentAnchor, path) {
+  const currentHash = currentAnchor.hash
+  const linkHash = getHash(path)
+  if (linkHash && currentHash !== linkHash) {
+    return false
+  }
+  const currentPath = normalize(currentAnchor.path)
+  const pagePath = normalize(path)
+  return currentPath === pagePath
 }
 </script>
 
@@ -97,8 +129,14 @@ function resolveOpenGroupIndex (route, items) {
       line-height 1.25rem
       font-size 1.1em
       padding 0.5rem 0 0.5rem 1.5rem
-  .sidebar-links
+  & > .sidebar-links
     padding 1.5rem 0
+    & > li > a.sidebar-link
+      font-size 1.1em
+      line-height 1.7
+      font-weight bold
+    & > li:not(:first-child)
+      margin-top .75rem
 
 @media (max-width: $MQMobile)
   .sidebar
@@ -106,6 +144,6 @@ function resolveOpenGroupIndex (route, items) {
       display block
       .dropdown-wrapper .nav-dropdown .dropdown-item a.router-link-active::after
         top calc(1rem - 2px)
-    .sidebar-links
+    & > .sidebar-links
       padding 1rem 0
 </style>
