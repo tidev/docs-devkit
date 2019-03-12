@@ -16,9 +16,11 @@ module.exports = (options, ctx) => ({
         : path.resolve(__dirname, 'noopModule.js')
     }
   },
-
   plugins: [
     ['@vuepress/search', { searchMaxSuggestions: 10 }],
-    '@vuepress/plugin-nprogress'
+    '@vuepress/plugin-nprogress',
+    ['@vuepress/container', { type: 'tip' }],
+    ['@vuepress/container', { type: 'warning' }],
+    ['@vuepress/container', { type: 'danger' }]
   ]
 })
