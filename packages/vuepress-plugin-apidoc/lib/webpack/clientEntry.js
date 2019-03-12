@@ -1,6 +1,6 @@
 /* global VUEPRESS_VERSION, LAST_COMMIT_HASH*/
 
-import { createApp } from '@vuepress/core/lib/app/app.js'
+import { createApp } from '@vuepress/core/lib/client/app.js'
 import { sync } from 'vuex-router-sync';
 
 const { app, router } = createApp(false /* isServer */)

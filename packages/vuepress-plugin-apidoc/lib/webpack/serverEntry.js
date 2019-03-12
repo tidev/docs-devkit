@@ -1,5 +1,5 @@
 import metadata from '@dynamic/metadata';
-import originalServerEntry from '@vuepress/core/lib/app/serverEntry';
+import originalServerEntry from '@vuepress/core/lib/client/serverEntry';
 import { sync } from 'vuex-router-sync';
 
 export default context => new Promise((resolve, reject) => {
