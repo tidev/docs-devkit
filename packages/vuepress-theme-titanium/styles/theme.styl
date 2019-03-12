@@ -138,9 +138,13 @@ h1, h2, h3, h4, h5, h6
       margin-bottom 1rem
       + p, + pre, + .custom-block
         margin-top 2rem
-    .header-anchor
+    a.header-anchor
       &:hover
         text-decoration none
+
+h1, h2
+  a.header-anchor
+    visibility hidden
 
 h1, h2, h3, h4, strong
   color #2c3e50
