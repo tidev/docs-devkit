@@ -67,7 +67,7 @@ function isValidType(keyPath, version) {
         return false;
       }
 
-      return members.some(memberMetadata => memberMetadata.name = memberName);
+      return members.some(memberMetadata => memberMetadata.name === memberName);
     });
   });
 }
