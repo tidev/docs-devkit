@@ -16,7 +16,7 @@ const versions = []
  * Titanium API reference documentation plugin
  */
 module.exports = (options = {}, context) => {
-  const pluginName = 'titanium/apidoc'
+  const pluginName = 'titanium/apidocs'
 
   const versionsFilePath = path.join(context.sourceDir, '.vuepress', 'versions.json')
   if (fs.existsSync(versionsFilePath)) {
