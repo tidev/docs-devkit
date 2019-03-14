@@ -1,7 +1,13 @@
 {
 	"name": "docs-devkit",
 	"description": "Tooling for Axway Appcelerator open source documentation",
+	"scripts": {
+		"lint": "eslint packages --fix --ext .js,.vue"
+	},
 	"devDependencies": {
+		"eslint": "^5.15.1",
+		"eslint-config-axway": "^4.2.2",
+		"eslint-plugin-vue-libs": "^3.0.0",
 		"lerna": "^3.13.0"
 	}
 }
