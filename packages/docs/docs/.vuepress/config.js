@@ -55,24 +55,12 @@ function getGuideSidebar (groupA, groupB) {
       collapsable: false,
       children: [
         '',
-        'getting-started',
-        'directory-structure',
-        'basic-config',
-        'assets',
-        'markdown',
-        'using-vue',
-        'i18n',
-        'deploy',
       ]
     },
     {
       title: groupB,
       collapsable: false,
       children: [
-        'frontmatter',
-        'permalinks',
-        'markdown-slot',
-        'global-computed'
       ]
     }
   ]
@@ -85,11 +73,8 @@ function getPluginSidebar (pluginTitle, pluginIntro, officialPluginTitle) {
       collapsable: false,
       children: [
         ['', pluginIntro],
-        'using-a-plugin',
-        'writing-a-plugin',
-        'life-cycle',
-        'option-api',
-        'context-api'
+        'apidoc-plugin',
+        'versioning-plugin'
       ]
     }
   ]
@@ -103,11 +88,7 @@ function getThemeSidebar (groupA, introductionA) {
       sidebarDepth: 2,
       children: [
         ['', introductionA],
-        'using-a-theme',
-        'writing-a-theme',
-        'option-api',
-        'default-theme-config',
-        'inheritance'
+        'titanium-theme-config',
       ]
     },
   ]
