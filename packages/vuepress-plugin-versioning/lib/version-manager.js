@@ -1,18 +1,18 @@
-const fs = require('fs');
+const fs = require('fs')
 
 class VersionManager {
-  constructor() {
-    this.currentVersion = null;
-    this.versions = [];
+  constructor () {
+    this.currentVersion = null
+    this.versions = []
   }
 
-  loadVersions(versionsFilePath) {
+  loadVersions (versionsFilePath) {
     if (fs.existsSync(versionsFilePath)) {
-      this.versions.splice(0, 0, ...JSON.parse(fs.readFileSync(versionsFilePath).toString()));
-      this.currentVersion = this.versions[0];
+      this.versions.splice(0, 0, ...JSON.parse(fs.readFileSync(versionsFilePath).toString()))
+      this.currentVersion = this.versions[0]
     }
   }
 }
-const manager = new VersionManager();
+const manager = new VersionManager()
 
-module.exports = manager;
+module.exports = manager

@@ -17,38 +17,38 @@ export default {
   computed: {
     normalizedPlaforms: function () {
       if (!this.platforms) {
-        return [];
+        return []
       }
 
-      const normalizedPlaforms = Array.from(this.platforms);
+      const normalizedPlaforms = Array.from(this.platforms)
 
       // Find the index of both platforms
-      const iphoneIndex = this.platforms.findIndex(platform => platform.name === 'iphone');
-      const ipadIndex = this.platforms.findIndex(platform => platform.name === 'ipad');
+      const iphoneIndex = this.platforms.findIndex(platform => platform.name === 'iphone')
+      const ipadIndex = this.platforms.findIndex(platform => platform.name === 'ipad')
 
       // If iPhone or iPad platform is not supported anyway, return early
       if (iphoneIndex === -1 || ipadIndex === -1) {
-        return this.platforms;
+        return this.platforms
       }
 
       // If both platforms exist and their versions match, update iPhone to iOS and remove iPad
       if (this.platforms[iphoneIndex].version === this.platforms[ipadIndex].version) {
-        const version = this.platforms[iphoneIndex].since;
-        normalizedPlaforms[iphoneIndex] = { name: 'ios', pretty_name: 'iOS', since: version };
-        normalizedPlaforms.splice(ipadIndex, 1);
+        const version = this.platforms[iphoneIndex].since
+        normalizedPlaforms[iphoneIndex] = { name: 'ios', pretty_name: 'iOS', since: version }
+        normalizedPlaforms.splice(ipadIndex, 1)
       }
 
-      return normalizedPlaforms;
+      return normalizedPlaforms
     }
   },
   methods: {
-    imageForPlatform(platformName) {
+    imageForPlatform (platformName) {
       switch (platformName) {
-        case 'android': return '/android-logo.png';
+        case 'android': return '/android-logo.png'
         case 'ios': return '/apple-logo.png'
         case 'iphone': return '/iphone-logo.png'
-        case 'ipad': return '/ipad-logo.png';
-        case 'windowsphone': return '/windows-logo.png';
+        case 'ipad': return '/ipad-logo.png'
+        case 'windowsphone': return '/windows-logo.png'
       }
     }
   }
@@ -75,7 +75,6 @@ export default {
 
       &>span
         margin-left: 0.4rem
-
 
 @media (max-width: $MQMobile)
   .availability

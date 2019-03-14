@@ -1,42 +1,42 @@
-const fs = require('fs-extra');
-const path = require('path');
+const fs = require('fs-extra')
+const path = require('path')
 
 class MetadataService {
-  constructor() {
-    this.initialized = false;
-    this.versions = [];
-    this.metadata = {};
+  constructor () {
+    this.initialized = false
+    this.versions = []
+    this.metadata = {}
   }
 
-  loadMetadata(context, versions) {
+  loadMetadata (context, versions) {
     if (this.initialized) {
-      return;
+      return
     }
 
-    let metadataFilePath = path.join(context.sourceDir, 'api', 'api.json');
-    let typesMetadata = JSON.parse(fs.readFileSync(metadataFilePath).toString());
-    this.metadata.next = typesMetadata;
+    let metadataFilePath = path.join(context.sourceDir, 'api', 'api.json')
+    let typesMetadata = JSON.parse(fs.readFileSync(metadataFilePath).toString())
+    this.metadata.next = typesMetadata
 
     for (const version of versions) {
-      metadataFilePath = path.join(context.versionedSourceDir, version, 'api', 'api.json');
-      typesMetadata = JSON.parse(fs.readFileSync(metadataFilePath).toString());
-      this.metadata[version] = typesMetadata;
+      metadataFilePath = path.join(context.versionedSourceDir, version, 'api', 'api.json')
+      typesMetadata = JSON.parse(fs.readFileSync(metadataFilePath).toString())
+      this.metadata[version] = typesMetadata
     }
 
-    this.versions = versions.slice();
-    this.versions.unshift('next');
-    this.initialized = true;
+    this.versions = versions.slice()
+    this.versions.unshift('next')
+    this.initialized = true
   }
 
-  findMetadata(typeName, version) {
+  findMetadata (typeName, version) {
     if (!version) {
-      version = 'next';
+      version = 'next'
     }
-    return this.metadata[version] ? this.metadata[version][typeName] : undefined;
+    return this.metadata[version] ? this.metadata[version][typeName] : undefined
   }
 }
 
-const metadataService = new MetadataService();
+const metadataService = new MetadataService()
 
 /**
  * Checks if the given identifier is a known type in our metadata. If no version
@@ -45,31 +45,31 @@ const metadataService = new MetadataService();
  * @param {String} keyPath Type identifier as a fully qualified key-path
  * @param {String} version Optional version of the metadta used for the type lookup
  */
-function isValidType(keyPath, version) {
+function isValidType (keyPath, version) {
   return metadataService.versions.filter(v => version ? v === version : true).some(v => {
-    const metadata = metadataService.findMetadata(keyPath, v);
+    const metadata = metadataService.findMetadata(keyPath, v)
     if (metadata) {
-      return true;
+      return true
     }
 
-    const parentKeyPath = keyPath.substring(0, keyPath.lastIndexOf('.'));
-    const memberName = keyPath.substring(parentKeyPath.length + 1);
-    const parentMetadata = metadataService.findMetadata(parentKeyPath, v);
+    const parentKeyPath = keyPath.substring(0, keyPath.lastIndexOf('.'))
+    const memberName = keyPath.substring(parentKeyPath.length + 1)
+    const parentMetadata = metadataService.findMetadata(parentKeyPath, v)
 
     if (!parentMetadata) {
-      return false;
+      return false
     }
 
-    const memberTypeCandidates = ['properties', 'methods', 'events', 'constants'];
+    const memberTypeCandidates = ['properties', 'methods', 'events', 'constants']
     return memberTypeCandidates.some(memberType => {
-      const members = parentMetadata[memberType];
+      const members = parentMetadata[memberType]
       if (!members) {
-        return false;
+        return false
       }
 
-      return members.some(memberMetadata => memberMetadata.name === memberName);
-    });
-  });
+      return members.some(memberMetadata => memberMetadata.name === memberName)
+    })
+  })
 }
 
 /**
@@ -82,16 +82,16 @@ function isValidType(keyPath, version) {
  * @param {String} basePath Base path used as a prefix in the returned path
  * @param {String} version Version of the metadata file to use for type metadata lookups
  */
-function getLinkForKeyPath(keyPath, basePath, version) {
-  prefix = `${basePath}${version ? `${version}/` : ''}api`;
+function getLinkForKeyPath (keyPath, basePath, version) {
+  let prefix = `${basePath}${version ? `${version}/` : ''}api`
 
   if (!version) {
-    verion = metadataService.versions[0];
+    version = metadataService.versions[0]
   }
-  const metadata = metadataService.findMetadata(keyPath, version);
+  const metadata = metadataService.findMetadata(keyPath, version)
   if (metadata) {
     if (metadata.type === 'pseudo') {
-      prefix += '/structs';
+      prefix += '/structs'
     }
     return {
       name: metadata.name,
@@ -99,24 +99,24 @@ function getLinkForKeyPath(keyPath, basePath, version) {
     }
   }
 
-  const parentKeyPath = keyPath.substring(0, keyPath.lastIndexOf('.'));
-  const memberName = keyPath.substring(parentKeyPath.length + 1);
-  const parentMetadata = metadataService.findMetadata(parentKeyPath, version);
+  const parentKeyPath = keyPath.substring(0, keyPath.lastIndexOf('.'))
+  const memberName = keyPath.substring(parentKeyPath.length + 1)
+  const parentMetadata = metadataService.findMetadata(parentKeyPath, version)
   if (!parentMetadata) {
-    return null;
+    return null
   }
 
-  const memberTypeCandidates = ['properties', 'methods', 'events', 'constants'];
+  const memberTypeCandidates = ['properties', 'methods', 'events', 'constants']
   for (let i = 0; i < memberTypeCandidates.length; i++) {
-    const members = parentMetadata[memberTypeCandidates[i]];
+    const members = parentMetadata[memberTypeCandidates[i]]
     if (!members) {
-      continue;
+      continue
     }
 
-    const match = members.find(memberMetadata => memberMetadata.name === memberName);
+    const match = members.find(memberMetadata => memberMetadata.name === memberName)
     if (match) {
       if (parentMetadata.type === 'pseudo') {
-        prefix += '/structs';
+        prefix += '/structs'
       }
       return {
         name: match.name,
@@ -125,7 +125,7 @@ function getLinkForKeyPath(keyPath, basePath, version) {
     }
   }
 
-  return null;
+  return null
 }
 
 module.exports = {

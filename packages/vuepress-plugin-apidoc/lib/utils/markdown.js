@@ -1,6 +1,6 @@
-const { isValidType } = require('./metadata');
+const { isValidType } = require('./metadata')
 
-const typeLinkPattern = /^<([a-zA-Z][a-zA-Z0-9._]+)>/;
+const typeLinkPattern = /^<([a-zA-Z][a-zA-Z0-9._]+)>/
 
 /**
  * Renderer rule for link tokens to create <type-link> tags which will render
@@ -8,47 +8,47 @@ const typeLinkPattern = /^<([a-zA-Z][a-zA-Z0-9._]+)>/;
  *
  * @param {Object} md markdown-it instance
  */
-function linkConverterPlugin(md) {
-  const renderLinkOpen = md.renderer.rules.link_open || function(tokens, idx, options, env, self) {
-    return self.renderToken(tokens, idx, options);
-  };
-  const renderLinkClose = md.renderer.rules.link_close || function(tokens, idx, options, env, self) {
-    return self.renderToken(tokens, idx, options);
-  };
-  let hasOpenTypeLink;
+function linkConverterPlugin (md) {
+  const renderLinkOpen = md.renderer.rules.link_open || function (tokens, idx, options, env, self) {
+    return self.renderToken(tokens, idx, options)
+  }
+  const renderLinkClose = md.renderer.rules.link_close || function (tokens, idx, options, env, self) {
+    return self.renderToken(tokens, idx, options)
+  }
+  let hasOpenTypeLink
 
   md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
-    const token = tokens[idx];
-    const hrefIndex = token.attrIndex('href');
+    const token = tokens[idx]
+    const hrefIndex = token.attrIndex('href')
     if (hrefIndex === -1) {
-      return renderLinkOpen(tokens, idx, options, env, self);
+      return renderLinkOpen(tokens, idx, options, env, self)
     }
 
     const link = token.attrs[hrefIndex]
-    const href = link[1];
+    const href = link[1]
     if (isValidType(href)) {
-      hasOpenTypeLink = true;
-      tokens[idx] = toTypeLink(token, link);
-      return self.renderToken(tokens, idx, options);
+      hasOpenTypeLink = true
+      tokens[idx] = toTypeLink(token, link)
+      return self.renderToken(tokens, idx, options)
     }
 
-    return renderLinkOpen(tokens, idx, options, env, self);
-  };
+    return renderLinkOpen(tokens, idx, options, env, self)
+  }
 
   md.renderer.rules.link_close = (tokens, idx, options, env, self) => {
     const token = tokens[idx]
     if (hasOpenTypeLink) {
       token.tag = 'type-link'
       hasOpenTypeLink = false
-      return self.renderToken(tokens, idx, options);
+      return self.renderToken(tokens, idx, options)
     }
 
-    return renderLinkClose(tokens, idx, options, env, self);
+    return renderLinkClose(tokens, idx, options, env, self)
   }
 
-  function toTypeLink(token, link) {
+  function toTypeLink (token, link) {
     link[0] = 'type'
-    let type = link[1]
+    const type = link[1]
 
     // markdown-it encodes the uri
     link[1] = decodeURI(type)
@@ -72,44 +72,44 @@ function linkConverterPlugin(md) {
  *
  * @param {Object} md markdown-it instance
  */
-function typeAutolink(md) {
+function typeAutolink (md) {
   md.inline.ruler.after('autolink', 'type-autolink', (state, silent) => {
-    const pos = state.pos;
+    const pos = state.pos
     if (state.src.charCodeAt(pos) !== 0x3C/* < */) {
-      return false;
+      return false
     }
 
-    const tail = state.src.slice(pos);
+    const tail = state.src.slice(pos)
     if (tail.indexOf('>') === -1) {
-      return false;
+      return false
     }
 
     if (typeLinkPattern.test(tail)) {
-      const linkMatch = tail.match(typeLinkPattern);
-      const url = linkMatch[0].slice(1, -1);
+      const linkMatch = tail.match(typeLinkPattern)
+      const url = linkMatch[0].slice(1, -1)
       if (!isValidType(url)) {
-        return false;
+        return false
       }
       if (!silent) {
-        let token;
-        token = state.push('link_open', 'a', 1);
-        token.attrs = [ [ 'href', url ] ];
-        token.markup = 'autolink';
-        token.info = 'auto';
+        let token
+        token = state.push('link_open', 'a', 1)
+        token.attrs = [['href', url]]
+        token.markup = 'autolink'
+        token.info = 'auto'
 
-        token = state.push('text', '', 0);
-        token.content = url;
+        token = state.push('text', '', 0)
+        token.content = url
 
-        token = state.push('link_close', 'a', -1);
-        token.markup = 'autolink';
-        token.info = 'auto';
+        token = state.push('link_close', 'a', -1)
+        token.markup = 'autolink'
+        token.info = 'auto'
       }
-      state.pos += linkMatch[0].length;
-      return true;
+      state.pos += linkMatch[0].length
+      return true
     }
 
-    return false;
-  });
+    return false
+  })
 }
 
 /**
@@ -118,26 +118,26 @@ function typeAutolink(md) {
  *
  * @param {Object} md
  */
-function vueComponentPatch(md) {
-  const htmlBlockRuleIndex = md.block.ruler.__find__('html_block');
-  const vueHtmlBlockRule = md.block.ruler.__rules__[htmlBlockRuleIndex].fn;
+function vueComponentPatch (md) {
+  const htmlBlockRuleIndex = md.block.ruler.__find__('html_block')
+  const vueHtmlBlockRule = md.block.ruler.__rules__[htmlBlockRuleIndex].fn
   md.block.ruler.at('html_block', (state, startLine, endLine, silent) => {
-    let pos = state.bMarks[startLine] + state.tShift[startLine]
-    let max = state.eMarks[startLine]
-    const lineText = state.src.slice(pos, max);
+    const pos = state.bMarks[startLine] + state.tShift[startLine]
+    const max = state.eMarks[startLine]
+    const lineText = state.src.slice(pos, max)
     if (typeLinkPattern.test(lineText)) {
-      const match = lineText.match(typeLinkPattern);
+      const match = lineText.match(typeLinkPattern)
       if (isValidType(match[1])) {
-        return false;
+        return false
       }
     }
 
-    return vueHtmlBlockRule(state, startLine, endLine, silent);
-  });
+    return vueHtmlBlockRule(state, startLine, endLine, silent)
+  })
 }
 
 module.exports = {
   linkConverterPlugin,
   typeAutolink,
   vueComponentPatch
-};
+}

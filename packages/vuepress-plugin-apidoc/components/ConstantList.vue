@@ -4,7 +4,7 @@
       <a href="#constants" class="header-anchor">#</a> Constants
     </h2>
 
-    <template v-for="(constant, index) in constants">
+    <div v-for="(constant, index) in constants" :key="constant.name">
       <div class="member-header">
         <h4 :id="constant.name.toLowerCase()">
           <a :href="`#${constant.name.toLowerCase()}`" class="header-anchor">#</a> {{constant.name}} <Badge v-if="constant.deprecated" text="DEPRECATED" type="warn"/>
@@ -15,13 +15,13 @@
       <p v-html="constant.summary"></p>
       <p v-html="constant.description"></p>
       <hr v-if="index < constants.length - 1">
-    </template>
+    </div>
   </div>
 </template>
 
 <script>
-import AvailabilityInfo from './AvailabilityInfo';
-import DeprecationAlert from './DeprecationAlert';
+import AvailabilityInfo from './AvailabilityInfo'
+import DeprecationAlert from './DeprecationAlert'
 
 export default {
   components: {

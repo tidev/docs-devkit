@@ -19,44 +19,44 @@ export default {
   components: { SidebarLinks, NavLinks },
   data: function () {
     return {
-      currentAnchor: null,
+      currentAnchor: null
     }
   },
   props: ['items'],
-  mounted() {
+  mounted () {
     Vue.$vuepress.$on('anchorChanged', this.onAnchorChanged)
   },
-  beforeDestroy() {
+  beforeDestroy () {
     Vue.$vuepress.store.$off('anchorChanged', this.onAnchorChanged)
   },
   computed: {
-    preparedItems() {
+    preparedItems () {
       if (this.items.length === 0) {
-        return this.items;
+        return this.items
       }
 
-      let currentAnchor = this.currentAnchor;
+      let currentAnchor = this.currentAnchor
       if (!currentAnchor && this.$page.headers) {
-        currentAnchor = { hash: this.$route.hash !== '' ? this.$route.hash : '#' + this.$page.headers[0].slug, path: this.$route.path };
-      } else if(!currentAnchor) {
+        currentAnchor = { hash: this.$route.hash !== '' ? this.$route.hash : '#' + this.$page.headers[0].slug, path: this.$route.path }
+      } else if (!currentAnchor) {
         currentAnchor = { path: this.$route.path }
       }
       const preparedItems = this.items.map(item => {
         markActiveItem(item, currentAnchor)
-        return Object.assign({}, item);
+        return Object.assign({}, item)
       })
 
       return preparedItems
     }
   },
   methods: {
-    onAnchorChanged(newAnchor) {
+    onAnchorChanged (newAnchor) {
       this.currentAnchor = newAnchor
     }
   }
 }
 
-function markActiveItem(item, currentAnchor) {
+function markActiveItem (item, currentAnchor) {
   if (item.type === 'group') {
     item.children.forEach(c => {
       if (c.type === 'group') {
@@ -70,25 +70,25 @@ function markActiveItem(item, currentAnchor) {
   }
 }
 
-function markActiveItemRecursive(item, currentAnchor) {
+function markActiveItemRecursive (item, currentAnchor) {
   const selfActive = isActive(currentAnchor, item.path)
   let active = selfActive
   if (item.type === 'auto') {
-    let childActive = false;
+    let childActive = false
     for (const c of item.children) {
       c.path = item.basePath + '#' + c.slug
       if (markActiveItemRecursive(c, currentAnchor)) {
-        childActive = true;
+        childActive = true
       }
     }
     active = selfActive || childActive
   } else if (active && item.headers && !hashRE.test(item.path)) {
-    let childActive = false;
+    let childActive = false
     const children = groupHeaders(item.headers)
     for (const c of children) {
       c.path = item.path + '#' + c.slug
       if (markActiveItemRecursive(c, currentAnchor)) {
-        childActive = true;
+        childActive = true
       }
     }
     item.children = children

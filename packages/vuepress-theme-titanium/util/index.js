@@ -255,7 +255,7 @@ export function calculateCurrentAnchor (sidebarLinks) {
       }
     })
   if (anchors.length === 0) {
-    return null;
+    return null
   }
   const l = anchors.length
   if (anchors[0].top > 0 && anchors[0].top < 10) {

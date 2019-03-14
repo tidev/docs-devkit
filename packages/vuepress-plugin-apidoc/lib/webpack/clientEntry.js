@@ -1,15 +1,15 @@
 /* global VUEPRESS_VERSION, LAST_COMMIT_HASH*/
 
 import { createApp } from '@vuepress/core/lib/client/app.js'
-import { sync } from 'vuex-router-sync';
+import { sync } from 'vuex-router-sync'
 
 const { app, router } = createApp(false /* isServer */)
 
 const store = app.$options.store
 if (window.__INITIAL_STATE__) {
-  store.replaceState(window.__INITIAL_STATE__);
+  store.replaceState(window.__INITIAL_STATE__)
 }
-sync(store, router);
+sync(store, router)
 
 window.__VUEPRESS_VERSION__ = {
   version: VUEPRESS_VERSION,
@@ -18,43 +18,43 @@ window.__VUEPRESS_VERSION__ = {
 
 router.onReady(() => {
   if (!window.__INITIAL_STATE__) {
-    fetchMetadata(router.currentRoute);
+    fetchMetadata(router.currentRoute)
   }
 
   router.beforeResolve((to, from, next) => {
     if (to.path === from.path) {
-      return next();
+      return next()
     }
-    fetchMetadata(to).then(next, next);
-  });
+    fetchMetadata(to).then(next, next)
+  })
 
   app.$mount('#app')
 })
 
-function fetchMetadata(route) {
+function fetchMetadata (route) {
   return new Promise((resolve, reject) => {
-    const page = findPageForPath(app.$site.pages, route.path);
+    const page = findPageForPath(app.$site.pages, route.path)
     if (!page) {
-      return resolve();
+      return resolve()
     }
 
-    let metadataKey = page.metadataKey;
+    let metadataKey = page.metadataKey
     if (!metadataKey) {
       // Ignore pages with no API metadata key
-      return resolve();
+      return resolve()
     }
 
-    metadataKey = `${page.version || 'next'}/${metadataKey}`;
+    metadataKey = `${page.version || 'next'}/${metadataKey}`
     if (store.state.metadata[metadataKey]) {
-      console.log('State data already available');
-      return resolve();
+      console.log('State data already available')
+      return resolve()
     }
 
-    store.dispatch('fetchMetadata', metadataKey).then(resolve, reject);
-  });
+    store.dispatch('fetchMetadata', metadataKey).then(resolve, reject)
+  })
 }
 
-function findPageForPath(pages, path) {
+function findPageForPath (pages, path) {
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i]
     if (page.path.toLowerCase() === path.toLowerCase()) {
@@ -62,5 +62,5 @@ function findPageForPath(pages, path) {
     }
   }
 
-  return null;
+  return null
 }

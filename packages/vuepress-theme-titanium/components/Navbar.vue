@@ -85,39 +85,39 @@ export default {
     },
 
     hasVersions () {
-      return this.$versions && this.$versions.length > 0;
+      return this.$versions && this.$versions.length > 0
     },
 
     versionsDropdown () {
-      const currentVersion = this.$versions[0];
+      const currentVersion = this.$versions[0]
       const currentLink = this.$page.path
       const routes = this.$router.options.routes
       return {
         text: this.$page.version,
         items: ['next', ...this.$versions].map(version => {
-          const text = version;
-          let link;
+          const text = version
+          let link
           if (version === this.$page.version) {
-            link = currentLink;
+            link = currentLink
           } else {
-            link = currentLink.replace(`/${this.$page.version}`, '');
+            link = currentLink.replace(`/${this.$page.version}`, '')
             if (version !== currentVersion) {
               // try to stay on current page for different version
-              link = `/${version}${link}`;
+              link = `/${version}${link}`
             }
             if (!routes.some(route => route.path === link)) {
               // fallback to homepage
-              link = version === currentVersion ? '/' : `/${version}/`;
+              link = version === currentVersion ? '/' : `/${version}/`
             }
           }
-          const item = { text, link };
+          const item = { text, link }
           if (version === currentVersion) {
-            item.subText = 'current';
+            item.subText = 'current'
           } else if (version === 'next') {
-            item.text = 'master';
-            item.subText = 'next';
+            item.text = 'master'
+            item.subText = 'next'
           }
-          return item;
+          return item
         })
       }
     }
@@ -182,7 +182,6 @@ $navbar-horizontal-padding = 1.5rem
               color $accentColor
               &:hover
                 color $accentColor
-
 
 @media (max-width: $MQMobile)
   .navbar

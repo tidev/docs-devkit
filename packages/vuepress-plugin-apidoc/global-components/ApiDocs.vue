@@ -8,10 +8,10 @@
 </template>
 
 <script>
-import PropertyList from '../components/PropertyList';
-import MethodList from '../components/MethodList';
-import EventList from '../components/EventList';
-import ConstantList from '../components/ConstantList';
+import PropertyList from '../components/PropertyList'
+import MethodList from '../components/MethodList'
+import EventList from '../components/EventList'
+import ConstantList from '../components/ConstantList'
 
 export default {
   components: {
@@ -21,9 +21,9 @@ export default {
     ConstantList
   },
   computed: {
-    metadata() {
-      const key = `${this.$page.version || 'next'}/${this.$page.metadataKey}`;
-      return this.$store.state.metadata[key] || {};
+    metadata () {
+      const key = `${this.$page.version || 'next'}/${this.$page.metadataKey}`
+      return this.$store.state.metadata[key] || {}
     }
   }
 }

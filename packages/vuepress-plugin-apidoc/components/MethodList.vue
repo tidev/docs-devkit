@@ -4,7 +4,7 @@
       <a href="#methods" class="header-anchor">#</a> Methods
     </h2>
 
-    <template v-for="(method, index) in methods">
+    <div v-for="(method, index) in methods" :key="method.name">
       <div class="member-header">
         <h3 :id="method.name.toLowerCase()">
           <a :href="`#${method.name.toLowerCase()}`" class="header-anchor">#</a> {{method.name}} <Badge v-if="method.deprecated" text="DEPRECATED" type="warn"/>
@@ -25,7 +25,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="parameter in method.parameters">
+          <tr v-for="parameter in method.parameters" :key="parameter.name">
             <td><code>{{parameter.name}}</code></td>
             <td><TypeLinks :types="parameter.type"/></td>
             <td>{{parameter.summary}}</td>
@@ -34,21 +34,21 @@
       </table>
       <h4>Returns</h4>
       <p v-if="method.returns && method.returns.summary" v-html="method.returns.summary"></p>
-      <p>
-        <dl class="type-info">
+      <div class="type-info">
+        <dl>
           <dt>Type</dt>
           <dd><TypeLinks :types="method.returns"/></dd>
         </dl>
-      </p>
+      </div>
       <hr v-if="index < methods.length - 1">
-    </template>
+    </div>
   </div>
 </template>
 
 <script>
-import AvailabilityInfo from './AvailabilityInfo';
-import DeprecationAlert from './DeprecationAlert';
-import FunctionSignature from './FunctionSignature';
+import AvailabilityInfo from './AvailabilityInfo'
+import DeprecationAlert from './DeprecationAlert'
+import FunctionSignature from './FunctionSignature'
 
 export default {
   components: {

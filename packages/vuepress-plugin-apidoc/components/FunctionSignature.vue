@@ -20,7 +20,7 @@ export default {
   },
   computed: {
     parameterNames: function () {
-      return this.parameters.map(value => value.name);
+      return this.parameters.map(value => value.name)
     }
   }
 }

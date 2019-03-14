@@ -16,7 +16,7 @@
 import Vue from 'vue'
 
 import ApiSidebarLink from '@theme/components/ApiSidebarLink.vue'
-import { groupHeaders } from '@theme/util';
+import { groupHeaders } from '@theme/util'
 
 export default {
   components: { ApiSidebarLink },
@@ -27,21 +27,21 @@ export default {
     }
   },
 
-  mounted() {
+  mounted () {
     Vue.$vuepress.$on('apiAnchorChanged', this.onAnchorChanged)
   },
 
-  beforeDestroy() {
+  beforeDestroy () {
     Vue.$vuepress.store.$off('apiAnchorChanged', this.onAnchorChanged)
   },
 
   computed: {
-    items() {
-      const headers = groupHeaders(this.$page.headers || []);
+    items () {
+      const headers = groupHeaders(this.$page.headers || [])
       return headers.map(header => {
-        const currentAnchor = this.currentAnchor || { hash: this.$route.hash !== '' ? this.$route.hash : '#' + this.$page.headers[0].slug, path: this.$route.path };
-        const selfActive = currentAnchor.hash === '#' + header.slug;
-        const active = selfActive || (header.children && header.children.some(c => currentAnchor.hash === '#' + c.slug));
+        const currentAnchor = this.currentAnchor || { hash: this.$route.hash !== '' ? this.$route.hash : '#' + this.$page.headers[0].slug, path: this.$route.path }
+        const selfActive = currentAnchor.hash === '#' + header.slug
+        const active = selfActive || (header.children && header.children.some(c => currentAnchor.hash === '#' + c.slug))
         return {
           type: 'auto',
           title: header.title,
@@ -49,16 +49,16 @@ export default {
           path: this.$page.path + '#' + header.slug,
           active: active,
           children: (header.children || []).map(child => {
-            child.active = currentAnchor.hash === '#' + child.slug;
-            return child;
+            child.active = currentAnchor.hash === '#' + child.slug
+            return child
           })
         }
-      });
+      })
     }
   },
 
   methods: {
-    onAnchorChanged(newAnchor) {
+    onAnchorChanged (newAnchor) {
       this.currentAnchor = newAnchor
     }
   }

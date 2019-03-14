@@ -1,15 +1,14 @@
 <template>
   <span class="type-links">
     <template v-for="(typeName, index) in normalizedTypes">
-      <type-link :type="typeName"></type-link>
-      <span class="type-devider" v-if="index < normalizedTypes.length - 1"> | </span>
+      <type-link :type="typeName" :key="typeName"></type-link>
+      <span class="type-devider" v-if="index < normalizedTypes.length - 1" :key="'devider' + index"> | </span>
     </template>
   </span>
 </template>
 
 <script>
-import typeLinks from '@dynamic/type-links';
-import TypeLink from './TypeLink';
+import TypeLink from './TypeLink'
 
 export default {
   components: {
@@ -23,13 +22,13 @@ export default {
   },
   computed: {
     normalizedTypes: function () {
-      const types = this.types.type ? this.types.type : this.types;
+      const types = this.types.type ? this.types.type : this.types
       if (typeof types === 'string') {
-        return types.split('|');
+        return types.split('|')
       } else if (Array.isArray(types)) {
-        return types.map(type => type.type ? type.type : type);
+        return types.map(type => type.type ? type.type : type)
       } else {
-        throw Error(`Unknown type format: ${JSON.stringify(types)}`);
+        throw Error(`Unknown type format: ${JSON.stringify(types)}`)
       }
     }
   }

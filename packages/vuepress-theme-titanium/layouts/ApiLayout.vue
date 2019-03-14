@@ -63,10 +63,10 @@ export default {
   },
 
   watch: {
-    '$page': function() {
-      this.$sidebarLinks = null;
-      Vue.$vuepress.$emit('anchorChanged', null);
-      Vue.$vuepress.$emit('apiAnchorChanged', null);
+    '$page': function () {
+      this.$sidebarLinks = null
+      Vue.$vuepress.$emit('anchorChanged', null)
+      Vue.$vuepress.$emit('apiAnchorChanged', null)
     }
   },
 
@@ -145,14 +145,14 @@ export default {
 
       const currentAnchor = calculateCurrentAnchor(this.$sidebarLinks)
       if (!currentAnchor) {
-        return;
+        return
       }
       if (!this.currentAnchor || this.currentAnchor.hash !== currentAnchor.hash) {
         this.currentAnchor = {
           hash: currentAnchor.hash,
           path: this.$route.path
         }
-        Vue.$vuepress.$emit('apiAnchorChanged', this.currentAnchor);
+        Vue.$vuepress.$emit('apiAnchorChanged', this.currentAnchor)
       }
     }, 300)
   }

@@ -22,14 +22,14 @@
 </template>
 
 <script>
-import AvailabilityInfo from '../components/AvailabilityInfo';
+import AvailabilityInfo from '../components/AvailabilityInfo'
 
 export default {
   components: { AvailabilityInfo },
   computed: {
     metadata: function () {
-      const key = `${this.$page.version || 'next'}/${this.$page.metadataKey}`;
-      return this.$store.state.metadata[key] || {};
+      const key = `${this.$page.version || 'next'}/${this.$page.metadataKey}`
+      return this.$store.state.metadata[key] || {}
     }
   }
 }

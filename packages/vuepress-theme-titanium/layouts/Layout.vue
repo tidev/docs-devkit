@@ -88,9 +88,9 @@ export default {
     shouldShowSidebar () {
       const { frontmatter } = this.$page
       return (
-        !frontmatter.home
-        && frontmatter.sidebar !== false
-        && this.sidebarItems.length
+        !frontmatter.home &&
+        frontmatter.sidebar !== false &&
+        this.sidebarItems.length
       )
     },
 
@@ -117,9 +117,9 @@ export default {
   },
 
   watch: {
-    '$page': function() {
-      this.$sidebarLinks = null;
-      Vue.$vuepress.$emit('anchorChanged', null);
+    '$page': function () {
+      this.$sidebarLinks = null
+      Vue.$vuepress.$emit('anchorChanged', null)
     }
   },
 
@@ -178,14 +178,14 @@ export default {
 
       const currentAnchor = calculateCurrentAnchor(this.$sidebarLinks)
       if (!currentAnchor) {
-        return;
+        return
       }
       if (!this.currentAnchor || this.currentAnchor.hash !== currentAnchor.hash) {
         this.currentAnchor = {
           hash: currentAnchor.hash,
           path: this.$route.path
         }
-        Vue.$vuepress.$emit('anchorChanged', this.currentAnchor);
+        Vue.$vuepress.$emit('anchorChanged', this.currentAnchor)
       }
     }, 300)
   }

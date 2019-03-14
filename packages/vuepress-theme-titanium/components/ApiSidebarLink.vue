@@ -9,7 +9,7 @@ export default {
   render (h, { parent: { $page, $site, $route }, props: { item }}) {
     const active = item.active
     const link = renderLink(h, item.path, item.title || item.path, active)
-    const maxDepth = 2;
+    const maxDepth = 2
     if (item.type === 'auto') {
       return [link, renderChildren(h, item.children, item.basePath, $route, maxDepth)]
     } else if (active && item.headers && !hashRE.test(item.path)) {
