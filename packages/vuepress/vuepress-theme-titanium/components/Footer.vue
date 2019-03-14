@@ -1,36 +1,52 @@
 <template>
   <footer class="footer">
     <section class="sitemap">
-      <section class="sitemap-section">
-        <h5>Docs</h5>
+      <section v-for="sitemapConfig in sitemap" class="sitemap-section" :key="sitemapConfig.title">
+        <h5>{{ sitemapConfig.title }}</h5>
         <ul>
-          <li><a href="https://docs.appcelerator.com/" target="_blank">Alloy</a></li>
-          <li><a href="https://docs.appcelerator.com/" target="_blank">Hyperloop</a></li>
-        </ul>
-      </section>
-      <section class="sitemap-section">
-        <h5>Community</h5>
-        <ul>
-          <li><a href="">Slack</a></li>
-        </ul>
-      </section>
-      <section class="sitemap-section">
-        <h5>Social</h5>
-        <ul>
-          <li><a href="https://github.com/appcelerator" target="_blank">Github</a></li>
-          <li><a href="https://twitter.com/appcelerator" target="_blank">Twitter</a></li>
-          <li><a href="http://www.linkedin.com/company/200115" target="_blank">LinkedIn</a></li>
+          <li v-for="link in sitemapConfig.links" :key="link.text"><a :href="link.link" :target="/^https?:\/\//.test(link.link) ? '_blank' : '_self'">{{ link.text }}</a></li>
         </ul>
       </section>
     </section>
-    <a href="https://appcelerator.com" target="_blank">
-      <img :src="$withBase('/images/axway-appcelerator-logo.png')"/>
+    <a v-if="logo" :href="logoLink" target="_blank">
+      <img :src="$withBase(logo)"/>
     </a>
     <section class="copyright">
-      Copyright © 2018-present Axway Appcelerator
+      {{ copyright }}
     </section>
   </footer>
 </template>
+
+<script>
+export default {
+  computed: {
+    copyright() {
+      const { themeConfig } = this.$site;
+      return themeConfig && themeConfig.footerCopyright
+    },
+    logo() {
+      const { themeConfig } = this.$site;
+      return themeConfig && themeConfig.footerLogo
+    },
+    logoLink() {
+      const { themeConfig } = this.$site;
+      return themeConfig && themeConfig.footerLogoLink || '/'
+    },
+    sitemap() {
+      const { themeConfig } = this.$site;
+      const sitemap = themeConfig.footerSitemap || []
+      return Object.keys(sitemap).map(sitemapColumnTitle => {
+        const sitemapColumnConfig = sitemap[sitemapColumnTitle]
+        return {
+          title: sitemapColumnTitle,
+          links: sitemapColumnConfig
+        }
+      })
+    }
+  }
+}
+</script>
+
 
 <style lang="stylus">
 .footer
