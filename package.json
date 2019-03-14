@@ -8,7 +8,7 @@
     "packages/vuepress/*"
   ],
   "scripts": {
-    "bootsrap": "yarn && lerna bootsrap",
+    "bootstrap": "yarn && lerna bootstrap",
     "build:docs": "yarn workspace docs build",
     "dev:docs": "yarn workspace docs dev",
     "lint": "eslint packages --fix --ext .js,.vue"
