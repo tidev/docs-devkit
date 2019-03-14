@@ -1,6 +1,12 @@
 {
   "name": "docs-devkit",
   "description": "Tooling for Axway Appcelerator open source documentation",
+  "private": true,
+  "workspaces": [
+    "packages/docs",
+    "packages/titanium-docgen",
+    "packages/vuepress/*"
+  ],
   "scripts": {
     "lint": "eslint packages --fix --ext .js,.vue"
   },
