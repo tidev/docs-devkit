@@ -73,7 +73,7 @@ function getPluginSidebar (pluginTitle, pluginIntro, officialPluginTitle) {
       collapsable: false,
       children: [
         ['', pluginIntro],
-        'apidoc-plugin',
+        'apidocs-plugin',
         'versioning-plugin'
       ]
     }
