@@ -46,7 +46,8 @@ export default {
         this.$page,
         this.$page.regularPath,
         this.$site,
-        this.$localePath
+        this.$localePath,
+        this.$versions
       )
     },
 

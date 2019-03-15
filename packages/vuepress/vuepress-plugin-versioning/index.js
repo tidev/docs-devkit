@@ -2,12 +2,14 @@ const fs = require('fs-extra')
 const path = require('path')
 const { logger, globby, sort } = require('@vuepress/shared-utils')
 
+const convertRouterLinkPlugin = require('./lib/link')
+const { generateVersionedPath, snapshotSidebar, updateSidebarConfig } = require('./lib/util')
 const versionManager = require('./lib/version-manager')
 
 module.exports = (options, context) => {
   const pluginName = 'titanium/versioning'
 
-  const versionedSourceDir = path.resolve(context.sourceDir, '..', 'website', 'versioned_docs')
+  const versionedSourceDir = options.versionedSourceDir || path.resolve(context.sourceDir, '..', 'website', 'versioned_docs')
   context.versionedSourceDir = versionedSourceDir
 
   const pagesSourceDir = options.pagesSourceDir || path.resolve(context.sourceDir, '..', 'website', 'pages')
@@ -20,61 +22,28 @@ module.exports = (options, context) => {
     name: pluginName,
 
     /**
-     * Rewrites the sidebar configurations and prefixes the page identifiers with the respective
-     * version they are part of.
+     * Reads in the snaphotted sidebar configs and rewrites them to be versioned
      */
     ready () {
-      const currentSidebarConfigPath = path.join(context.sourceDir, '.vuepress', 'sidebar.config.js')
       if (versions.length === 0) {
-        if (fs.existsSync(currentSidebarConfigPath)) {
-          context.themeConfig.sidebar = require(currentSidebarConfigPath)
-        }
-
         return
       }
 
-      if (!context.themeConfig.sidebar) {
-        throw new Error('Versioned sidebars require an empty Array or Object as the themeConfig.sidebar option depending on your sidebar structure.')
-      }
-
-      function rewriteSidebarConfig (sidebarConfig, version) {
-        if (Array.isArray(sidebarConfig)) {
-          return sidebarConfig.map(path => {
-            return Array.isArray(path) ? `${version}${path[0]}` : `${version}${path}`
-          })
-        } else {
-          return Object.keys(sidebarConfig).reduce((config, key) => {
-            config[`/${version}${key}`] = sidebarConfig[key]
-            return config
-          }, {})
-        }
-      }
-
-      function mergeSidebarConfig (target, source) {
-        if (Array.isArray(target)) {
-          return target.concat(source)
-        } else {
-          return Object.assign(target, source)
-        }
-      }
-
-      if (fs.existsSync(currentSidebarConfigPath)) {
-        const sidebarConfig = rewriteSidebarConfig(require(currentSidebarConfigPath), 'next')
-        mergeSidebarConfig(context.themeConfig.sidebar, sidebarConfig)
-      }
+      updateSidebarConfig(context.themeConfig, 'next')
 
       const currentVersion = versions[0]
+      context.themeConfig.versionedSidebar = {}
       for (const version of versions) {
-        const versionSidebarConfigPath = path.join(versionedSourceDir, version, 'sidebar.config.js')
-        if (fs.existsSync(versionSidebarConfigPath)) {
-          let sidebarConfig
-          if (version === currentVersion) {
-            sidebarConfig = require(versionSidebarConfigPath)
-          } else {
-            sidebarConfig = rewriteSidebarConfig(require(versionSidebarConfigPath), version)
-          }
-          mergeSidebarConfig(context.themeConfig.sidebar, sidebarConfig)
+        const versionSidebarConfigPath = path.join(versionedSourceDir, version, 'sidebar.config.json')
+        if (!fs.existsSync(versionSidebarConfigPath)) {
+          continue
         }
+
+        const sidebarConfig = JSON.parse(fs.readFileSync(versionSidebarConfigPath).toString())
+        if (version !== currentVersion) {
+          updateSidebarConfig(sidebarConfig, version)
+        }
+        context.themeConfig.versionedSidebar[version] = sidebarConfig
       }
     },
 
@@ -84,18 +53,19 @@ module.exports = (options, context) => {
     extendCli (cli) {
       cli
         .command('version <targetDir> <version>', '')
-        .option('--debug', 'enable debug logging')
-        .action((dir, version,) => {
+        .allowUnknownOptions()
+        .action(async (dir, version,) => {
           if (versions.includes(version)) {
             logger.error(`Version ${version} already exists in version.json. Please use a different version.`)
             return
           }
 
-          const vuepressPath = path.join(context.sourceDir, '.vuepress')
+          logger.wait(`Creating new version ${version} ...`)
+
           const versionDestPath = path.join(versionedSourceDir, version)
-          fs.copySync(context.sourceDir, versionDestPath, {
+          await fs.copy(context.sourceDir, versionDestPath, {
             filter: (src, dest) => {
-              if (src === vuepressPath) {
+              if (src === context.vuepressDir) {
                 return false
               }
 
@@ -103,13 +73,16 @@ module.exports = (options, context) => {
             }
           })
 
-          fs.copy(path.join(vuepressPath, 'sidebar.config.js'), path.join(versionDestPath, 'sidebar.config.js'))
-          fs.copy(path.join(context.sourceDir, 'api', 'api.json'), path.join(versionDestPath, 'api.json'))
+          await snapshotSidebar(context.siteConfig, versionDestPath)
+          if (typeof options.onNewVersion === 'function') {
+            await options.onNewVersion(version, versionDestPath)
+          }
 
           versions.unshift(version)
-          fs.writeFileSync(versionsFilePath, JSON.stringify(versions, null, 2))
+          await fs.writeFile(versionsFilePath, JSON.stringify(versions, null, 2))
 
-          logger.success(`Created snapshot of ${context.sourceDir} as version ${version} in ${versionDestPath}`)
+          logger.success(`Snapshotted your current docs as version ${version}`)
+          logger.tip(`You can find them under ${versionDestPath}`)
         })
     },
 
@@ -123,7 +96,7 @@ module.exports = (options, context) => {
         const pages = []
         pageFiles.map(relative => {
           const filePath = path.resolve(basePath, relative)
-          versionedPages.push({
+          pages.push({
             filePath,
             relative
           })
@@ -162,7 +135,7 @@ module.exports = (options, context) => {
         }
       } else if (page._filePath.startsWith(context.sourceDir)) {
         page.version = 'next'
-        page.path = page.regularPath = `/next${page.path}`
+        page.path = page.regularPath = generateVersionedPath(page.path, page.version, page._localePath)
       }
     },
 
@@ -181,6 +154,30 @@ module.exports = (options, context) => {
     }
   })
 }`
-    }]
+    }],
+
+    /**
+     * Replaces the default convert-router-link plugin from VuePress with a
+     * modified one that knows how to properly handle relative links for the
+     * rewritten paths of versioned pages.
+     *
+     * @param {*} config
+     */
+    chainMarkdown (config) {
+      config.plugins.delete('convert-router-link')
+      const { externalLinks } = context.siteConfig.markdown || {}
+      config
+        .plugin('convert-router-link-versioned')
+        .use(convertRouterLinkPlugin, [{
+          externalAttrs: Object.assign({
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          }, externalLinks),
+          sourceDir: context.sourceDir,
+          versionedSourceDir,
+          locales: Object.keys(context.siteConfig.locales || {}).filter(l => l !== '/')
+        }])
+        .end()
+    }
   })
 }

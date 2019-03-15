@@ -115,12 +115,20 @@ function resolvePath (relative, base, append) {
  * @param { string } localePath
  * @returns { SidebarGroup }
  */
-export function resolveSidebarItems (page, regularPath, site, localePath) {
-  const { pages, themeConfig } = site
+export function resolveSidebarItems (page, regularPath, site, localePath, versions) {
+  const { pages } = site
+  let themeConfig = site.themeConfig
 
-  const localeConfig = localePath && themeConfig.locales
+  let localeConfig = localePath && themeConfig.locales
     ? themeConfig.locales[localePath] || themeConfig
     : themeConfig
+  if (page.version && page.version !== 'next') {
+    const versionedConfig = site.themeConfig.versionedSidebar && site.themeConfig.versionedSidebar[page.version]
+    localeConfig = localePath && versionedConfig.locales
+      ? versionedConfig.locales[localePath] || versionedConfig
+      : versionedConfig
+    themeConfig = versionedConfig
+  }
 
   const pageSidebarConfig = page.frontmatter.sidebar || localeConfig.sidebar || themeConfig.sidebar
   if (pageSidebarConfig === 'auto') {
