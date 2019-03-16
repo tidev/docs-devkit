@@ -20,20 +20,20 @@
 <script>
 export default {
   computed: {
-    copyright() {
-      const { themeConfig } = this.$site;
+    copyright () {
+      const { themeConfig } = this.$site
       return themeConfig && themeConfig.footerCopyright
     },
-    logo() {
-      const { themeConfig } = this.$site;
+    logo () {
+      const { themeConfig } = this.$site
       return themeConfig && themeConfig.footerLogo
     },
-    logoLink() {
-      const { themeConfig } = this.$site;
+    logoLink () {
+      const { themeConfig } = this.$site
       return themeConfig && themeConfig.footerLogoLink || '/'
     },
-    sitemap() {
-      const { themeConfig } = this.$site;
+    sitemap () {
+      const { themeConfig } = this.$site
       const sitemap = themeConfig.footerSitemap || []
       return Object.keys(sitemap).map(sitemapColumnTitle => {
         const sitemapColumnConfig = sitemap[sitemapColumnTitle]
@@ -46,7 +46,6 @@ export default {
   }
 }
 </script>
-
 
 <style lang="stylus">
 .footer
