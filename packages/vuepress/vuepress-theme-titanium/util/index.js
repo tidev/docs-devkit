@@ -183,13 +183,31 @@ export function groupHeaders (headers) {
 
 export function resolveNavLinkItem (linkItem) {
   return Object.assign(linkItem, {
-    link: linkItem.versioned ? resolveVersionedLink(linkItem.link) : linkItem.link,
     type: linkItem.items && linkItem.items.length ? 'links' : 'link'
   })
 }
 
-function resolveVersionedLink (link, site, versions) {
+export function versionifyUserNav (navConfig, currentPage, currentVersion, localePath, routes) {
+  return navConfig.map(item => {
+    // assign item to new object so we don't override the original values
+    item = Object.assign({}, item)
+    if (item.items) {
+      item.items = versionifyUserNav(item.items, currentPage, currentVersion, localePath, routes)
+    } else {
+      let link = item.link
+      const cleanPath = item.link.replace(new RegExp(`^${localePath}`), '')
+      if (currentPage.version !== currentVersion) {
+        link = `${localePath}${currentPage.version}/${cleanPath}`
+        if (!routes.some(route => route.path === link)) {
+          // Fallback to the un-altered default link
+          link = item.link
+        }
+      }
+      item.link = link
+    }
 
+    return Object.assign({}, item)
+  })
 }
 
 /**

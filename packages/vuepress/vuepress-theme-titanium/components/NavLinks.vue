@@ -35,7 +35,7 @@
 
 <script>
 import DropdownLink from './DropdownLink.vue'
-import { resolveNavLinkItem } from '../util'
+import { resolveNavLinkItem, versionifyUserNav } from '../util'
 import NavLink from './NavLink.vue'
 
 export default {
@@ -43,7 +43,20 @@ export default {
 
   computed: {
     userNav () {
-      return this.$themeLocaleConfig.nav || this.$site.themeConfig.nav || []
+      let nav
+      if (this.$versions.length > 0) {
+        nav = versionifyUserNav(
+          this.$themeLocaleConfig.nav || this.$site.themeConfig.nav || [],
+          this.$page,
+          this.$versions[0],
+          this.$localePath,
+          this.$router.options.routes
+        )
+      } else {
+        return this.$themeLocaleConfig.nav || this.$site.themeConfig.nav || []
+      }
+      console.log(nav)
+      return nav
     },
 
     nav () {
