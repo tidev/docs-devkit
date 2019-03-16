@@ -195,8 +195,8 @@ export function versionifyUserNav (navConfig, currentPage, currentVersion, local
       item.items = versionifyUserNav(item.items, currentPage, currentVersion, localePath, routes)
     } else {
       let link = item.link
-      const cleanPath = item.link.replace(new RegExp(`^${localePath}`), '')
       if (currentPage.version !== currentVersion) {
+        const cleanPath = item.link.replace(new RegExp(`^${localePath}`), '')
         link = `${localePath}${currentPage.version}/${cleanPath}`
         if (!routes.some(route => route.path === link)) {
           // Fallback to the un-altered default link

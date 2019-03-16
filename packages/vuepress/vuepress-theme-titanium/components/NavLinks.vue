@@ -43,9 +43,8 @@ export default {
 
   computed: {
     userNav () {
-      let nav
       if (this.$versions.length > 0) {
-        nav = versionifyUserNav(
+        return versionifyUserNav(
           this.$themeLocaleConfig.nav || this.$site.themeConfig.nav || [],
           this.$page,
           this.$versions[0],
@@ -55,8 +54,6 @@ export default {
       } else {
         return this.$themeLocaleConfig.nav || this.$site.themeConfig.nav || []
       }
-      console.log(nav)
-      return nav
     },
 
     nav () {
