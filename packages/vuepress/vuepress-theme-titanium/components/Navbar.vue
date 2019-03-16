@@ -91,24 +91,24 @@ export default {
     versionsDropdown () {
       const themeConfig = this.$site.themeConfig
       const currentVersion = this.$versions[0]
-      const currentLink = this.$page.path
       const routes = this.$router.options.routes
       return {
         text: this.$page.version,
         items: ['next', ...this.$versions].map(version => {
           const text = version
-          let link
-          if (version === this.$page.version) {
-            link = currentLink
-          } else {
-            link = currentLink.replace(`/${this.$page.version}`, '')
+          let link = this.$page.path
+          if (version !== this.$page.version) {
+            link = link.replace(new RegExp(`^${this.$localePath.substring(0, this.$localePath.length - 1)}`), '')
+            link = link.replace(new RegExp(`^/${this.$page.version}`), '')
+            // try to stay on current page
             if (version !== currentVersion) {
-              // try to stay on current page for different version
-              link = `/${version}${link}`
+              link = `${this.$localePath}${version}${link}`
+            } else {
+              link = `${this.$localePath.substring(0, this.$localePath.length - 1)}${link}`
             }
             if (!routes.some(route => route.path === link)) {
               // fallback to homepage
-              link = version === currentVersion ? '/' : `/${version}/`
+              link = version === currentVersion ? this.$localePath : `${this.$localePath}${version}/`
             }
           }
           const item = { text, link }
