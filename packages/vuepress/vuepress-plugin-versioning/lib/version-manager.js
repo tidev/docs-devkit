@@ -8,7 +8,7 @@ class VersionManager {
 
   loadVersions (versionsFilePath) {
     if (fs.existsSync(versionsFilePath)) {
-      this.versions.splice(0, 0, ...JSON.parse(fs.readFileSync(versionsFilePath).toString()))
+      this.versions.splice(0, this.versions.length, ...JSON.parse(fs.readFileSync(versionsFilePath).toString()))
       this.currentVersion = this.versions[0]
     }
   }
