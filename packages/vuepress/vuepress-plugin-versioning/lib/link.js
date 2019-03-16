@@ -13,8 +13,6 @@ module.exports = (md, { externalAttrs, sourceDir, versionedSourceDir, locales })
   let hasOpenRouterLink = false
   let hasOpenExternalLink = false
 
-  console.log(sourceDir, versionedSourceDir)
-
   md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
     const { relPath } = env
     const token = tokens[idx]
