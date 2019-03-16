@@ -89,6 +89,7 @@ export default {
     },
 
     versionsDropdown () {
+      const themeConfig = this.$site.themeConfig
       const currentVersion = this.$versions[0]
       const currentLink = this.$page.path
       const routes = this.$router.options.routes
@@ -114,7 +115,7 @@ export default {
           if (version === currentVersion) {
             item.subText = 'current'
           } else if (version === 'next') {
-            item.text = 'master'
+            item.text = themeConfig && themeConfig.nextVersionTitle || 'master'
             item.subText = 'next'
           }
           return item
