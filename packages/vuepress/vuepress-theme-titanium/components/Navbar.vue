@@ -20,7 +20,7 @@
       >{{ $siteTitle }}</span>
     </router-link>
 
-    <div v-if="hasVersions" class="versions-dropdown">
+    <div v-if="hasVersions" class="versions-dropdown can-hide">
       <DropdownLink :item="versionsDropdown"/>
     </div>
 
