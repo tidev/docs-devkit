@@ -111,12 +111,21 @@ export default {
       const {
         repo,
         editLinks,
-        docsDir = '',
         docsBranch = 'master',
         docsRepo = repo
       } = this.$site.themeConfig
+      let {
+        docsDir = '',
+        docsDirVersioned = 'docs/website/versioned_docs'
+      } = this.$site.themeConfig
 
-      let path = normalize(this.$page.path)
+      let path = normalize(this.$page.regularPath)
+      if (this.$page.version) {
+        path = normalize(this.$page.originalRegularPath)
+        if (this.$page.version !== 'next') {
+          docsDir = docsDirVersioned
+        }
+      }
       if (endingSlashRE.test(path)) {
         path += 'README.md'
       } else {

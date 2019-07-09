@@ -55,9 +55,11 @@ function generateVersionedPath (path, version, localePath) {
   const localePattern = new RegExp(`^${localePath}`)
   if (localePath && path.match(localePattern)) {
     return path.replace(localePattern, `${localePath}${version}/`)
-  } else {
+  } else if (version) {
     return `/${version}/${path}`
   }
+
+  return `/${path}`
 }
 
 module.exports = {

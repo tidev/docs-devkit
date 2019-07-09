@@ -43,7 +43,7 @@ export default {
 
   computed: {
     userNav () {
-      if (this.$versions.length > 0) {
+      if (this.$versions && this.$versions.length > 0) {
         return versionifyUserNav(
           this.$themeLocaleConfig.nav || this.$site.themeConfig.nav || [],
           this.$page,
