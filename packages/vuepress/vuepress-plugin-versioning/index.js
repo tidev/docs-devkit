@@ -104,11 +104,17 @@ module.exports = (options, context) => {
         return pages
       }
 
-      const versionedPageFiles = sort(await globby(patterns, { cwd: versionedSourceDir }))
-      const versionedPages = addPages(versionedPageFiles, versionedSourceDir)
+      let versionedPages = []
+      if (await fs.exists(versionedSourceDir)) {
+        const versionedPageFiles = sort(await globby(patterns, { cwd: versionedSourceDir }))
+        versionedPages = addPages(versionedPageFiles, versionedSourceDir)
+      }
 
-      const pageFiles = sort(await globby(patterns, { cwd: pagesSourceDir }))
-      const pages = addPages(pageFiles, pagesSourceDir)
+      let pages = []
+      if (await fs.exists(pagesSourceDir)) {
+        const pageFiles = sort(await globby(patterns, { cwd: pagesSourceDir }))
+        pages = addPages(pageFiles, pagesSourceDir)
+      }
 
       return [...versionedPages, ...pages]
     }
@@ -175,6 +181,7 @@ module.exports = (options, context) => {
           }, externalLinks),
           sourceDir: context.sourceDir,
           versionedSourceDir,
+          pagesSourceDir,
           locales: Object.keys(context.siteConfig.locales || {}).filter(l => l !== '/')
         }])
         .end()

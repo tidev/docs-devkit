@@ -9,7 +9,7 @@ const { generateVersionedPath } = require('./util')
 
 const indexRE = /(^|.*\/)(index|readme).md(#?.*)$/i
 
-module.exports = (md, { externalAttrs, sourceDir, versionedSourceDir, locales }) => {
+module.exports = (md, { externalAttrs, sourceDir, versionedSourceDir, pagesSourceDir, locales }) => {
   let hasOpenRouterLink = false
   let hasOpenExternalLink = false
 
@@ -58,6 +58,9 @@ module.exports = (md, { externalAttrs, sourceDir, versionedSourceDir, locales })
             version = match[1]
             relPath = relPath.replace(versionPathPattern, '')
           }
+        } else if (fullPath.startsWith(pagesSourceDir)) {
+          relPath = path.relative(pagesSourceDir, fullPath)
+          version = null
         }
         to = url.resolve('/' + relPath, to)
         let localePath
