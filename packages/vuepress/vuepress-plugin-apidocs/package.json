@@ -15,7 +15,7 @@
   "author": "Axway Appcelerator",
   "license": "Apache-2.0",
   "dependencies": {
-    "@vuepress/shared-utils": "^1.0.0-alpha.40",
+    "@vuepress/shared-utils": "^1.0.2",
     "fs-extra": "^7.0.1",
     "simple-git": "^1.107.0",
     "titanium-docgen": "^0.0.0"

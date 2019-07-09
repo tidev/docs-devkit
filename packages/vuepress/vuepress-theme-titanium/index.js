@@ -19,9 +19,9 @@ module.exports = (options, ctx) => ({
   },
   plugins: [
     ['@vuepress/search', { searchMaxSuggestions: 10 }],
-    '@vuepress/plugin-nprogress',
-    ['@vuepress/container', { type: 'tip' }],
-    ['@vuepress/container', { type: 'warning' }],
-    ['@vuepress/container', { type: 'danger' }]
+    '@vuepress/nprogress',
+    ['container', { type: 'tip' }],
+    ['container', { type: 'warning' }],
+    ['container', { type: 'danger' }]
   ]
 })
