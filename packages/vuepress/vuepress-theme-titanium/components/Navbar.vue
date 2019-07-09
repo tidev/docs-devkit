@@ -38,7 +38,7 @@
       <NavLinks class="can-hide"/>
     </div>
 
-    <ApiSidebarButton @toggle-api-sidebar="$emit('toggle-api-sidebar')"/>
+    <ApiSidebarButton v-if="$page.metadataKey" @toggle-api-sidebar="$emit('toggle-api-sidebar')"/>
   </header>
 </template>
 
