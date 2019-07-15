@@ -46,7 +46,6 @@ function fetchMetadata (route) {
 
     metadataKey = `${page.version || 'next'}/${metadataKey}`
     if (store.state.metadata[metadataKey]) {
-      console.log('State data already available')
       return resolve()
     }
 

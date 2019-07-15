@@ -52,7 +52,7 @@ module.exports = (options, context) => {
      */
     extendCli (cli) {
       cli
-        .command('version <targetDir> <version>', '')
+        .command('version <targetDir> <version>', 'Draft a new version')
         .allowUnknownOptions()
         .action(async (dir, version,) => {
           if (versions.includes(version)) {
