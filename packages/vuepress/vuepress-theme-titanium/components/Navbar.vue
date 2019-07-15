@@ -20,7 +20,7 @@
       >{{ $siteTitle }}</span>
     </router-link>
 
-    <div v-if="hasVersions" class="versions-dropdown can-hide">
+    <div v-if="hasVersions && isVersionedPage" class="versions-dropdown can-hide">
       <DropdownLink :item="versionsDropdown"/>
     </div>
 
@@ -86,6 +86,10 @@ export default {
 
     hasVersions () {
       return this.$versions && this.$versions.length > 0
+    },
+
+    isVersionedPage () {
+      return this.$page.version !== undefined
     },
 
     versionsDropdown () {
