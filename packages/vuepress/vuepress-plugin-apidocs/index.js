@@ -22,9 +22,8 @@ module.exports = (options = {}, context) => {
   if (fs.existsSync(versionsFilePath)) {
     versions.splice(0, 0, ...JSON.parse(fs.readFileSync(versionsFilePath).toString()))
   }
-  metadataService.loadMetadata(context, versions)
 
-  return {
+  const pluginConfig = {
     name: pluginName,
 
     plugins: [
@@ -38,6 +37,19 @@ module.exports = (options = {}, context) => {
 
     alias: {
       '@apidoc': __dirname
+    },
+
+    ready () {
+      metadataService.loadMetadata(options, context, versions)
+      for (const version of Object.keys(metadataService.metadata)) {
+        processed[version] = {}
+        for (const typeName of Object.keys(metadataService.metadata[version])) {
+          const metadata = metadataService.metadata[version][typeName]
+          const metadataProcessor = new MetadataProcessor(context, version)
+          metadataProcessor.transoformMetadataAndCollectHeaders(metadata)
+          processed[version][typeName] = metadataProcessor
+        }
+      }
     },
 
     /**
@@ -59,8 +71,7 @@ module.exports = (options = {}, context) => {
       const metadata = metadataService.findMetadata(typeName, version)
 
       if (!metadata) {
-        logger.warn(`no metadata found for API page ${page.path}`)
-        metadataService.currentPage = null
+        logger.warn(`no metadata found for type ${typeName} of API page ${page.path}`)
         return
       }
 
@@ -70,19 +81,10 @@ module.exports = (options = {}, context) => {
       if (processed[version] && processed[version][typeName]) {
         const metadataProcessor = processed[version][typeName]
         metadataProcessor.appendAdditionalHeaders(page)
-        metadataService.currentPage = null
         return
       }
 
-      const metadataProcessor = new MetadataProcessor(context, version)
-      metadataProcessor.transoformMetadataAndCollectHeaders(metadata)
-      metadataProcessor.appendAdditionalHeaders(page)
-
-      if (!processed[version]) {
-        processed[version] = {}
-      }
-      processed[version][typeName] = metadataProcessor
-      metadataService.currentPage = null
+      logger.warn(`no metadata found for type ${typeName} of API page ${page.path}`)
     },
 
     /**
@@ -94,6 +96,9 @@ module.exports = (options = {}, context) => {
       // the other one manually
       const typeLinks = {}
       for (const version of metadataService.versions) {
+        if (!metadataService.metadata[version]) {
+          continue
+        }
         Object.keys(metadataService.metadata[version]).forEach(name => {
           if (!typeLinks[name]) {
             typeLinks[name] = getLinkForKeyPath(name, '/').path
@@ -223,10 +228,11 @@ export default ${JSON.stringify(typeLinks)}\n\n`.trim()
             }, []),
             '-o', outputPath
           ]
-          logger.wait('Generating API metadata...')
+          logger.wait('Generating API metadata file...')
           try {
+            logger.debug(`Running command ${command.join(' ')}`);
             await execAsync(command.join(' '))
-            logger.success(`Done! Metadata generated to ${outputPath}`)
+            logger.success(`Done! Metadata file generated to ${path.join(outputPath, 'api.json')}`)
           } catch (e) {
             logger.error('Failed to generate API metadata.')
             throw e
@@ -234,6 +240,12 @@ export default ${JSON.stringify(typeLinks)}\n\n`.trim()
         })
     }
   }
+
+  if (!options.disableStoreSetup) {
+    pluginConfig.enhanceAppFiles = path.resolve(__dirname, 'lib', 'enhanceApp.js')
+  }
+
+  return pluginConfig
 }
 
 function findMetadataWithLowerCasedKey (lowerCasedTypeName, version) {

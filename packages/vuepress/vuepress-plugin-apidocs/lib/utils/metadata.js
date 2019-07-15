@@ -1,3 +1,4 @@
+const { logger } = require('@vuepress/shared-utils')
 const fs = require('fs-extra')
 const path = require('path')
 
@@ -8,17 +9,33 @@ class MetadataService {
     this.metadata = {}
   }
 
-  loadMetadata (context, versions) {
+  loadMetadata (options, context, versions) {
     if (this.initialized) {
       return
     }
 
-    let metadataFilePath = path.join(context.sourceDir, 'api', 'api.json')
+    const relativeMetadataFilePath = options.metadataFile || 'api/api.json'
+    let metadataFilePath = path.resolve(context.sourceDir, relativeMetadataFilePath)
+    if (!fs.existsSync(metadataFilePath)) {
+      logger.warn(`
+        Couldn't load metadata file at ${metadataFilePath}\n
+        Please check your apidocs plugin options to ensure the path is correct.\n
+        You can generate the required api.json with the metadata command, see vuepress metadata --help
+      `)
+      return
+    }
     let typesMetadata = JSON.parse(fs.readFileSync(metadataFilePath).toString())
     this.metadata.next = typesMetadata
 
+    // @fixme how can we get the default value from the versioning plugin?
+    const versionedSourceDir = options.versionedSourceDir || path.resolve(context.sourceDir, '..', 'website', 'versioned_docs')
+    let versionedRelativeMetadataFilePath = options.versionedMetadataFile || 'api/api.json';
     for (const version of versions) {
-      metadataFilePath = path.join(context.versionedSourceDir, version, 'api', 'api.json')
+      metadataFilePath = path.resolve(versionedSourceDir, version, versionedRelativeMetadataFilePath)
+      if (!fs.existsSync(metadataFilePath)) {
+        logger.warn(`Couldn't load metadata file for version ${version} at ${metadataFilePath}. Please check your apidocs plugin options.`)
+        continue
+      }
       typesMetadata = JSON.parse(fs.readFileSync(metadataFilePath).toString())
       this.metadata[version] = typesMetadata
     }
