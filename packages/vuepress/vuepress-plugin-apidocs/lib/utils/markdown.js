@@ -1,4 +1,4 @@
-const { isValidType } = require('./metadata')
+const { isValidType } = require('../metadata/service')
 
 const typeLinkPattern = /^<([a-zA-Z][a-zA-Z0-9._]+)>/
 

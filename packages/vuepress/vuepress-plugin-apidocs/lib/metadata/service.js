@@ -29,7 +29,7 @@ class MetadataService {
 
     // @fixme how can we get the default value from the versioning plugin?
     const versionedSourceDir = options.versionedSourceDir || path.resolve(context.sourceDir, '..', 'website', 'versioned_docs')
-    let versionedRelativeMetadataFilePath = options.versionedMetadataFile || 'api/api.json';
+    const versionedRelativeMetadataFilePath = options.versionedMetadataFile || 'api/api.json'
     for (const version of versions) {
       metadataFilePath = path.resolve(versionedSourceDir, version, versionedRelativeMetadataFilePath)
       if (!fs.existsSync(metadataFilePath)) {
