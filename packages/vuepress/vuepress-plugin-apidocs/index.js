@@ -37,11 +37,11 @@ module.exports = (options = {}, context) => {
     ],
 
     alias: {
-      '@apidoc': __dirname
+      '@apidocs': __dirname
     },
 
     /**
-     * Loads and processes metadata once the the markdown renderer
+     * Loads and processes metadata once the markdown renderer
      * is instantiated
      */
     extendMarkdown (md) {
@@ -240,7 +240,7 @@ export default ${JSON.stringify(typeLinks)}\n\n`.trim()
           ]
           logger.wait('Generating API metadata file...')
           try {
-            logger.debug(`Running command ${command.join(' ')}`);
+            logger.debug(`Running command ${command.join(' ')}`)
             await execAsync(command.join(' '))
             logger.success(`Done! Metadata file generated to ${path.join(outputPath, 'api.json')}`)
           } catch (e) {

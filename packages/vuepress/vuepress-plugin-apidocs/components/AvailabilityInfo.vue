@@ -2,8 +2,8 @@
   <div class="proxy-meta availability">
     <div class="proxy-meta-name">Availability</div>
     <div class="proxy-meta-value available-platforms">
-      <div class="platform-item" v-for="platform in normalizedPlaforms">
-        <img :src="$withBase(imageForPlatform(platform.name))" class="platform-logo"/> <span>{{platform.since}}</span>
+      <div class="platform-item" v-for="platform in normalizedPlaforms" :key="platform.name">
+        <img :src="imageForPlatform(platform.name)" class="platform-logo"/> <span>{{platform.since}}</span>
       </div>
     </div>
   </div>
@@ -44,11 +44,11 @@ export default {
   methods: {
     imageForPlatform (platformName) {
       switch (platformName) {
-        case 'android': return '/android-logo.png'
-        case 'ios': return '/apple-logo.png'
-        case 'iphone': return '/iphone-logo.png'
-        case 'ipad': return '/ipad-logo.png'
-        case 'windowsphone': return '/windows-logo.png'
+        case 'android': return require('@apidocs/assets/android-logo.png')
+        case 'ios': return require('@apidocs/assets/apple-logo.png')
+        case 'iphone': return require('@apidocs/assets/iphone-logo.png')
+        case 'ipad': return require('@apidocs/assets/ipad-logo.png')
+        case 'windowsphone': return require('@apidocs/assets/windows-logo.png')
       }
     }
   }
