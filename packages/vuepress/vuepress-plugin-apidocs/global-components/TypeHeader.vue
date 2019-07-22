@@ -1,14 +1,14 @@
 <template>
   <div class="type-header" v-if="metadata">
-    <div class="proxy-summary">
+    <div class="type-summary">
       <div class="summary-content" v-html="metadata.summary"></div>
-      <div class="proxy-metas">
+      <div class="type-metas">
         <AvailabilityInfo :platforms="metadata.platforms"/>
-        <div v-if="metadata.extends" class="proxy-meta">
-          <div class="proxy-meta-name">
+        <div v-if="metadata.extends" class="type-meta">
+          <div class="type-meta-name">
             Extends
           </div>
-          <div class="proxy-meta-value">
+          <div class="type-meta-value">
             <TypeLink :type="metadata.extends"/>
           </div>
         </div>
@@ -26,17 +26,24 @@ import AvailabilityInfo from '../components/AvailabilityInfo'
 
 export default {
   components: { AvailabilityInfo },
+  props: {
+    type: String
+  },
   computed: {
-    metadata: function () {
-      const key = `${this.$page.version || 'next'}/${this.$page.metadataKey}`
-      return this.$store.state.metadata[key] || {}
+    typeName () {
+      return `${this.$page.version || 'next'}/${this.type || this.$page.metadataKey}`
+    },
+    metadata () {
+      return this.$store.getters.getMetadata(this.typeName)
     }
   }
 }
 </script>
 
 <style lang="stylus">
-.proxy-summary
+@require '../styles/main'
+
+.type-summary
   margin 1rem 0
   display flex
   justify-content space-between
@@ -44,11 +51,11 @@ export default {
   &>.summary-content
     padding-right 1rem
 
-  &>.proxy-metas
+  &>.type-metas
     flex-shrink 0
 
 @media (max-width: $MQMobile)
-  .proxy-summary
+  .type-summary
     flex-direction column
 
     &>.summary-content

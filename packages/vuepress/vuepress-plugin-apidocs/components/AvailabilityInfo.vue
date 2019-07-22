@@ -1,7 +1,7 @@
 <template>
-  <div class="proxy-meta availability">
-    <div class="proxy-meta-name">Availability</div>
-    <div class="proxy-meta-value available-platforms">
+  <div class="type-meta availability">
+    <div class="type-meta-name">Availability</div>
+    <div class="type-meta-value available-platforms">
       <div class="platform-item" v-for="platform in normalizedPlaforms" :key="platform.name">
         <img :src="imageForPlatform(platform.name)" class="platform-logo"/> <span>{{platform.since}}</span>
       </div>
@@ -56,6 +56,8 @@ export default {
 </script>
 
 <style lang="stylus">
+@require '../styles/main'
+
 .availability
   &>.available-platforms
     display flex
