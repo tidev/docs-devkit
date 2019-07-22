@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer">
+  <footer class="footer" v-if="shouldShowFooter">
     <section class="sitemap">
       <section v-for="sitemapConfig in sitemap" class="sitemap-section" :key="sitemapConfig.title">
         <h5>{{ sitemapConfig.title }}</h5>
@@ -20,6 +20,10 @@
 <script>
 export default {
   computed: {
+    shouldShowFooter() {
+      const { themeConfig } = this.$site
+      return this.copyright || this.logo || themeConfig.footerSitemap
+    },
     copyright () {
       const { themeConfig } = this.$site
       return themeConfig && themeConfig.footerCopyright
@@ -54,7 +58,7 @@ export default {
   padding-top 2rem
   >.sitemap
     display flex
-    justify-content space-between
+    justify-content space-around
     margin 0 auto 3rem
     max-width $contentWidth
     >.sitemap-section
@@ -66,6 +70,7 @@ export default {
         >li
          >a
           color #999
+          font-size .9em
           &:hover
             color #fff
 
@@ -82,7 +87,7 @@ export default {
       max-width 100%
   >.copyright
     text-align center
-    color #999
+    color #666
 
 @media (max-width: $MQMobile)
   .footer
