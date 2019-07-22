@@ -136,13 +136,13 @@ module.exports = (options, context) => {
       if (page._filePath.startsWith(versionedSourceDir)) {
         const version = page._filePath.substring(versionedSourceDir.length + 1, page._filePath.indexOf('/', versionedSourceDir.length + 1))
         page.version = version
-        page.originalRegularPath = page.regularPath;
+        page.originalRegularPath = page.regularPath
         if (version === currentVersion) {
           page.path = page.regularPath = page.path.replace(new RegExp(`^/${version}`), '')
         }
       } else if (page._filePath.startsWith(context.sourceDir)) {
         page.version = 'next'
-        page.originalRegularPath = page.regularPath;
+        page.originalRegularPath = page.regularPath
         page.path = page.regularPath = generateVersionedPath(page.path, page.version, page._localePath)
       }
     },

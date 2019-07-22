@@ -7,8 +7,6 @@ export function createMetadataModule(Vue, baseUrl) {
     },
     getters: {
       getMetadata: (state) => (typeName) => {
-        console.log(`getMetadata ${typeName}`)
-        console.log(state.metadata[typeName] || {})
         return state.metadata[typeName] || {};
       }
     },
