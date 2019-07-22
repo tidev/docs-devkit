@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <Content/>
+    <Content class="content"/>
 
     <div class="page-edit" v-if="contentMounted">
       <div
