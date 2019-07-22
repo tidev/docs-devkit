@@ -1,6 +1,8 @@
 <template>
   <div class="main-docs-wrapper">
-    <component :is="layout"/>
+    <div class="main-content-wrapper">
+      <component :is="layout"/>
+    </div>
     <Footer/>
   </div>
 </template>
@@ -27,3 +29,8 @@ export default {
   }
 }
 </script>
+
+<style lang="stylus">
+.main-content-wrapper
+  min-height 100vh
+</style>
