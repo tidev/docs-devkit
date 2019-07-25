@@ -108,23 +108,24 @@ export default {
       if (this.$page.frontmatter.editLink === false) {
         return
       }
+
       const {
         repo,
         editLinks,
         docsBranch = 'master',
-        docsRepo = repo
+        docsRepo = repo,
+        docsDirVersioned = 'website/versioned_docs',
+        docsDirPages = 'website/pages'
       } = this.$site.themeConfig
-      let {
-        docsDir = '',
-        docsDirVersioned = 'docs/website/versioned_docs'
-      } = this.$site.themeConfig
-
+      let { docsDir = '' } = this.$site.themeConfig
       let path = normalize(this.$page.regularPath)
       if (this.$page.version) {
         path = normalize(this.$page.originalRegularPath)
         if (this.$page.version !== 'next') {
           docsDir = docsDirVersioned
         }
+      } else if (this.$page.unversioned === true) {
+        docsDir = docsDirPages
       }
       if (endingSlashRE.test(path)) {
         path += 'README.md'
