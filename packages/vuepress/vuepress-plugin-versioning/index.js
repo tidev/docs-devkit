@@ -10,8 +10,6 @@ module.exports = (options, context) => {
   const pluginName = 'titanium/versioning'
 
   const versionedSourceDir = options.versionedSourceDir || path.resolve(context.sourceDir, '..', 'website', 'versioned_docs')
-  context.versionedSourceDir = versionedSourceDir
-
   const pagesSourceDir = options.pagesSourceDir || path.resolve(context.sourceDir, '..', 'website', 'pages')
 
   const versionsFilePath = path.join(context.sourceDir, '.vuepress', 'versions.json')
@@ -117,6 +115,17 @@ module.exports = (options, context) => {
       }
 
       return [...versionedPages, ...pages]
+    },
+
+    /**
+     * Marks unversioned pages from the pageSourceDir
+     *
+     * @param {Object} page VuePress page object
+     */
+    extendPageData (page) {
+      if (page._filePath.startsWith(pagesSourceDir)) {
+        page.unversioned = true
+      }
     }
   }
 
@@ -139,7 +148,11 @@ module.exports = (options, context) => {
         page.originalRegularPath = page.regularPath
         if (version === currentVersion) {
           page.path = page.regularPath = page.path.replace(new RegExp(`^/${version}`), '')
+        } else {
+          page.path = page.regularPath = generateVersionedPath(page.path, page.version, page._localePath)
         }
+      } else if (page._filePath.startsWith(pagesSourceDir)) {
+        page.unversioned = true
       } else if (page._filePath.startsWith(context.sourceDir)) {
         page.version = 'next'
         page.originalRegularPath = page.regularPath
