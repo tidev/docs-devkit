@@ -11,7 +11,6 @@ const MetadataProcessor = require('./lib/metadata/processor')
 const execAsync = promisify(exec)
 
 const processed = {}
-const versions = []
 
 /**
  * Titanium API reference documentation plugin
@@ -20,9 +19,12 @@ module.exports = (options = {}, context) => {
   const pluginName = 'titanium/apidocs'
 
   const versionsFilePath = path.join(context.sourceDir, '.vuepress', 'versions.json')
+  let versions = []
   if (fs.existsSync(versionsFilePath)) {
-    versions.splice(0, 0, ...JSON.parse(fs.readFileSync(versionsFilePath).toString()))
+    versions = JSON.parse(fs.readFileSync(versionsFilePath).toString())
   }
+
+  metadataService.loadMetadata(options, context, versions)
 
   const pluginConfig = {
     name: pluginName,
@@ -45,10 +47,13 @@ module.exports = (options = {}, context) => {
      * is instantiated
      */
     extendMarkdown (md) {
-      metadataService.loadMetadata(options, context, versions)
       for (const version of Object.keys(metadataService.metadata)) {
-        processed[version] = {}
+        processed[version] = processed[version] || {}
         for (const typeName of Object.keys(metadataService.metadata[version])) {
+          if (processed[version][typeName]) {
+            continue
+          }
+
           const metadata = metadataService.metadata[version][typeName]
           const metadataProcessor = new MetadataProcessor({
             md,
