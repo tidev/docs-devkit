@@ -36,6 +36,7 @@
 </template>
 
 <script>
+/* global SEARCH_MAX_SUGGESTIONS, SEARCH_PATHS */
 export default {
   data () {
     return {
@@ -48,9 +49,9 @@ export default {
   computed: {
     showSuggestions () {
       return (
-        this.focused
-        && this.suggestions
-        && this.suggestions.length
+        this.focused &&
+        this.suggestions &&
+        this.suggestions.length
       )
     },
 
@@ -65,8 +66,8 @@ export default {
       const localePath = this.$localePath
       const currentVersion = this.$page.version
       const matches = item => (
-        item.title
-        && item.title.toLowerCase().indexOf(query) > -1
+        item.title &&
+        item.title.toLowerCase().indexOf(query) > -1
       )
       const res = []
       for (let i = 0; i < pages.length; i++) {

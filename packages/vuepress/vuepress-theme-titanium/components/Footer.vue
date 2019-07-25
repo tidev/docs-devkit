@@ -20,7 +20,7 @@
 <script>
 export default {
   computed: {
-    shouldShowFooter() {
+    shouldShowFooter () {
       const { themeConfig } = this.$site
       return this.copyright || this.logo || themeConfig.footerSitemap
     },

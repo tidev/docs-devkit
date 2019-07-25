@@ -530,7 +530,7 @@ function processFreeFormTextField(api, propertyName) {
 	}
 
 	const yamlSourceBasePath = pathMod.dirname(pathMod.resolve(process.cwd(), api.__file));
-	const markdownSourcePath = pathMod.resolve(yamlSourceBasePath, fileReferenceMatch[1])
+	const markdownSourcePath = pathMod.resolve(yamlSourceBasePath, fileReferenceMatch[1]);
 	if (!fs.existsSync(markdownSourcePath)) {
 		throw new Error(`Markdown file ${markdownSourcePath} referenced in ${api.name}.${propertyName} not found.`);
 	}
@@ -544,6 +544,7 @@ function processFreeFormTextField(api, propertyName) {
 		}
 
 		const apiDocsTagOffset = markdownContent.indexOf('<ApiDocs/>');
+		// eslint-disable-next-line security/detect-non-literal-regexp
 		const nextHeadingRegex = new RegExp(`^#{${headingLevel}}[^#]+$`, 'gm');
 		nextHeadingRegex.lastIndex = headingOffset + heading.length;
 		const nextHeadingMatch = nextHeadingRegex.exec(markdownContent);
@@ -553,7 +554,7 @@ function processFreeFormTextField(api, propertyName) {
 		}
 		let fieldMarkdown = markdownContent.substring(headingOffset + heading.length, endOffset).trim();
 		if (propertyName === 'examples') {
-			api[propertyName] = convertExamples(fieldMarkdown)
+			api[propertyName] = convertExamples(fieldMarkdown);
 		} else {
 			api[propertyName] = fieldMarkdown.replace(/^(#{3,})/gm, (match, heading) => heading + '#');
 		}
@@ -565,10 +566,11 @@ function processFreeFormTextField(api, propertyName) {
 /**
  * Converts structured examples from markdown back to their object representation.
  *
- * Each heading with a level of three considered an example and any following
- * text is treated as the example content.
+ * Each heading with a level of three is considered as the example title and
+ * any following text is treated as the example content.
  *
- * @param {*} examplesMarkdown
+ * @param {String} examplesMarkdown Markdown text to parse for examples
+ * @return {Array<Object>} Parsed list of examples
  */
 function convertExamples(examplesMarkdown) {
 	const examples = [];
