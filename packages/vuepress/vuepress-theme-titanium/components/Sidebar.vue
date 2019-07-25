@@ -99,6 +99,9 @@ function markActiveItemRecursive (item, currentAnchor) {
 }
 
 function isActive (currentAnchor, path) {
+  if (!path) {
+    return false
+  }
   const currentHash = currentAnchor.hash
   const linkHash = getHash(path)
   if (linkHash && currentHash !== linkHash) {
