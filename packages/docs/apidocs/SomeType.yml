@@ -1,0 +1,37 @@
+---
+name: Titanium.SomeType
+summary: Example type for the Titanium Docs DevKit documentation
+properties:
+  - name: normalProp
+    type: Object
+    summary: The normal property
+    deprecated:
+      since: 2.0.0
+      notes: Use <Titanium.SomeType.readonlyProp> instead
+  - name: readonlyProp
+    type: String
+    summary: 'The read-only property'
+    permission: read-only
+methods:
+  - name: doSomeStuff
+    summary: Short and clear summary of this method
+    description: |
+      Lenghty description for this method
+
+      With several paragraphs
+
+      And even code blocks
+
+      ```js
+      const result = doSomeStuff(context, 'myid');
+      ```
+    parameters:
+      - name: context
+        type: Object
+        summary: The context
+      - name: id
+        type: String
+        summary: The id to get
+    returns:
+      type: String
+      description: The thing done
