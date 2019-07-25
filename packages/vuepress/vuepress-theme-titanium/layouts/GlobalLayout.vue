@@ -8,6 +8,8 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import { setGlobalInfo } from '@app/util'
 import Footer from '../components/Footer.vue'
 
 export default {
@@ -16,6 +18,13 @@ export default {
   },
   computed: {
     layout () {
+      const layout = this.getLayout()
+      setGlobalInfo('layout', layout)
+      return Vue.component(layout)
+    }
+  },
+  methods: {
+    getLayout () {
       if (this.$page.path) {
         const layout = this.$page.frontmatter.layout
         if (layout && (this.$vuepress.getLayoutAsyncComponent(layout) ||

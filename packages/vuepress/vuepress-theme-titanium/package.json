@@ -11,9 +11,9 @@
   "dependencies": {
     "@vuepress/plugin-nprogress": "^1.0.2",
     "@vuepress/plugin-search": "^1.0.2",
-    "docsearch.js": "^2.6.2",
+    "docsearch.js": "^2.6.3",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
-    "vuepress-plugin-container": "^2.0.1"
+    "vuepress-plugin-container": "^2.0.2"
   }
 }
