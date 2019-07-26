@@ -1,7 +1,7 @@
 #! groovy
 library 'pipeline-library'
 
-def publishableBranches = ['develop']
+def publishableBranches = ['master']
 def nodeVersion = '10.15.0'
 def yarnVersion = '1.16.0'
 
