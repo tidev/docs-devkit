@@ -2,6 +2,8 @@
 
 > Tooling for Axway Appcelerator open source documentation
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/28f362c2-9aef-4701-a0d6-25f7bd71760f/deploy-status)](https://app.netlify.com/sites/titanium-docs-devkit/deploys)
+
 This is the home for all the libraries, plugins and themes to build sleek and modern documentations using VuePress.
 
 📖 View the [Documentation](https://titanium-docs-devkit.netlify.com/).
@@ -12,10 +14,10 @@ This is a monorepo with the following packages:
 
 | Package | Description | Version | Links |
 |---|---|---|---|
-| titanium-docgen | Various generators to format Titanium API documentation | - | - |
-| vuepress-plugin-apidoc | Plugin for VuePress to render API reference documentation | - | - |
-| vuepress-plugin-versioning | Versioning plugin for VuePress | - | - |
-| vuepress-theme-titanium | VuePress theme for Titanium projects | - | - |
+| titanium-docgen | Various generators to format Titanium API documentation | [![latest](https://img.shields.io/npm/v/titanium-docgen.svg?style=flat-square)](https://www.npmjs.com/package/titanium-docgen) | [![README](https://img.shields.io/badge/README--green.svg)](packages/titanium-docgen#readme) |
+| vuepress-plugin-apidocs | Plugin for VuePress to render API reference documentation | [![latest](https://img.shields.io/npm/v/vuepress-plugin-apidocs.svg?style=flat-square)](https://www.npmjs.com/package/vuepress-plugin-apidocs) | [![README](https://img.shields.io/badge/README--green.svg)](packages/vuepress/vuepress-plugin-apidocs#readme) |
+| vuepress-plugin-versioning | Versioning plugin for VuePress | [![latest](https://img.shields.io/npm/v/vuepress-plugin-versioning.svg?style=flat-square)](https://www.npmjs.com/package/vuepress-plugin-versioning) | [![README](https://img.shields.io/badge/README--green.svg)](packages/vuepress/vuepress-plugin-versioning#readme) |
+| vuepress-theme-titanium | VuePress theme for Titanium projects | [![latest](https://img.shields.io/npm/v/vuepress-theme-titanium.svg?style=flat-square)](https://www.npmjs.com/package/vuepress-theme-titaniumm) | [![README](https://img.shields.io/badge/README--green.svg)](packages/vuepress/vuepress-theme-titanium#readme) |
 
 ## Contributing
 
