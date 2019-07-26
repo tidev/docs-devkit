@@ -123,6 +123,10 @@ module.exports = (options, context) => {
      * @param {Object} page VuePress page object
      */
     extendPageData (page) {
+      if (!page._filePath) {
+        return
+      }
+
       if (page._filePath.startsWith(pagesSourceDir)) {
         page.unversioned = true
       }
@@ -139,9 +143,10 @@ module.exports = (options, context) => {
      */
     extendPageData (page) {
       const currentVersion = versions[0]
-      if (page.regularPath === '/404.html') {
+      if (!page._filePath) {
         return
       }
+
       if (page._filePath.startsWith(versionedSourceDir)) {
         const version = page._filePath.substring(versionedSourceDir.length + 1, page._filePath.indexOf('/', versionedSourceDir.length + 1))
         page.version = version

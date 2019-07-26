@@ -1,5 +1,5 @@
 <template>
-  <SearchBox v-if="!$versions"/>
+  <SearchBox v-if="!hasVersions"/>
   <VersionedSearchBox v-else/>
 </template>
 
@@ -10,6 +10,11 @@ export default {
   components: {
     SearchBox,
     VersionedSearchBox: () => import('vuepress-plugin-versioning/components/SearchBox')
+  },
+  computed: {
+    hasVersions () {
+      return this.$versions && this.$versions.length > 0
+    }
   }
 }
 </script>
