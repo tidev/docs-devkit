@@ -2,5 +2,11 @@
   "lerna": "3.13.0",
   "version": "0.0.0",
   "npmClient": "yarn",
-  "useWorkspaces": true
+  "useWorkspaces": true,
+  "command": {
+    "publish": {
+      "allowBranch": "master",
+      "message": "chore(release): publish %s"
+    }
+  }
 }
