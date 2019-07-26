@@ -4,6 +4,8 @@
 
 This is the home for all the libraries, plugins and themes to build sleek and modern documentations using VuePress.
 
+📖 View the [Documentation](https://titanium-docs-devkit.netlify.com/).
+
 ## Packages
 
 This is a monorepo with the following packages:
