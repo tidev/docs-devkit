@@ -8,9 +8,12 @@
   },
   "author": "Axway Appcelerator",
   "license": "Apache-2.0",
+  "bin": {
+    "docgen": "bin/docgen.js"
+  },
   "dependencies": {
     "colors": "^1.3.3",
-    "ejs": "^2.6.1",
+    "ejs": "^2.6.2",
     "js-yaml": "^3.13.1",
     "markdown-it": "^9.0.1",
     "node-appc": "^0.3.3"
