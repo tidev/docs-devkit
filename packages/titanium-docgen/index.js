@@ -940,7 +940,7 @@ formats.forEach(function (format) {
 	// For changes format, make sure we have a start version and it's less than the end version if defined
 	if (format === 'changes') {
 		if (!processedData.__startVersion) {
-			const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'))
+			const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'));
 			processedData.__startVersion = version;
 		}
 		if (processedData.__endVersion) {
@@ -957,7 +957,7 @@ formats.forEach(function (format) {
 	if (format === 'modulehtml') {
 		processedData.__modules = modules;
 	} else if (format === 'typescript') {
-		const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'))
+		const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'));
 		processedData.__version = version;
 	}
 	if (searchPlatform) {
@@ -1038,7 +1038,7 @@ formats.forEach(function (format) {
 				if (type.indexOf('__') === 0) {
 					continue;
 				}
-				templateStr = fs.readFileSync(pathMod.join(templatePath, 'htmlejs',type + '.html'), 'utf8');
+				templateStr = fs.readFileSync(pathMod.join(templatePath, 'htmlejs', type + '.html'), 'utf8');
 				exportData[type].forEach(function (member) { // eslint-disable-line no-loop-func
 					render = ejs.render(templateStr, { data: member, filename: pathMod.join(templatePath, 'htmlejs', type + '.html'), assert: common.assertObjectKey, css: cssFile });
 					const filename = pathMod.join(output, `${member.filename}.html`);
@@ -1067,7 +1067,7 @@ formats.forEach(function (format) {
 			output = pathMod.join(outputPath, 'api.json');
 			break;
 		case 'jsduck' :
-			templateStr = fs.readFileSync(pathMod.join(templatePath,'jsduck.ejs'), 'utf8');
+			templateStr = fs.readFileSync(pathMod.join(templatePath, 'jsduck.ejs'), 'utf8');
 			render = ejs.render(templateStr, { doc: exportData }, { filename: pathMod.join(templatePath, 'jsduck.ejs') });
 			output = pathMod.join(outputPath, 'titanium.js');
 			break;
