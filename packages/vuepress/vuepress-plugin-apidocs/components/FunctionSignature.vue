@@ -1,7 +1,7 @@
 <template>
-  <p class="type-signature function-signature">
+  <div class="type-signature function-signature">
     <span class="static" v-if="!instance">(static)</span> <span>{{name}}({{parameterNames.join(', ')}})</span> <span class="return-type">→ <TypeLinks :types="returns"/></span>
-  </p>
+  </div>
 </template>
 
 <script>

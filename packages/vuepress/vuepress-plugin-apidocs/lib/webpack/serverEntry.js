@@ -31,7 +31,9 @@ export default context => new Promise((resolve, reject) => {
       const versionedMetadataKey = `${version}/${metadataKey}`
       store.replaceState({
         metadata: {
-          [versionedMetadataKey]: metadata[version][metadataKey]
+          metadata: {
+            [versionedMetadataKey]: metadata[version][metadataKey]
+          }
         }
       })
       context.state = store.state

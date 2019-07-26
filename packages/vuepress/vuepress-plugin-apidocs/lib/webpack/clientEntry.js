@@ -45,11 +45,11 @@ function fetchMetadata (route) {
     }
 
     metadataKey = `${page.version || 'next'}/${metadataKey}`
-    if (store.state.metadata[metadataKey]) {
+    if (store.getters['metadata/getMetadata'](metadataKey)) {
       return resolve()
     }
 
-    store.dispatch('fetchMetadata', metadataKey).then(resolve, reject)
+    store.dispatch('metadata/fetchMetadata', metadataKey).then(resolve, reject)
   })
 }
 
