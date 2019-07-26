@@ -15,7 +15,7 @@ exports.exportData = function exportGlobalTemplate(apis) {
 	parser = new DocsParser(apis);
 	parser.parse();
 
-	const writer = new GlobalTemplateWriter();
+	const writer = new GlobalTemplateWriter(apis.__version);
 	writer.generateTitaniumDefinition(parser.tree);
 
 	return writer.output;
@@ -129,18 +129,19 @@ class DocsParser {
 		uiNamespace.addInterface(this.viewInterface);
 
 		for (const fullyQualifiedTypeName in this.apis) {
+			if (fullyQualifiedTypeName.startsWith('__')) {
+				continue;
+			}
+
 			const typeInfo = this.apis[fullyQualifiedTypeName];
 			const namespaceParts = typeInfo.name.split('.');
 			namespaceParts.pop();
 
 			if (namespaceParts[0] !== 'Titanium' && namespaceParts.length > 0) {
-				console.log(`Skipping module ${typeInfo.name}`);
 				continue;
 			} else if (typeInfo.name === 'Global') {
-				console.log('Skipping module Global');
 				continue;
 			} else if (typeInfo.name === 'Dictionary') {
-				console.log('Skipping Dictionary pseudo object.');
 				continue;
 			}
 
@@ -286,9 +287,15 @@ class EmulatedSyntaxTree {
 class GlobalTemplateWriter {
 	/**
 	 * Constructs a new global template writer.
+	 *
+	 * @param {String} version Version number of the typings
 	 */
-	constructor() {
+	constructor(version) {
 		this.output = '';
+		if (!version) {
+			throw new TypeError('Invalid version');
+		}
+		this.version = version;
 	}
 
 	/**
@@ -307,8 +314,7 @@ class GlobalTemplateWriter {
 	 * Writes the type definition header required by DefinitelyTyped.
 	 */
 	writeHeader() {
-		const { version } = require('../../package.json');
-		const versionSplit = version.split('.');
+		const versionSplit = this.version.split('.');
 		const majorMinor = `${versionSplit[0]}.${versionSplit[1]}`;
 		this.output += `// Type definitions for non-npm package Titanium ${majorMinor}\n`;
 		this.output += '// Project: https://github.com/appcelerator/titanium_mobile\n';
