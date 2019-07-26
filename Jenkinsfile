@@ -26,7 +26,7 @@ timestamps {
           sh 'yarn lint'
         }
         if(publishableBranches.contains(env.BRANCH_NAME)) {
-          stage('Publish') {
+          stage('Publissh') {
             sh 'yarn run lerna:publish'
             pushGit(name: env.BRANCH_NAME)
           }
