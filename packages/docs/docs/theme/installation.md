@@ -11,7 +11,7 @@ yarn add -D vuepress-theme-titanium
 # OR npm i -D vuepress-theme-titanium
 ```
 
-and then update your `.vuepress/config.js` to activate the thene.
+and then update your `.vuepress/config.js` to activate the theme.
 
 ```js
 module.exports = {
