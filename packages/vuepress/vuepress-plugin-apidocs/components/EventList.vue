@@ -28,7 +28,10 @@
           <tr v-for="property in event.properties" :key="property.name">
             <td>{{property.name}}</td>
             <td><TypeLinks :types="property.type"/></td>
-            <td>{{property.summary}}</td>
+            <td class="parameter-description">
+              <div v-html="property.summary"></div>
+              <div v-if="property.description" v-html="property.description"></div>
+            </td>
           </tr>
         </tbody>
       </table>

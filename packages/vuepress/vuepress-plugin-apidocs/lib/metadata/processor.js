@@ -79,13 +79,9 @@ class MetadataProcessor {
     }
 
     const headers = []
-    membersMetadata.forEach((memberMetadata, index) => {
-      if (memberMetadata.summary) {
-        membersMetadata[index].summary = this.renderMarkdown(memberMetadata.summary)
-      }
-      if (memberMetadata.description) {
-        membersMetadata[index].description = this.renderMarkdown(memberMetadata.description)
-      }
+    membersMetadata.forEach((memberMetadata) => {
+      this.renderSummaryAndDescription(memberMetadata)
+
       if (memberMetadata.examples && memberMetadata.examples.length) {
         let combinedExamplesMarkdown = '#### Examples\n\n'
         memberMetadata.examples.forEach(example => {
@@ -103,6 +99,16 @@ class MetadataProcessor {
       if (memberType === 'properties' && this.constantNamingPattern.test(memberMetadata.name)) {
         this.hasConstants = true
         return
+      } else if (memberType === 'methods') {
+        const parameters = memberMetadata.parameters || []
+        for (const parameterMeta of parameters) {
+          this.renderSummaryAndDescription(parameterMeta)
+        }
+      } else if (memberType === 'events') {
+        const properties = memberMetadata.properties || []
+        for (const propertyMeta of properties) {
+          this.renderSummaryAndDescription(propertyMeta)
+        }
       }
 
       headers.push({
@@ -118,6 +124,21 @@ class MetadataProcessor {
         slug: memberType
       })
       this.additionalHeaders = this.additionalHeaders.concat(headers)
+    }
+  }
+
+  /**
+   * Renders markdown in the summary and description property of
+   * the given metadata object.
+   *
+   * @param {Object} metadata Metadata object
+   */
+  renderSummaryAndDescription (metadata) {
+    if (metadata.summary) {
+      metadata.summary = this.renderMarkdown(metadata.summary)
+    }
+    if (metadata.description) {
+      metadata.description = this.renderMarkdown(metadata.description)
     }
   }
 

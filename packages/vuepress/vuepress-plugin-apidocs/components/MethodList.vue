@@ -28,7 +28,10 @@
           <tr v-for="parameter in method.parameters" :key="parameter.name">
             <td><code>{{parameter.name}}</code></td>
             <td><TypeLinks :types="parameter.type"/></td>
-            <td>{{parameter.summary}}</td>
+            <td class="parameter-description">
+              <div v-html="parameter.summary"></div>
+              <div v-if="parameter.description" v-html="parameter.description"></div>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -66,10 +69,6 @@ export default {
 </script>
 
 <style lang="stylus">
-.parameter-table
-  td:last-child
-    width 100%
-
 .type-info
   dt
     display inline-block
