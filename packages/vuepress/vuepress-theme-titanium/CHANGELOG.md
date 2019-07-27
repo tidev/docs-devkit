@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.2](https://github.com/appcelerator/docs-devkit/compare/v0.1.1...v0.1.2) (2019-07-27)
+
+
+### Bug Fixes
+
+* **theme:** test for available headers before accessing ([91bb50d](https://github.com/appcelerator/docs-devkit/commit/91bb50d))
+
+
+
+
+
 # 0.1.0 (2019-07-27)
 
 
