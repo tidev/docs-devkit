@@ -33,7 +33,8 @@ export default context => new Promise((resolve, reject) => {
         metadata: {
           metadata: {
             [versionedMetadataKey]: metadata[version][metadataKey]
-          }
+          },
+          requests: {}
         }
       })
       context.state = store.state
