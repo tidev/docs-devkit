@@ -1,15 +1,26 @@
 {
   "name": "titanium-docgen",
   "version": "0.0.0",
-  "description": "Various generators to format Titanium API documentation",
+  "description": "Generates Titanium API documentation in different formats",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Axway Appcelerator",
-  "license": "Apache-2.0",
   "bin": {
     "docgen": "bin/docgen.js"
+  },
+  "keywords": [
+    "titanium",
+    "docgen",
+    "documentation"
+    "docs"
+  ],
+  "author": "Axway Appcelerator",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/appcelerator/docs-devkit.git",
+    "directory": "packages/titanium-docgen"
   },
   "dependencies": {
     "colors": "^1.3.3",

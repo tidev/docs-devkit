@@ -8,6 +8,11 @@
   },
   "author": "Axway Appcelerator",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/appcelerator/docs-devkit.git",
+    "directory": "packages/vuepress/vuepress-theme-titanium"
+  },
   "dependencies": {
     "@vuepress/plugin-nprogress": "^1.0.2",
     "@vuepress/plugin-search": "^1.0.2",
