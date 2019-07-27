@@ -123,7 +123,9 @@ class MetadataProcessor {
 
   renderMarkdown (markdownString) {
     markdownString = this.rewriteTypeLinks(markdownString)
-    return this.markdown.render(markdownString)
+    // @todo validate data.typeLinks
+    const { html } = this.markdown.render(markdownString)
+    return html
   }
 
   rewriteTypeLinks (markdownString) {
