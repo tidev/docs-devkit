@@ -27,7 +27,7 @@
         <tbody>
           <tr v-for="property in event.properties" :key="property.name">
             <td>{{property.name}}</td>
-            <td><code>{{property.type | formatTypes}}</code></td>
+            <td><TypeLinks :types="property.type"/></td>
             <td>{{property.summary}}</td>
           </tr>
         </tbody>
