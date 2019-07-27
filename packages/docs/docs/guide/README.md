@@ -17,7 +17,6 @@ You can see the plugins and theme in action on this very site.
 - [Versioning](./guide/versioning.md)
 - [API Docs](./guide/api-docs.md)
 
-
 ### Theme
 
 - Contains all features of the VuePress [default theme](https://v1.vuepress.vuejs.org/theme/default-theme-config.html)

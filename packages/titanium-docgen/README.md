@@ -10,7 +10,7 @@ npm i titanium-docgen -D
 
 ## Usage
 
-```
+```sh
 node docgen [--addon-docs <PATH_TO_YAML_FILES] [--css <CSS_FILE>] [--format <EXPORT_FORMAT>] [--output <OUTPUT_DIRECTORY>] <PATH_TO_YAML_FILES>
 ```
 
