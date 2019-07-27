@@ -36,7 +36,7 @@ export default {
       }
 
       let currentAnchor = this.currentAnchor
-      if (!currentAnchor && this.$page.headers) {
+      if (!currentAnchor && this.$page.headers && this.$page.headers.length > 0) {
         currentAnchor = { hash: this.$route.hash !== '' ? this.$route.hash : '#' + this.$page.headers[0].slug, path: this.$route.path }
       } else if (!currentAnchor) {
         currentAnchor = { path: this.$route.path }
