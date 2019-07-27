@@ -10,6 +10,7 @@ const MetadataProcessor = require('./lib/metadata/processor')
 
 const execAsync = promisify(exec)
 
+let metadataProcessed = false
 const processed = {}
 
 /**
@@ -43,37 +44,20 @@ module.exports = (options = {}, context) => {
     },
 
     /**
-     * Loads and processes metadata once the markdown renderer
-     * is instantiated
-     */
-    extendMarkdown (md) {
-      for (const version of Object.keys(metadataService.metadata)) {
-        processed[version] = processed[version] || {}
-        for (const typeName of Object.keys(metadataService.metadata[version])) {
-          if (processed[version][typeName]) {
-            continue
-          }
-
-          const metadata = metadataService.metadata[version][typeName]
-          const metadataProcessor = new MetadataProcessor({
-            md,
-            context,
-            version,
-            versions
-          })
-          metadataProcessor.transoformMetadataAndCollectHeaders(metadata)
-          processed[version][typeName] = metadataProcessor
-        }
-      }
-    },
-
-    /**
-     * Extend page data of pages under /api/ with metadata key, process the metadata
-     * required by that page and then adds additonal headers to the page
+     * Extend page data of pages under /api/ with metadata key and adds additonal
+     * headers to the page.
+     *
+     * We also use this plugin option to process the whole metadata once, rendering
+     * any markdown in it and cellecting the additional page headers.
      *
      * @param {Page} page
      */
     extendPageData (page) {
+      if (!metadataProcessed) {
+        processMetadata(context, versions)
+        metadataProcessed = true
+      }
+
       if (!/^(\/[\w.\-]+)?\/api\//.test(page.regularPath)) {
         return
       }
@@ -261,6 +245,28 @@ export default ${JSON.stringify(typeLinks)}\n\n`.trim()
   }
 
   return pluginConfig
+}
+
+function processMetadata (context, versions) {
+  const md = context.markdown
+  for (const version of Object.keys(metadataService.metadata)) {
+    processed[version] = processed[version] || {}
+    for (const typeName of Object.keys(metadataService.metadata[version])) {
+      if (processed[version][typeName]) {
+        continue
+      }
+
+      const metadata = metadataService.metadata[version][typeName]
+      const metadataProcessor = new MetadataProcessor({
+        md,
+        context,
+        version,
+        versions
+      })
+      metadataProcessor.transoformMetadataAndCollectHeaders(metadata)
+      processed[version][typeName] = metadataProcessor
+    }
+  }
 }
 
 function findMetadataWithLowerCasedKey (lowerCasedTypeName, version) {
