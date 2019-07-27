@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.3](https://github.com/appcelerator/docs-devkit/compare/v0.1.2...v0.1.3) (2019-07-27)
+
+
+### Bug Fixes
+
+* **apidocs:** replace state with correct structure during ssr ([f2e3ed3](https://github.com/appcelerator/docs-devkit/commit/f2e3ed3))
+
+
+
+
+
 ## [0.1.2](https://github.com/appcelerator/docs-devkit/compare/v0.1.1...v0.1.2) (2019-07-27)
 
 
