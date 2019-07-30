@@ -1,0 +1,142 @@
+{
+    "Titanium.SomeType": {
+        "name": "Titanium.SomeType",
+        "summary": "Example type for the Titanium Docs DevKit documentation",
+        "deprecated": null,
+        "events": [],
+        "examples": [],
+        "methods": [
+            {
+                "name": "doSomeStuff",
+                "deprecated": null,
+                "summary": "Short and clear summary of this method",
+                "description": "Lenghty description for this method\n\nWith several paragraphs\n\nAnd even code blocks\n\n```js\nconst result = doSomeStuff(context, 'myid');\n```\n",
+                "filename": "Titanium.SomeType.doSomeStuff-method",
+                "platforms": [
+                    {
+                        "pretty_name": "Android",
+                        "since": "0.8",
+                        "name": "android"
+                    },
+                    {
+                        "pretty_name": "iPhone",
+                        "since": "0.8",
+                        "name": "iphone"
+                    },
+                    {
+                        "pretty_name": "iPad",
+                        "since": "0.8",
+                        "name": "ipad"
+                    }
+                ],
+                "inherits": null,
+                "examples": [],
+                "parameters": [
+                    {
+                        "name": "context",
+                        "deprecated": null,
+                        "summary": "The context",
+                        "description": null,
+                        "type": "Object",
+                        "optional": false,
+                        "filename": "Titanium.SomeType.doSomeStuff-method.context-param"
+                    },
+                    {
+                        "name": "id",
+                        "deprecated": null,
+                        "summary": "The id to get",
+                        "description": null,
+                        "type": "String",
+                        "optional": false,
+                        "filename": "Titanium.SomeType.doSomeStuff-method.id-param"
+                    }
+                ],
+                "returns": {
+                    "type": "String"
+                }
+            }
+        ],
+        "extends": "Object",
+        "properties": [
+            {
+                "name": "normalProp",
+                "deprecated": {
+                    "notes": "Use <Titanium.SomeType.readonlyProp> instead",
+                    "since": "2.0.0"
+                },
+                "summary": "The normal property",
+                "description": null,
+                "filename": "Titanium.SomeType.normalProp-property",
+                "platforms": [
+                    {
+                        "pretty_name": "Android",
+                        "since": "0.8",
+                        "name": "android"
+                    },
+                    {
+                        "pretty_name": "iPhone",
+                        "since": "0.8",
+                        "name": "iphone"
+                    },
+                    {
+                        "pretty_name": "iPad",
+                        "since": "0.8",
+                        "name": "ipad"
+                    }
+                ],
+                "inherits": null,
+                "examples": [],
+                "type": "Object"
+            },
+            {
+                "name": "readonlyProp",
+                "deprecated": null,
+                "summary": "The read-only property",
+                "description": null,
+                "filename": "Titanium.SomeType.readonlyProp-property",
+                "platforms": [
+                    {
+                        "pretty_name": "Android",
+                        "since": "0.8",
+                        "name": "android"
+                    },
+                    {
+                        "pretty_name": "iPhone",
+                        "since": "0.8",
+                        "name": "iphone"
+                    },
+                    {
+                        "pretty_name": "iPad",
+                        "since": "0.8",
+                        "name": "ipad"
+                    }
+                ],
+                "inherits": null,
+                "examples": [],
+                "type": "String",
+                "permission": "read-only"
+            }
+        ],
+        "description": null,
+        "platforms": [
+            {
+                "pretty_name": "Android",
+                "since": "0.8",
+                "name": "android"
+            },
+            {
+                "pretty_name": "iPhone",
+                "since": "0.8",
+                "name": "iphone"
+            },
+            {
+                "pretty_name": "iPad",
+                "since": "0.8",
+                "name": "ipad"
+            }
+        ],
+        "filename": null,
+        "type": "pseudo",
+        "subtype": null
+    }
+}

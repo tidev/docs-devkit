@@ -1,0 +1,83 @@
+{
+  "locales": {
+    "/": {
+      "label": "English",
+      "selectText": "Languages",
+      "editLinkText": "Edit this page on GitHub",
+      "lastUpdated": "Last Updated",
+      "nav": [
+        {
+          "text": "Guide",
+          "link": "/guide/"
+        },
+        {
+          "text": "Plugins",
+          "link": "/plugins/"
+        },
+        {
+          "text": "Theme",
+          "link": "/theme/"
+        }
+      ],
+      "sidebar": {
+        "/guide/": [
+          {
+            "title": "Guide",
+            "collapsable": false,
+            "children": [
+              "",
+              "getting-started",
+              "versioning",
+              "api-docs"
+            ]
+          },
+          {
+            "title": "Advanced",
+            "collapsable": false,
+            "children": [
+              "page-metadata"
+            ]
+          }
+        ],
+        "/plugins/": [
+          {
+            "title": "Plugins",
+            "collapsable": false,
+            "children": [
+              [
+                "",
+                "Introduction"
+              ],
+              "versioning-plugin",
+              "apidocs-plugin"
+            ]
+          }
+        ],
+        "/theme/": [
+          {
+            "title": "Theme",
+            "collapsable": false,
+            "sidebarDepth": 2,
+            "children": [
+              [
+                "",
+                "Introduction"
+              ],
+              "installation",
+              "titanium-theme-config"
+            ]
+          }
+        ],
+        "/api/": [
+          {
+            "title": "API Docs",
+            "collapsable": false,
+            "children": [
+              "sometype"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
