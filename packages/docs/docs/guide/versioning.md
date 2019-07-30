@@ -2,10 +2,14 @@
 
 You can use the versioning plugin to cut a new documentation version based on the latest content in the source directory. That specific set of documentation will then be preserved and is accessible even as the documentation in the docs directory changes moving forward.
 
-::: tip NOTE: VuePress source folder
-It's is recommended to not have your docs at the root level of your repo when using the versioning plugin. It needs to store the versioned docs somewhere outside of the source folder. By default this is in a folder called `website` parallel to the source directory you pass to VuePress.
+:::warning WARNING: VuePress source folder
+Do not place your docs at the root level of your repo when using the versioning plugin. It needs to store the versioned docs somewhere outside of the source folder. By default this is in a folder called `website` parallel to the source directory you pass to VuePress.
 
 This guide assumes you use `docs` as the source directory for VuePress.
+:::
+
+:::warning WARNING: Theme compatibility
+Your theme must be able to properly handle versioned page links. See the [Titanium theme](../theme/README.md) for a modified version of the VuePress default theme that is compatible with the versioning plugin.
 :::
 
 ## Getting Started
