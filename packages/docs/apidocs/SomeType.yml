@@ -2,6 +2,9 @@
 name: Titanium.SomeType
 summary: Example type for the Titanium Docs DevKit documentation
 properties:
+  - name: newProperty
+    type: Number
+    summary: This is a new property to demo the versioning support of the API docs plugin.
   - name: normalProp
     type: Object
     summary: The normal property

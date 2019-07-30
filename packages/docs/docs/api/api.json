@@ -59,6 +59,33 @@
         "extends": "Object",
         "properties": [
             {
+                "name": "newProperty",
+                "deprecated": null,
+                "summary": "This is a new property to demo the versioning support of the API docs plugin.",
+                "description": null,
+                "filename": "Titanium.SomeType.newProperty-property",
+                "platforms": [
+                    {
+                        "pretty_name": "Android",
+                        "since": "0.8",
+                        "name": "android"
+                    },
+                    {
+                        "pretty_name": "iPhone",
+                        "since": "0.8",
+                        "name": "iphone"
+                    },
+                    {
+                        "pretty_name": "iPad",
+                        "since": "0.8",
+                        "name": "ipad"
+                    }
+                ],
+                "inherits": null,
+                "examples": [],
+                "type": "Number"
+            },
+            {
                 "name": "normalProp",
                 "deprecated": {
                     "notes": "Use <Titanium.SomeType.readonlyProp> instead",
