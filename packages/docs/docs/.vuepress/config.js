@@ -1,4 +1,4 @@
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 
 module.exports = context => ({
@@ -64,15 +64,14 @@ module.exports = context => ({
   plugins: [
     ['versioning', {
       async onNewVersion(version, versionDestPath) {
-        const apiMetadataFile = path.join(context.sourceDir, 'api', 'api.json')
+        const relativeMetadataFilePath = path.join('api', 'api.json')
+        const apiMetadataFile = path.join(context.sourceDir, relativeMetadataFilePath)
         if (fs.existsSync(apiMetadataFile)) {
-          await fs.copyFile(path.join(context.sourceDir, 'api', 'api.json'), path.join(versionDestPath, 'api.json'))
+          await fs.copyFile(path.join(context.sourceDir, relativeMetadataFilePath), path.join(versionDestPath, relativeMetadataFilePath))
         }
       }
     }],
-    ['apidocs', {
-      metadataFile: 'api.json'
-    }],
+    'apidocs',
     '@vuepress/back-to-top'
   ]
 })
