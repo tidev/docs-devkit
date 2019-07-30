@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "docgen": "bin/docgen.js"
+    "docgen": "bin/docgen.js",
+    "tdoc-validate": "bin/validate.js"
   },
   "keywords": [
     "titanium",
