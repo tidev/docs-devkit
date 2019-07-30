@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "vuepress dev docs --temp .temp",
     "build": "vuepress build docs --temp .temp",
-    "metadata": "vuepress metadata docs apidocs -o docs"
+    "metadata": "vuepress metadata docs apidocs",
+    "createVersion": "vuepress version docs"
   },
   "dependencies": {
     "@vuepress/plugin-back-to-top": "1.0.2",

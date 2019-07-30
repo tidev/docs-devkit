@@ -12,6 +12,7 @@
     "docs:build": "yarn workspace docs build",
     "docs:dev": "yarn workspace docs dev",
     "docs:metadata": "yarn workspace docs metadata",
+    "docs:version": "yarn workspace docs createVersion",
     "lerna:publish": "lerna publish --yes --conventional-commits",
     "lint": "eslint packages --ext .js,.vue"
   },
