@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.4](https://github.com/appcelerator/docs-devkit/compare/v0.1.3...v0.1.4) (2019-07-30)
+
+
+### Bug Fixes
+
+* **docgen:** add missing validate command ([807f211](https://github.com/appcelerator/docs-devkit/commit/807f211))
+
+
+
+
+
 ## [0.1.3](https://github.com/appcelerator/docs-devkit/compare/v0.1.2...v0.1.3) (2019-07-27)
 
 
