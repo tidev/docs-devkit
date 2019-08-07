@@ -1,6 +1,6 @@
 {
   "name": "titanium-docgen",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Generates Titanium API documentation in different formats",
   "main": "index.js",
   "scripts": {
