@@ -988,7 +988,7 @@ formats.forEach(function (format) {
 				}
 			}
 			exportData.__copyList.forEach(function (file) {
-				copyCommand = 'cp ' + file + ' ' + output;
+				const copyCommand = 'cp ' + file + ' ' + output;
 				exec(copyCommand, function (error) {
 					if (error !== null) {
 						common.log(common.LOG_ERROR, 'Error copying file: %s (%s)', file, error);
@@ -1006,10 +1006,8 @@ formats.forEach(function (format) {
 			templateStr = fs.readFileSync(pathMod.join(templatePath, 'changes.ejs'), 'utf8');
 			render = ejs.render(templateStr, { data: exportData, filename: 'changes.ejs', assert: common.assertObjectKey });
 			break;
-		case 'html' :
-		case 'modulehtml' :
-
-			let copyCommand;
+		case 'html':
+		case 'modulehtml':
 
 			output = pathMod.join(outputPath, 'apidoc');
 
@@ -1020,18 +1018,28 @@ formats.forEach(function (format) {
 			if (cssFile) {
 				fs.createReadStream(cssPath).pipe(fs.createWriteStream(pathMod.join(output, cssFile)));
 			}
-			const imgPath = pathMod.join(__dirname, 'images');
-			if (os.type() === 'Windows_NT') {
-				copyCommand = `xcopy ${imgPath} ${output}`;
-				copyCommand = copyCommand.replace(/\//g, '\\') + ' /s';
-			} else {
-				copyCommand = `cp -r ${imgPath} ${output}`;
-			}
 
-			exec(copyCommand, function (error) {
-				if (error !== null) {
-					common.log(common.LOG_ERROR, 'Error copying file: %s', error);
+			// For each of the input directories, check if there's an images subdir
+			// if so, copy it over!
+			basePaths.concat(addOnDocs).forEach(p => {
+				const imgPath = pathMod.join(p, 'images');
+				if (!fs.existsSync(imgPath)) {
+					return;
 				}
+				// TODO: Use fs module to copy it!
+				let copyCommand;
+				if (os.type() === 'Windows_NT') {
+					copyCommand = `xcopy ${imgPath} ${output}`;
+					copyCommand = copyCommand.replace(/\//g, '\\') + ' /s';
+				} else {
+					copyCommand = `cp -r ${imgPath} ${output}`;
+				}
+
+				exec(copyCommand, function (error) {
+					if (error !== null) {
+						common.log(common.LOG_ERROR, 'Error copying file: %s', error);
+					}
+				});
 			});
 
 			for (const type in exportData) {
