@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/appcelerator/docs-devkit/compare/v0.1.5...v0.2.0) (2019-09-09)
+
+
+### Features
+
+* **docgen:** copy over images from any of the input paths for html output ([7fd48b6](https://github.com/appcelerator/docs-devkit/commit/7fd48b6))
+* **validate:** add ability to whitelist types ([#5](https://github.com/appcelerator/docs-devkit/issues/5)) ([44d893b](https://github.com/appcelerator/docs-devkit/commit/44d893b))
+
+
+
+
+
 ## [0.1.5](https://github.com/appcelerator/docs-devkit/compare/v0.1.4...v0.1.5) (2019-08-07)
 
 
