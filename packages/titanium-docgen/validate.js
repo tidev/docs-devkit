@@ -17,6 +17,11 @@ let doc = {},
 	errorCount = 0,
 	standaloneFlag = false;
 
+// List of "whitelisted" types provided via cli flag
+// if we are unable to find these types we do not error
+// This gives more control versus the standalone Flag which just ignores any type errors
+const whitelist = [];
+
 // Constants that are valid, but are windows specific, so would fail validation
 const WINDOWS_CONSTANTS = [
 	'Titanium.UI.Windows.ListViewScrollPosition.*'
@@ -188,6 +193,11 @@ function validateAPINames(obj, type, className) {
 			return validateAPINames(obj, type, parent);
 		}
 
+		// This is a whitelisted type, so ignore it
+		if (whitelist.includes(parent)) {
+			return;
+		}
+
 		if (standaloneFlag) {
 			console.warn('WARNING! Cannot validate parent class: %s'.yellow, parent);
 			return;
@@ -296,6 +306,11 @@ function validateDataType(type) {
 
 	// This is awkward and backwards, but if the class is valid OR it's a common type, there's no error, so return empty array
 	if (!validateClass(type) || ~common.DATA_TYPES.indexOf(type)) {
+		return [];
+	}
+
+	// Type is whiteslisted, so assume it's "valid"
+	if (whitelist.includes(type)) {
 		return [];
 	}
 
@@ -615,7 +630,7 @@ function validateKey(obj, syntax, currentKey, className) {
 				if ((err = validateClass(obj))) {
 					if (standaloneFlag) {
 						console.warn('WARNING! Cannot validate class: %s'.yellow, obj);
-					} else {
+					} else if (!whitelist.includes(obj)) { // only if not whitelisted
 						errors[currentKey] = err;
 					}
 				}
@@ -755,10 +770,11 @@ function outputErrors(errors, level) {
  * Output CLI usage
  */
 function cliUsage () {
-	common.log('Usage: node validate.js [--standalone] [--quiet] [<PATH_TO_YAML_FILES>]');
+	common.log('Usage: node validate.js [--standalone] [--quiet] [--whitelisted Type.Name,Type.Two] [<PATH_TO_YAML_FILES>]');
 	common.log('\nOptions:');
 	common.log('\t--quiet, -q\tSuppress non-error messages');
 	common.log('\t--standalone, -s\tdisable error checking for inherited APIs');
+	common.log('\t--whitelisted, -w\tdisable error checking for unresolved types. Can be specified multiple times. Accepts a comma separated list of types.');
 }
 
 // Start of Main Flow
@@ -768,14 +784,27 @@ let basePath = '.';
 if (argc > 2) {
 	for (let x = 2; x < argc; x++) {
 		switch (process.argv[x]) {
-			case '--help' :
+			case '--help':
 				cliUsage();
 				process.exit(0);
 				break;
-			case '--standalone' :
-			case '-s' :
+			// TODO: Remove standalone mode? It really just ignores being unable to resolve any types
+			// We should probably just make it like an auto-whitelist for commonly-referred-to types in SDK like Ti.Proxy, Ti.UI.View
+			case '--standalone':
+			case '-s':
 				standaloneFlag = true;
 				common.log('Standalone mode enabled. Errors will not be logged against inherited APIs.');
+				break;
+			case '--whitelisted':
+			case '-w' :
+				// Read next arg as a whitelisted type
+				if (x === argc - 1) {
+					common.log(common.LOG_WARN, 'Must supply name of whitelisted type');
+					cliUsage();
+					process.exit(1);
+				}
+				const types = process.argv[++x].split(',');
+				whitelist.push(...types);
 				break;
 			case '--quiet':
 			case '-q':
@@ -791,6 +820,10 @@ if (argc > 2) {
 				}
 		}
 	}
+}
+
+if (whitelist.length !== 0) {
+	common.log('Whitelist mode enabled. Errors will not be logged for failure to resolve these types: ' + whitelist);
 }
 
 if (!fs.existsSync(basePath) || !fs.statSync(basePath).isDirectory()) {
