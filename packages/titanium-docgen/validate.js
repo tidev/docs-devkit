@@ -774,7 +774,7 @@ function cliUsage () {
 	common.log('\nOptions:');
 	common.log('\t--quiet, -q\tSuppress non-error messages');
 	common.log('\t--standalone, -s\tdisable error checking for inherited APIs');
-	common.log('\t--whitelisted, -w\tdisable error checking for unresolved types. Can be specified multiple times, one type each time');
+	common.log('\t--whitelisted, -w\tdisable error checking for unresolved types. Can be specified multiple times. Accepts a comma separated list of types.');
 }
 
 // Start of Main Flow
