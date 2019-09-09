@@ -770,7 +770,7 @@ function outputErrors(errors, level) {
  * Output CLI usage
  */
 function cliUsage () {
-	common.log('Usage: node validate.js [--standalone] [--quiet] [--whitelisted Type.Name] [<PATH_TO_YAML_FILES>]');
+	common.log('Usage: node validate.js [--standalone] [--quiet] [--whitelisted Type.Name,Type.Two] [<PATH_TO_YAML_FILES>]');
 	common.log('\nOptions:');
 	common.log('\t--quiet, -q\tSuppress non-error messages');
 	common.log('\t--standalone, -s\tdisable error checking for inherited APIs');
@@ -803,7 +803,8 @@ if (argc > 2) {
 					cliUsage();
 					process.exit(1);
 				}
-				whitelist.push(process.argv[++x]);
+				const types = process.argv[++x].split(',');
+				whitelist.push(...types);
 				break;
 			case '--quiet':
 			case '-q':
