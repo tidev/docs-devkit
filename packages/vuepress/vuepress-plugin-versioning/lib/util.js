@@ -4,7 +4,7 @@ const path = require('path')
 async function snapshotSidebar (siteConfig, versionDestPath) {
   const sidebarConfig = {
     locales: siteConfig.themeConfig.locales,
-    sidebar: siteConfig.sidebar
+    sidebar: siteConfig.themeConfig.sidebar
   }
 
   return fs.writeFile(path.join(versionDestPath, 'sidebar.config.json'), JSON.stringify(sidebarConfig, null, 2))
