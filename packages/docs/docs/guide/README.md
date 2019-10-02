@@ -10,8 +10,8 @@ The Titanium Docs DevKit for VuePress is composed of a [theme](../theme/README.m
 You can see the plugins and theme in action on this very site.
 :::
 
-:::warning VERSIONING DEMO
-This is just some dummy content to demonstrate the versioning plugin. Use the version dropdown in the top left to switch between versions.
+:::warning NETLIFY PR DEPLOY PREVIEW
+This is just some dummy content to demonstrate Netlify deploys.
 :::
 
 ## Features
