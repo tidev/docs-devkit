@@ -956,7 +956,7 @@ formats.forEach(function (format) {
 	exporter = require('./generators/' + format + '_generator.js'); // eslint-disable-line security/detect-non-literal-require
 	if (format === 'modulehtml') {
 		processedData.__modules = modules;
-	} else if (format === 'typescript') {
+	} else if (format === 'typescript' || format === 'ts-declaration') {
 		const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'));
 		processedData.__version = version;
 	}
@@ -1091,6 +1091,14 @@ formats.forEach(function (format) {
 		case 'typescript':
 			render = exportData;
 			output = pathMod.join(outputPath, 'index.d.ts');
+			break;
+		case 'ts-declaration':
+			render = exportData;
+			var typingsDir = pathMod.join(outputPath, 'titanium');
+			if (!fs.existsSync(typingsDir)) {
+				fs.mkdirSync(typingsDir);
+			}
+			output = pathMod.join(typingsDir, 'index.d.ts');
 	}
 
 	if (!~[ 'addon' ].indexOf(format)) {
