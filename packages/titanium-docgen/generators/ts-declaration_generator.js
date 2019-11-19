@@ -316,28 +316,28 @@ class Block {
 			if (events.size) {
 				eventsMapName = 'Ti.Event';
 				const body = [];
+				const baseEvent = `${this._baseName}BaseEvent`;
+				eventInterface += `${this._padding}interface ${baseEvent} extends Ti.Event {\n`
+						+ `${padding}source: ${this.api.name}\n`
+						+ `${this._padding}}\n`;
 				events.forEach((event, name) => {
 					if (event.deprecated && event.deprecated.removed) {
 						return;
 					}
-					if (!event.properties) {
-						return;
-					}
-					const properties = Object.values(event.properties);
-					if (!properties.length) {
-						return;
-					}
+					const properties = event.properties && Object.values(event.properties) || [];
 					eventsMapName = `${this._baseName}EventMap`;
-					const eventInterfaceName = `${this._baseName}_${name.replace(':', '_')}_Event`;
+					let eventInterfaceName = baseEvent;
+					if (properties.length) {
+						eventInterfaceName = `${this._baseName}_${name.replace(':', '_')}_Event`;
+						const temp = [];
+						properties.forEach(prop => {
+							temp.push(`${padding}${prop.name}: ${getType(prop.type)}`);
+						});
+						eventInterface += `${this._padding}interface ${eventInterfaceName} extends ${baseEvent} {\n`
+								+ temp.join(',\n')
+								+ `\n${this._padding}}\n`;
+					}
 					body.push(`${padding}\t"${name}": ${eventInterfaceName}`);
-					const temp = [];
-					properties.forEach(prop => {
-						temp.push(`${padding}${prop.name}: ${getType(prop.type)}`);
-					});
-					temp.push(`${padding}source: ${this.api.name}`);
-					eventInterface += `${this._padding}interface ${eventInterfaceName} extends Ti.Event {\n`
-							+ temp.join(',\n')
-							+ `\n${this._padding}}\n`;
 				});
 				if (eventsMapName !== 'Ti.Event') {
 					eventInterface += `${this._padding}interface ${eventsMapName} extends ProxyEventMap {\n`
