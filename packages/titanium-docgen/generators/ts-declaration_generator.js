@@ -211,7 +211,7 @@ function methodToString(pad, method, allPropertiesNames, eventInterfaceName, thi
 	return `${pad}${method.name}(${args}): ${methodResultToString(method)};`;
 }
 
-function methodArgumentsToString(parameters) {
+function methodArgumentsToString(parameters, padding = '') {
 	if (!parameters) {
 		return [];
 	}
@@ -226,7 +226,7 @@ function methodArgumentsToString(parameters) {
 		if (v.optional) {
 			optional = '?';
 		}
-		return `${name}${optional}: ${type}`;
+		return `${padding}${name}${optional}: ${type}`;
 	});
 }
 
@@ -329,10 +329,7 @@ class Block {
 					let eventInterfaceName = baseEvent;
 					if (properties.length) {
 						eventInterfaceName = `${this._baseName}_${name.replace(':', '_')}_Event`;
-						const temp = [];
-						properties.forEach(prop => {
-							temp.push(`${padding}${prop.name}: ${getType(prop.type)}`);
-						});
+						const temp = methodArgumentsToString(properties, padding);
 						eventInterface += `${this._padding}interface ${eventInterfaceName} extends ${baseEvent} {\n`
 								+ temp.join(',\n')
 								+ `\n${this._padding}}\n`;
