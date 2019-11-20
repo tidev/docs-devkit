@@ -84,6 +84,7 @@ const validSyntax = {
 						type: 'DataType',
 					},
 					optional: {
+						optional: 'Boolean',
 						platforms: [ common.VALID_PLATFORMS ],
 						deprecated: Deprecated,
 						since: 'Since',
