@@ -140,14 +140,11 @@ function formatRemoved(pad, methodOrProperty, comment) {
 			+ `${pad}${comment ? '// ' : ''}${methodOrProperty.name}: never;`;
 }
 
-function propertyToString(pad, property, allMethodsNames, classOrInterface) {
+function propertyToString(pad, property, allMethodsNames) {
 	if (property.deprecated && property.deprecated.removed) {
 		return formatRemoved(pad, property, allMethodsNames.includes(property.name));
 	}
-	let opt = false;
-	if (classOrInterface === 'interface') {
-		opt = true;
-	}
+	const opt = property.optional === true;
 	return `${pad}${property.permission === 'read-only' ? 'readonly ' : ''}${property.name}${
 		opt ? '?' : ''}: ${getType(property.type)};`;
 }
@@ -287,7 +284,7 @@ class Block {
 
 		if (properties.length) {
 			inner += excludesToString(padding, this.all_excludes['properties']);
-			inner += properties.map(v => propertyToString(padding, v, allMethodsNames, classOrInterface)).join('\n') + '\n';
+			inner += properties.map(v => propertyToString(padding, v, allMethodsNames)).join('\n') + '\n';
 		}
 		if (methods.length) {
 			inner += excludesToString(padding, this.all_excludes['methods']);
