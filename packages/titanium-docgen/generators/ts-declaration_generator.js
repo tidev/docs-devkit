@@ -33,9 +33,8 @@ function writeDefinitions(version, d) {
 // Project: https://github.com/appcelerator/titanium_mobile
 // Definitions by: Sergey Volkov <s.volkov@netris.ru>
 
- 
 type NonFunctionPropertyNames<T> = {
-\t[K in keyof T]: T[K] extends Function ? never : K 
+\t[K in keyof T]: T[K] extends Function ? never : K
 }[keyof T];
 type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
 type Dictionary<T> = Partial<NonFunctionProperties<T>>
@@ -140,11 +139,11 @@ function formatRemoved(pad, methodOrProperty, comment) {
 			+ `${pad}${comment ? '// ' : ''}${methodOrProperty.name}: never;`;
 }
 
-function propertyToString(pad, property, allMethodsNames) {
+function propertyToString(pad, property, allMethodsNames, default_opt) {
 	if (property.deprecated && property.deprecated.removed) {
 		return formatRemoved(pad, property, allMethodsNames.includes(property.name));
 	}
-	const opt = property.optional === true;
+	const opt = property.optional === true || typeof property.optional !== 'undefined' ? property.optional : default_opt;
 	return `${pad}${property.permission === 'read-only' ? 'readonly ' : ''}${property.name}${
 		opt ? '?' : ''}: ${getType(property.type)};`;
 }
@@ -283,8 +282,9 @@ class Block {
 		}
 
 		if (properties.length) {
+			const default_opt = this.api.name.indexOf('.') === -1;
 			inner += excludesToString(padding, this.all_excludes['properties']);
-			inner += properties.map(v => propertyToString(padding, v, allMethodsNames)).join('\n') + '\n';
+			inner += properties.map(v => propertyToString(padding, v, allMethodsNames, default_opt)).join('\n') + '\n';
 		}
 		if (methods.length) {
 			inner += excludesToString(padding, this.all_excludes['methods']);
