@@ -139,16 +139,17 @@ function formatRemoved(pad, methodOrProperty, comment) {
 			+ `${pad}${comment ? '// ' : ''}${methodOrProperty.name}: never;`;
 }
 
-function propertyToString(pad, property, allMethodsNames, default_opt) {
+function propertyToString(pad, property, allMethodsNames, optionalByDefault, isStatic) {
 	if (property.deprecated && property.deprecated.removed) {
 		return formatRemoved(pad, property, allMethodsNames.includes(property.name));
 	}
-	const opt = property.optional === true || typeof property.optional !== 'undefined' ? property.optional : default_opt;
-	return `${pad}${property.permission === 'read-only' ? 'readonly ' : ''}${property.name}${
-		opt ? '?' : ''}: ${getType(property.type)};`;
+	const opt = property.optional === true || typeof property.optional !== 'undefined' ? property.optional : optionalByDefault;
+	const stat = isStatic ? 'static ' : '';
+	const ro = property.permission === 'read-only' ? 'readonly ' : '';
+	return `${pad}${stat}${ro}${property.name}${opt ? '?' : ''}: ${getType(property.type)};`;
 }
 
-function methodOverloadsToString(pad, method, allPropertiesNames, eventsInterfaceName, thisName) {
+function methodOverloadsToString(pad, method, allPropertiesNames, eventsInterfaceName, thisName, isStatic) {
 	if (method.deprecated && method.deprecated.removed) {
 		return formatRemoved(pad, method, allPropertiesNames.includes(method.name));
 	}
@@ -183,28 +184,29 @@ function methodOverloadsToString(pad, method, allPropertiesNames, eventsInterfac
 	if (modifiedArguments) {
 		result += `${pad}// ${ERROR.INCORRECT_ARGUMENTS}\n`;
 	}
-	result += methods.map(method => methodToString(pad, method, allPropertiesNames, eventsInterfaceName, thisName)).join('\n');
+	result += methods.map(method => methodToString(pad, method, allPropertiesNames, eventsInterfaceName, thisName, isStatic)).join('\n');
 	return result;
 }
 
-function methodToString(pad, method, allPropertiesNames, eventInterfaceName, thisName) {
+function methodToString(pad, method, allPropertiesNames, eventInterfaceName, thisName, isStatic) {
 	if (method.__hide) {
 		return `${pad}${method.name}: never;`;
 	}
+	const stat = isStatic ? 'static ' : '';
 	if (eventInterfaceName) {
 		if (method.name === 'addEventListener') {
-			return `${pad}${method.name}<K extends keyof ${eventInterfaceName}>(name: K, callback: (this: ${thisName}, ev: ${eventInterfaceName}[K]) => any): void;\n`
-					+ `${pad}${method.name}(name: string, callback: (this: ${thisName}, ...args: any[]) => any): void;`;
+			return `${pad}${stat}${method.name}<K extends keyof ${eventInterfaceName}>(name: K, callback: (this: ${thisName}, ev: ${eventInterfaceName}[K]) => any): void;\n`
+					+ `${pad}${stat}${method.name}(name: string, callback: (this: ${thisName}, ...args: any[]) => any): void;`;
 		} else if (method.name === 'removeEventListener') {
-			return `${pad}${method.name}<K extends keyof ${eventInterfaceName}>(name: K, callback: (this: ${thisName}, ev: ${eventInterfaceName}[K]) => any): void;\n`
-					+ `${pad}${method.name}(name: string, callback: (...args: any[]) => any): void;`;
+			return `${pad}${stat}${method.name}<K extends keyof ${eventInterfaceName}>(name: K, callback: (this: ${thisName}, ev: ${eventInterfaceName}[K]) => any): void;\n`
+					+ `${pad}${stat}${method.name}(name: string, callback: (...args: any[]) => any): void;`;
 		} else if (method.name === 'fireEvent') {
-			return `${pad}${method.name}<K extends keyof ${eventInterfaceName}>(name: K, ev: ${eventInterfaceName}[K]): void;\n`
-					+ `${pad}${method.name}(name: string, ...args: any[]): void;`;
+			return `${pad}${stat}${method.name}<K extends keyof ${eventInterfaceName}>(name: K, ev: ${eventInterfaceName}[K]): void;\n`
+					+ `${pad}${stat}${method.name}(name: string, ...args: any[]): void;`;
 		}
 	}
 	const args = methodArgumentsToString(method.parameters).join(', ');
-	return `${pad}${method.name}(${args}): ${methodResultToString(method)};`;
+	return `${pad}${stat}${method.name}(${args}): ${methodResultToString(method)};`;
 }
 
 function methodArgumentsToString(parameters, padding = '') {
@@ -252,7 +254,7 @@ class Block {
 		this.childBlocks = [];
 		this.childBlocksMap = {};
 	}
-	formatClassOrInterface() {
+	formatClassOrInterface(isModule) {
 		this.prepareExcludes();
 		const padding = `${this._padding}\t`;
 		const methods = Object.values(this.api.methods);
@@ -281,17 +283,26 @@ class Block {
 			}
 		}
 
+		const isStatic = classOrInterface === 'class' && this.api.__subtype === 'module';
+
 		if (properties.length) {
-			const default_opt = this.api.name.indexOf('.') === -1;
+			const optionalByDefault = this.api.name.indexOf('.') === -1;
+			const props = [];
 			inner += excludesToString(padding, this.all_excludes['properties']);
-			inner += properties.map(v => propertyToString(padding, v, allMethodsNames, default_opt)).join('\n') + '\n';
+			properties.forEach(v => {
+				if (isModule && v.name === v.name.toUpperCase()) {
+					return;
+				}
+				props.push(propertyToString(padding, v, allMethodsNames, optionalByDefault, isStatic));
+			});
+			inner += props.length ? (props.join('\n') + '\n') : '';
 		}
 		if (methods.length) {
 			inner += excludesToString(padding, this.all_excludes['methods']);
-			inner += methods.map(v => methodOverloadsToString(padding, v, allPropertiesNames, eventsMapName, this.api.name)).join('\n') + '\n';
+			inner += methods.map(v => methodOverloadsToString(padding, v, allPropertiesNames, eventsMapName, this.api.name, isStatic)).join('\n') + '\n';
 		}
 		let ext = '';
-		if (this.api.extends) {
+		if (this.api.extends && this._baseName !== 'Titanium') {
 			ext = `extends ${this.api.extends} `;
 		}
 
@@ -342,7 +353,7 @@ class Block {
 		}
 		return { eventInterface, eventsMapName };
 	}
-	formatNamespace() {
+	formatNamespace(hasClass) {
 		let inner = this.childBlocks.map(block => block.toString()).join('');
 		this.prepareExcludes();
 		const methods = Object.values(this.api.methods);
@@ -351,7 +362,7 @@ class Block {
 		const padding = isGlobal ? '' : `${this._padding}\t`;
 		const declare = isGlobal ? 'declare ' : '';
 
-		if (methods.length) {
+		if (methods.length && !hasClass) {
 			inner = excludesToString(padding, this.all_excludes['methods'], 'const ')
 					+ methods.map(v => {
 						const args = methodArgumentsToString(v.parameters).join(', ');
@@ -360,18 +371,24 @@ class Block {
 		}
 		if (properties.length) {
 			const apiName = this.api.name;
+			const props = [];
+			properties.forEach(v => {
+				if (hasClass && v.name !== v.name.toUpperCase()) {
+					return;
+				}
+				let prefix = 'let';
+				if (v.permission === 'read-only') {
+					prefix = 'const';
+				}
+				const result = `${declare}${prefix} ${v.name}: ${getType(v.type)};`;
+				if (v.name === 'R' && (apiName === 'Titanium.Android' || apiName === 'Titanium.App.Android')) {
+					props.push(`${padding}// ${ERROR.REDECLARATION}\n${padding}//${result}`);
+				} else {
+					props.push(`${padding}${result}`);
+				}
+			});
 			inner = excludesToString(padding, this.all_excludes['properties'])
-					+ properties.map(v => {
-						let prefix = 'let';
-						if (v.permission === 'read-only') {
-							prefix = 'const';
-						}
-						const result = `${declare}${prefix} ${v.name}: ${getType(v.type)};`;
-						if (v.name === 'R' && (apiName === 'Titanium.Android' || apiName === 'Titanium.App.Android')) {
-							return `${padding}// ${ERROR.REDECLARATION}\n${padding}//${result}`;
-						}
-						return `${padding}${result}`;
-					}).join('\n') + '\n' + inner;
+					+ (props.length ? (props.join('\n') + '\n') : '') + inner;
 		}
 
 		if (isGlobal) {
@@ -422,13 +439,20 @@ class Block {
 			return `${this._padding}// ${ERROR.INCORRECT_IDENTIFIER} "${this._baseName}";\n`;
 		}
 		let result = '';
-
-		if (typeof this.api.__subtype !== 'undefined' && [ 'proxy', 'view' ].includes(this.api.__subtype)) {
-			result += this.formatClassOrInterface();
-		} else if (this.childBlocks.length) {
-			result += this.formatNamespace();
+		const hasChildren = this.childBlocks.length;
+		const isModules = this.api.name === 'Modules';
+		if ([ 'proxy', 'view', 'pseudo' ].includes(this.api.__subtype) && !isModules) {
+			result += this.formatClassOrInterface(false);
+		} else if (this.api.__subtype === 'module' || isModules) {
+			const generateClass = this !== this._global && !isModules;
+			if (hasChildren) {
+				result += this.formatNamespace(generateClass);
+			}
+			if (generateClass) {
+				result += this.formatClassOrInterface(true);
+			}
 		} else {
-			result += this.formatClassOrInterface();
+			common.log(common.LOG_INFO, `${this.api.name}  :  ${this.api.__subtype}`);
 		}
 		return result;
 	}
