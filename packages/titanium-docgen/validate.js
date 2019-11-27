@@ -81,9 +81,10 @@ const validSyntax = {
 					required: {
 						name: 'String',
 						summary: 'String',
+						type: 'DataType',
 					},
 					optional: {
-						type: 'DataType',
+						optional: 'Boolean',
 						platforms: [ common.VALID_PLATFORMS ],
 						deprecated: Deprecated,
 						since: 'Since',
