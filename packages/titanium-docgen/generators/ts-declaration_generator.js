@@ -254,7 +254,7 @@ class Block {
 		this.childBlocks = [];
 		this.childBlocksMap = {};
 	}
-	formatClassOrInterface(isModule) {
+	formatClassOrInterface(namespaceGenerated) {
 		this.prepareExcludes();
 		const padding = `${this._padding}\t`;
 		const methods = Object.values(this.api.methods);
@@ -290,7 +290,7 @@ class Block {
 			const props = [];
 			inner += excludesToString(padding, this.all_excludes['properties']);
 			properties.forEach(v => {
-				if (isModule && v.name === v.name.toUpperCase()) {
+				if (namespaceGenerated && v.name === v.name.toUpperCase()) {
 					return;
 				}
 				props.push(propertyToString(padding, v, allMethodsNames, optionalByDefault, isStatic));
@@ -449,7 +449,7 @@ class Block {
 				result += this.formatNamespace(generateClass);
 			}
 			if (generateClass) {
-				result += this.formatClassOrInterface(true);
+				result += this.formatClassOrInterface(hasChildren);
 			}
 		} else {
 			common.log(common.LOG_INFO, `${this.api.name}  :  ${this.api.__subtype}`);
