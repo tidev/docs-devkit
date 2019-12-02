@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 3.0.0 (2019-12-02)
+
+
+### Bug Fixes
+
+* adapt changed plugin name ([e3f04de](https://github.com/appcelerator/docs-devkit/commit/e3f04de))
+
+
+
+
+
 # 2.0.0 (2019-12-02)
 
 
