@@ -13,7 +13,7 @@ timestamps {
           checkout([
             $class: 'GitSCM',
             branches: scm.branches,
-            extensions: scm.extensions + [[$class: 'CleanBeforeCheckout'], [$class: 'LocalBranch', localBranch: "**"]],
+            extensions: scm.extensions + [[$class: 'WipeWorkspace'], [$class: 'LocalBranch', localBranch: "**"]],
             submoduleCfg: [],
             userRemoteConfigs: scm.userRemoteConfigs
           ])
