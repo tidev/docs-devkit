@@ -7,7 +7,7 @@
     "publish": {
       "allowBranch": "master",
       "message": "chore(release): publish %s",
-      "noPush": true
+      "push": false
     }
   }
 }
