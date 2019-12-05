@@ -290,10 +290,17 @@ class Block {
 			const props = [];
 			inner += excludesToString(padding, this.all_excludes['properties']);
 			properties.forEach(v => {
-				if (namespaceGenerated && v.name === v.name.toUpperCase()) {
-					return;
+				let s = isStatic;
+				if (v.name === v.name.toUpperCase()) {
+					if (namespaceGenerated) {
+						return;
+					}
+					const ro = v.permission === 'read-only' ? 'readonly ' : '';
+					if (ro && !isStatic) {
+						s = true;
+					}
 				}
-				props.push(propertyToString(padding, v, allMethodsNames, optionalByDefault, isStatic));
+				props.push(propertyToString(padding, v, allMethodsNames, optionalByDefault, s));
 			});
 			inner += props.length ? (props.join('\n') + '\n') : '';
 		}
