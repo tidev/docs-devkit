@@ -74,6 +74,8 @@ function getType(type) {
 			return `any /* ${ERROR.UNTYPED} "${type}" */`;
 		case 'Array<Dictionary>':
 			return `any[] /* ${ERROR.UNTYPED} "${type}" */`;
+		case 'bool':
+			return 'boolean';
 		default:
 			if (typeof type === 'object') {
 				if (typeof type[0] === 'object') {
@@ -87,6 +89,8 @@ function getType(type) {
 				return type.replace(/^Callback<(.*)>$/, formatCallback);
 			} else if (type === 'Array') {
 				return `any[] /* ${ERROR.UNTYPED} "${type}" */`;
+			} else if (type.startsWith('Array')) {
+				return type.replace(/^Array<(.*)>$/, formatArray);
 			} else {
 				return type;
 			}
@@ -101,10 +105,14 @@ function formatCallback(match, p1) {
 			if (a === 'Object') {
 				a = 'any';
 			}
-			return `arg${i + 1}: ${a}`;
+			return `arg${i + 1}: ${getType(a)}`;
 		})
 		.join(', ');
 	return `(${args}) => void`;
+}
+
+function formatArray(match, p1) {
+	return `${getType(p1)}[]`;
 }
 
 function getValidName(name) {
