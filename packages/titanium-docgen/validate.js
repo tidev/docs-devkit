@@ -401,9 +401,9 @@ function validateDataType(type, fullTypeContext) {
 	}
 
 	// Warn about generic Dictonary/Object types
-	if (['Dictionary', 'Object'].includes(type)) {
+	if ([ 'Dictionary', 'Object' ].includes(type)) {
 		// TODO: How can we mark/skip the valid cases here? Some APIs really do need to say "Object" as the arg/return value
-		return [ new Problem(`Please define a new type rather than using the generic Object/Dictionary references: ${fullTypeContext ? fullTypeContext : type}`, WARNING) ];
+		return [ new Problem(`Please define a new type rather than using the generic Object/Dictionary references: ${fullTypeContext || type}`, WARNING) ];
 	}
 
 	// Is this a built in Javascript type?
@@ -440,7 +440,7 @@ function validateDefault(val) {
  */
 function validatePlatforms(platforms) {
 	if (!Array.isArray(platforms)) {
-		return new Problem(`must be an array of valid platform names`);
+		return new Problem('must be an array of valid platform names');
 	}
 
 	if (platforms.length === 0) {
@@ -467,7 +467,7 @@ function validateAvailability(availability) {
 
 function validateOneOf(possibilities, value) {
 	if (!possibilities.includes(value)) {
-		return new Problem(`must be one of: ${possibilities}. was: ${value}`)
+		return new Problem(`must be one of: ${possibilities}. was: ${value}`);
 	}
 	return null;
 }
@@ -486,7 +486,7 @@ function validatePermission(permission, propertyName) {
 	// It's one of our enumerated values, but if it looks like a constant, should probably be 'read-only'
 	// consider UPPER(_MORE)* style constants (i.e. can't start/end with underscores)
 	if (/^[A-Z]+(_[A-Z]+)*$/.test(propertyName) && permission !== 'read-only') {
-		return new Problem(`property name is all caps so permissions should likely be read-only (was ${permission})`, WARNING); 
+		return new Problem(`property name is all caps so permissions should likely be read-only (was ${permission})`, WARNING);
 	}
 	return null;
 }
@@ -704,6 +704,7 @@ function mergeMaps(map1, map2) {
 /**
  * @param {string|null} baseNamespace may be null, may be a dotted namespace
  * @param {string} keyName base name of the key we're working on
+ * @returns {string}
  */
 function generateFullPath(baseNamespace, keyName) {
 	if (baseNamespace) {
@@ -904,7 +905,7 @@ function validateKey(obj, syntax, currentKey, className, fullKeyPath) {
 			// so let's validate that the references names actually exist on the type hierarchy
 			if (syntax.indexOf('Array') === 0) {
 				// Pull out the internal "type" of the array reference
-				const baseTypeReference = syntax.slice(syntax.indexOf('<') + 1, syntax.indexOf('>')); 
+				const baseTypeReference = syntax.slice(syntax.indexOf('<') + 1, syntax.indexOf('>'));
 				switch (baseTypeReference) {
 					case 'events.name':
 						return possibleProblemAsMap(fullKeyPath, validateAPINames(obj, 'events', className));
@@ -919,25 +920,6 @@ function validateKey(obj, syntax, currentKey, className, fullKeyPath) {
 			// This should never happen!
 			return possibleProblemAsMap(fullKeyPath, new Problem(`Did not validate: ${currentKey} = ${obj}`, WARNING));
 	}
-}
-
-/**
- * Format and output errors
- * @param {Map<String, Problem[]>} keysToProblems mapping from key paths to the array of problems found there
- * @return {string} error output
- */
-function outputErrors(keysToProblems) {
-	let errorOutput = '';
-	keysToProblems.forEach((problems, key) => {
-		problems.forEach(p => {
-			if (p.isError()) {
-				errorCount++;
-			}
-			errorOutput += `${key} - ${p}\n`;
-		});
-	});
-
-	return errorOutput;
 }
 
 /**
