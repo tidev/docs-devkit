@@ -349,14 +349,11 @@ class Block {
 					}
 					const properties = event.properties && Object.values(event.properties) || [];
 					eventsMapName = `${this._baseName}EventMap`;
-					let eventInterfaceName = baseEvent;
-					if (properties.length) {
-						eventInterfaceName = `${this._baseName}_${name.replace(':', '_')}_Event`;
-						const temp = methodArgumentsToString(properties, padding);
-						eventInterface += `${this._padding}interface ${eventInterfaceName} extends ${baseEvent} {\n`
-								+ temp.join(',\n')
-								+ `\n${this._padding}}\n`;
-					}
+					const eventInterfaceName = `${this._baseName}_${name.replace(':', '_')}_Event`;
+					const temp = methodArgumentsToString(properties, padding);
+					eventInterface += `${this._padding}interface ${eventInterfaceName} extends ${baseEvent} {\n`
+							+ temp.join(',\n')
+							+ `\n${this._padding}}\n`;
 					body.push(`${padding}\t"${name}": ${eventInterfaceName}`);
 				});
 				if (eventsMapName !== 'Ti.Event') {
