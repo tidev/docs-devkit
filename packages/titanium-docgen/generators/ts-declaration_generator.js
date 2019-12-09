@@ -19,6 +19,7 @@ const RESERVED_KEYWORDS = [
 ];
 
 const ERROR = {
+	DUPLICATE_IDENTIFIER: '#Error. Duplicate identifier',
 	UNDEFINED_TYPE: '#Error. #Undefined type',
 	UNTYPED: '#Error. #Untyped',
 	INCORRECT_ARGUMENTS: '#Error. #Suspicious method arguments. Optional argument is not the last',
@@ -147,17 +148,21 @@ function formatRemoved(pad, methodOrProperty, comment) {
 			+ `${pad}${comment ? '// ' : ''}${methodOrProperty.name}: never;`;
 }
 
-function propertyToString(pad, property, allMethodsNames, optionalByDefault, isStatic) {
+function propertyToString(pad, property, allMethodsNames, optionalByDefault, isStatic, allSet) {
 	if (property.deprecated && property.deprecated.removed) {
 		return formatRemoved(pad, property, allMethodsNames.includes(property.name));
 	}
 	const opt = property.optional === true || typeof property.optional !== 'undefined' ? property.optional : optionalByDefault;
 	const stat = isStatic ? 'static ' : '';
 	const ro = property.permission === 'read-only' ? 'readonly ' : '';
-	return `${pad}${stat}${ro}${property.name}${opt ? '?' : ''}: ${getType(property.type)};`;
+	const error = allSet.has(property.name) ? `// ${ERROR.DUPLICATE_IDENTIFIER} ` : '';
+	if (!error) {
+		allSet.add(property.name);
+	}
+	return `${pad}${error}${stat}${ro}${property.name}${opt ? '?' : ''}: ${getType(property.type)};`;
 }
 
-function methodOverloadsToString(pad, method, allPropertiesNames, eventsInterfaceName, thisName, isStatic) {
+function methodOverloadsToString(pad, method, allPropertiesNames, eventsInterfaceName, thisName, isStatic, allSet) {
 	if (method.deprecated && method.deprecated.removed) {
 		return formatRemoved(pad, method, allPropertiesNames.includes(method.name));
 	}
@@ -192,13 +197,17 @@ function methodOverloadsToString(pad, method, allPropertiesNames, eventsInterfac
 	if (modifiedArguments) {
 		result += `${pad}// ${ERROR.INCORRECT_ARGUMENTS}\n`;
 	}
-	result += methods.map(method => methodToString(pad, method, allPropertiesNames, eventsInterfaceName, thisName, isStatic)).join('\n');
+	result += methods.map(method => methodToString(pad, method, allPropertiesNames, eventsInterfaceName, thisName, isStatic, allSet)).join('\n');
 	return result;
 }
 
-function methodToString(pad, method, allPropertiesNames, eventInterfaceName, thisName, isStatic) {
+function methodToString(pad, method, allPropertiesNames, eventInterfaceName, thisName, isStatic, allSet) {
 	if (method.__hide) {
 		return `${pad}${method.name}: never;`;
+	}
+	const error = allSet.has(method.name) ? `// ${ERROR.DUPLICATE_IDENTIFIER} ` : '';
+	if (!error) {
+		allSet.add(method.name);
 	}
 	const stat = isStatic ? 'static ' : '';
 	if (eventInterfaceName) {
@@ -249,6 +258,22 @@ function excludesToString(pad, excludesSet, prefix) {
 	return temp.join('\n');
 }
 
+function sortByName(a, b) {
+	if (a.name > b.name) {
+		return 1;
+	}
+	if (a.name < b.name) {
+		return -1;
+	}
+	if (a.type) {
+		return -1;
+	}
+	if (b.type) {
+		return 1;
+	}
+	return 0;
+}
+
 class Block {
 	constructor(params) {
 		this._baseName = params.baseName;
@@ -265,9 +290,10 @@ class Block {
 	formatClassOrInterface(namespaceGenerated) {
 		this.prepareExcludes();
 		const padding = `${this._padding}\t`;
-		const methods = Object.values(this.api.methods);
-		const properties = Object.values(this.api.properties);
+		const methods = Object.values(this.api.methods).sort(sortByName);
+		const properties = Object.values(this.api.properties).sort(sortByName);
 
+		const allList = new Set();
 		const allMethodsNames = methods.map(v => v.name);
 		const allPropertiesNames = properties.map(v => v.name);
 		const { eventsMapName, eventInterface } = this.formatEvents();
@@ -308,13 +334,13 @@ class Block {
 						s = true;
 					}
 				}
-				props.push(propertyToString(padding, v, allMethodsNames, optionalByDefault, s));
+				props.push(propertyToString(padding, v, allMethodsNames, optionalByDefault, s, allList));
 			});
 			inner += props.length ? (props.join('\n') + '\n') : '';
 		}
 		if (methods.length) {
 			inner += excludesToString(padding, this.all_excludes['methods']);
-			inner += methods.map(v => methodOverloadsToString(padding, v, allPropertiesNames, eventsMapName, this.api.name, isStatic)).join('\n') + '\n';
+			inner += methods.map(v => methodOverloadsToString(padding, v, allPropertiesNames, eventsMapName, this.api.name, isStatic, allList)).join('\n') + '\n';
 		}
 		let ext = '';
 		if (this.api.extends && this._baseName !== 'Titanium') {
@@ -332,7 +358,7 @@ class Block {
 		let eventInterface = '';
 		let eventsMapName;
 		if (this.api.events && Object.keys(this.api.events)) {
-			const events = new Map(Object.values(this.api.events).map(e => [ e.name, e ]));
+			const events = new Map(Object.values(this.api.events).sort(sortByName).map(e => [ e.name, e ]));
 			if (this.api.excludes && this.api.excludes.events) {
 				Object.values(this.api.excludes.events).forEach(event => events.delete(event));
 			}
@@ -368,8 +394,8 @@ class Block {
 	formatNamespace(hasClass) {
 		let inner = this.childBlocks.map(block => block.toString()).join('');
 		this.prepareExcludes();
-		const methods = Object.values(this.api.methods);
-		const properties = Object.values(this.api.properties);
+		const methods = Object.values(this.api.methods).sort(sortByName);
+		const properties = Object.values(this.api.properties).sort(sortByName);
 		const isGlobal = this === this._global;
 		const padding = isGlobal ? '' : `${this._padding}\t`;
 		const declare = isGlobal ? 'declare ' : '';
@@ -451,17 +477,22 @@ class Block {
 			return `${this._padding}// ${ERROR.INCORRECT_IDENTIFIER} "${this._baseName}";\n`;
 		}
 		let result = '';
-		const hasChildren = this.childBlocks.length;
+		const childrenCount = this.childBlocks.length;
 		const isModules = this.api.name === 'Modules';
 		if ([ 'proxy', 'view', 'pseudo' ].includes(this.api.__subtype) && !isModules) {
 			result += this.formatClassOrInterface(false);
 		} else if (this.api.__subtype === 'module' || isModules) {
 			const generateClass = this !== this._global && !isModules;
-			if (hasChildren) {
+			if (childrenCount) {
+				this.childBlocks.sort((a, b) => sortByName(a.api, b.api));
+				this.childBlocksMap = {};
+				for (let i = 0; i < childrenCount; i++) {
+					this.childBlocksMap[this.childBlocks[i]._baseName] = i;
+				}
 				result += this.formatNamespace(generateClass);
 			}
 			if (generateClass) {
-				result += this.formatClassOrInterface(hasChildren);
+				result += this.formatClassOrInterface(childrenCount);
 			}
 		} else {
 			common.log(common.LOG_INFO, `${this.api.name}  :  ${this.api.__subtype}`);
