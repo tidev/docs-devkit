@@ -27,8 +27,9 @@ timestamps {
         }
         if(publishableBranches.contains(env.BRANCH_NAME)) {
           stage('Publish') {
-            sh 'yarn run lerna:publish'
-            pushGit(name: env.BRANCH_NAME)
+            gitRemoteWithCredentials {
+              sh 'yarn run lerna:publish'
+            }
           }
         }
       }
