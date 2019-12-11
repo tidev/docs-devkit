@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.1](https://github.com/appcelerator/docs-devkit/compare/v4.0.0...v4.0.1) (2019-12-11)
+
+**Note:** Version bump only for package docs
+
+
+
+
+
 # 4.0.0 (2019-12-02) [YANKED]
 
 # 3.0.0 (2019-12-02) [YANKED]
