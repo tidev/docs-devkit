@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/appcelerator/docs-devkit/compare/v4.0.1...v4.1.0) (2019-12-12)
+
+
+### Features
+
+* **docgen:** improve validation to include warnings ([#21](https://github.com/appcelerator/docs-devkit/issues/21)) ([efe2aca](https://github.com/appcelerator/docs-devkit/commit/efe2aca))
+
+
+
+
+
 ## [4.0.1](https://github.com/appcelerator/docs-devkit/compare/v4.0.0...v4.0.1) (2019-12-11)
 
 **Note:** Version bump only for package titanium-docgen
