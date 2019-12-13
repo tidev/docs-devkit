@@ -307,13 +307,50 @@ function hideAPIMembers(apis, type) {
 }
 
 /**
+ * Return deprecation object if required
+ * @param {boolean} getOrSet True for getter, False for setter
+ * @param {Object} api Property object
+ * @param {string} className Name of the class
+ * @param {string} deprecate Mark accessors as "deprecated" since (>= 8.0.0)
+ * @param {string} remove Mark accessors as "removed" since (>= 9.0.0)
+ * @return {*}
+ */
+function getDeprecation(getOrSet, api, className, deprecate, remove) {
+	if (api.deprecated && api.deprecated.removed) {
+		return api.deprecated;
+	}
+	if (deprecate) {
+		const deprecated = {};
+		if (api.deprecated) {
+			Object.keys(api.deprecated).forEach(key => {
+				// `api.deprecated` contains only primitives, no need for a deep clone
+				deprecated[key] = api.deprecated[key];
+			});
+		}
+		if (remove && !deprecated.removed) {
+			deprecated.removed = remove;
+		}
+		deprecated.since = deprecate;
+		if (!deprecated.notes) {
+			deprecated.notes = getOrSet ? 'Access <' + className + '.' + api.name + '> instead.'
+				: 'Set the value using <' + className + '.' + api.name + '> instead.';
+		}
+		return deprecated;
+	} else {
+		return api.deprecated;
+	}
+}
+
+/**
  * Generates accessors from the given list of properties
  * @param {Array<Object>} apis Array of property objects
  * @param {String} className Name of the class
- * @param {String} methods Array of defined methods on the API
+ * @param {Array<Object>} methods Array of defined methods on the API
+ * @param {string} deprecate Mark accessors as "deprecated" since (>= 8.0.0)
+ * @param {string} remove Mark accessors as "removed" since (>= 9.0.0)
  * @returns {Array<Object>} Array of methods
  */
-function generateAccessors(apis, className, methods) {
+function generateAccessors(apis, className, methods, deprecate, remove) {
 	const rv = [];
 	apis.forEach(function (api) {
 
@@ -328,7 +365,7 @@ function generateAccessors(apis, className, methods) {
 			rv.push({
 				name: getterName,
 				summary: 'Gets the value of the <' + className + '.' + api.name + '> property.',
-				deprecated: api.deprecated || { since: '8.0.0', notes: 'Access <' + className + '.' + api.name + '> instead.' },
+				deprecated: getDeprecation(true, api, className, deprecate, remove),
 				platforms: api.platforms,
 				since: api.since,
 				returns: { type: api.type, __subtype: 'return' },
@@ -344,7 +381,7 @@ function generateAccessors(apis, className, methods) {
 			rv.push({
 				name: setterName,
 				summary: 'Sets the value of the <' + className + '.' + api.name + '> property.',
-				deprecated: api.deprecated || { since: '8.0.0', notes: 'Set the value using <' + className + '.' + api.name + '> instead.'  },
+				deprecated: getDeprecation(false, api, className, deprecate, remove),
 				platforms: api.platforms,
 				since: api.since,
 				parameters: [ {
@@ -400,9 +437,11 @@ function getSubtype (api) {
 /**
  * Process API class
  * @param {Object} api API object to build (and use as base)
+ * @param {string} deprecate Mark accessors as "deprecated" since (>= 8.0.0)
+ * @param {string} remove Mark accessors as "removed" since (>= 9.0.0)
  * @return {Object} api
  */
-function processAPIs (api) {
+function processAPIs (api, deprecate, remove) {
 	var defaultVersions = nodeappc.util.mix({}, common.DEFAULT_VERSIONS),
 		inheritedAPIs = {},
 		matches = [];
@@ -479,7 +518,7 @@ function processAPIs (api) {
 		api = hideAPIMembers(api, 'properties');
 		api.properties = processAPIMembers(api.properties, 'properties', api.since, api.__addon);
 		const methods = api.methods.map(method => method.name);
-		if (api.__subtype !== 'pseudo' && (accessors = generateAccessors(api.properties, api.name, methods))) {
+		if (api.__subtype !== 'pseudo' && (accessors = generateAccessors(api.properties, api.name, methods, deprecate, remove))) {
 			if (assert(api, 'methods')) {
 				matches = [];
 				accessors.forEach(function (accessor) {
@@ -920,27 +959,36 @@ addOnDocs.forEach(function (basePath) {
 	}
 });
 
+const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'));
+let deprecateAccessors = '';
+let removeAccessors = '';
+if (nodeappc.version.gte(version, '8.0.0')) {
+	deprecateAccessors = '8.0.0';
+}
+if (nodeappc.version.gte(version, '9.0.0')) {
+	removeAccessors = '9.0.0';
+}
+
 // Process YAML files
 common.log(common.LOG_INFO, 'Processing YAML data...');
 processFirst.forEach(function (cls) {
 	if (!assert(doc, cls)) {
 		return;
 	}
-	processedData[cls] = processAPIs(doc[cls]);
+	processedData[cls] = processAPIs(doc[cls], deprecateAccessors, removeAccessors);
 });
 skipList = skipList.concat(processFirst);
 for (const key in doc) {
 	if (~skipList.indexOf(key)) {
 		continue;
 	}
-	processedData[key] = processAPIs(doc[key]);
+	processedData[key] = processAPIs(doc[key], deprecateAccessors, removeAccessors);
 }
 
 formats.forEach(function (format) {
 	// For changes format, make sure we have a start version and it's less than the end version if defined
 	if (format === 'changes') {
 		if (!processedData.__startVersion) {
-			const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'));
 			processedData.__startVersion = version;
 		}
 		if (processedData.__endVersion) {
@@ -957,7 +1005,6 @@ formats.forEach(function (format) {
 	if (format === 'modulehtml') {
 		processedData.__modules = modules;
 	} else if (format === 'typescript') {
-		const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'));
 		processedData.__version = version;
 	}
 	if (searchPlatform) {
