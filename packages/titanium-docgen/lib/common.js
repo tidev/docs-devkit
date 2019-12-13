@@ -30,7 +30,9 @@ exports.ADDON_VERSIONS = {
 	blackberry: '3.1.2',
 	windowsphone: '4.1.0'
 };
-exports.DATA_TYPES = [ 'Array', 'Boolean', 'Callback', 'Date', 'Dictionary', 'Number', 'Object', 'String' ];
+
+// TODO: Add null, undefined, Arguments, Function?
+exports.DATA_TYPES = [ 'Array', 'Boolean', 'Callback', 'Date', 'Dictionary', 'Number', 'Object', 'String', 'Error', 'RegExp' ];
 exports.PRETTY_PLATFORM = {
 	android: 'Android',
 	blackberry: 'BlackBerry',

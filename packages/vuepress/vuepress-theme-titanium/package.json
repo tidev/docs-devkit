@@ -1,6 +1,6 @@
 {
   "name": "vuepress-theme-titanium",
-  "version": "0.2.0",
+  "version": "4.0.1",
   "description": "VuePress theme for Titanium projects",
   "main": "index.js",
   "scripts": {

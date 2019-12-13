@@ -13,7 +13,7 @@ timestamps {
           checkout([
             $class: 'GitSCM',
             branches: scm.branches,
-            extensions: scm.extensions + [[$class: 'CleanBeforeCheckout'], [$class: 'LocalBranch', localBranch: "**"]],
+            extensions: scm.extensions + [[$class: 'WipeWorkspace'], [$class: 'LocalBranch', localBranch: "**"]],
             submoduleCfg: [],
             userRemoteConfigs: scm.userRemoteConfigs
           ])
@@ -27,8 +27,9 @@ timestamps {
         }
         if(publishableBranches.contains(env.BRANCH_NAME)) {
           stage('Publish') {
-            sh 'yarn run lerna:publish'
-            pushGit(name: env.BRANCH_NAME)
+            gitRemoteWithCredentials {
+              sh 'yarn run lerna:publish'
+            }
           }
         }
       }
