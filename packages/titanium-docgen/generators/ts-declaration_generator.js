@@ -139,18 +139,18 @@ function deepExtend(from, to) {
 	});
 }
 
-function formatRemoved(pad, methodOrProperty, comment) {
-	const notes = methodOrProperty.deprecated.notes ? methodOrProperty.deprecated.notes.replace('\n', `\n${pad} *`) : '';
+function formatRemoved(pad, name, deprecated, prefix) {
+	const notes = deprecated.notes ? (pad + ' * ' + deprecated.notes.replace('\n', `\n${pad} * `) + '\n') : '';
 	return `${pad}/*\n`
-			+ `${pad} * REMOVED in ${methodOrProperty.deprecated.removed}\n`
-			+ `${pad} * ${notes}\n`
+			+ `${pad} * Removed in ${deprecated.removed}\n`
+			+ notes
 			+ `${pad} */\n`
-			+ `${pad}${comment ? '// ' : ''}${methodOrProperty.name}: never;`;
+			+ `${pad}${prefix}${name}: never;`;
 }
 
 function propertyToString(pad, property, allMethodsNames, optionalByDefault, isStatic, allSet) {
 	if (property.deprecated && property.deprecated.removed) {
-		return formatRemoved(pad, property, allMethodsNames.includes(property.name));
+		return formatRemoved(pad, property.name, property.deprecated, allMethodsNames.includes(property.name) ? '// ' : '');
 	}
 	const opt = property.optional === true || typeof property.optional !== 'undefined' ? property.optional : optionalByDefault;
 	const stat = isStatic ? 'static ' : '';
@@ -164,7 +164,14 @@ function propertyToString(pad, property, allMethodsNames, optionalByDefault, isS
 
 function methodOverloadsToString(pad, method, allPropertiesNames, eventsInterfaceName, thisName, isStatic, allSet) {
 	if (method.deprecated && method.deprecated.removed) {
-		return formatRemoved(pad, method, allPropertiesNames.includes(method.name));
+		let prefix = '';
+		if (allPropertiesNames.includes(method.name)) {
+			prefix = '// ';
+		}
+		if (isStatic) {
+			prefix += 'static ';
+		}
+		return formatRemoved(pad, method.name, method.deprecated, prefix);
 	}
 	const methods = [];
 	const parameters = method.parameters;
@@ -475,6 +482,9 @@ class Block {
 	toString() {
 		if (!isNaN(parseInt(this._baseName[0], 10)) || this._baseName === 'Dictionary') {
 			return `${this._padding}// ${ERROR.INCORRECT_IDENTIFIER} "${this._baseName}";\n`;
+		}
+		if (this.api.deprecated && this.api.deprecated.removed) {
+			return formatRemoved(this._padding, this._baseName, this.api.deprecated, 'const ') + '\n';
 		}
 		let result = '';
 		const childrenCount = this.childBlocks.length;
