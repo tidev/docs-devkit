@@ -1,4 +1,5 @@
 'use strict';
+const common = require('../lib/common.js');
 
 /*
  * Map of invalid types and their replacement
@@ -9,6 +10,21 @@ const invalidTypeMap = {
 	Dictionary: 'any',
 	Object: 'any'
 };
+
+const skipApis = [
+	'Dictionary',
+	'Titanium.UI.2DMatrix',
+	'Titanium.UI.3DMatrix'
+];
+
+// List of modules that need to be generated as an interface instead of a namespace.
+const knowInterfacesList = [
+	'Titanium.App.iOS.UserDefaults',
+	'Global.String',
+	'Global.JSON',
+	'Global.console'
+];
+
 let parser = null;
 
 exports.exportData = function exportGlobalTemplate(apis) {
@@ -46,54 +62,6 @@ function isConstantsOnlyProxy(typeInfo) {
 }
 
 /**
- * Checks if a type can safely be extended from an already existing interface.
- *
- * A type can be extended from another type when it contains all of its
- * properties and methods.
- *
- * @param {Object} typeInfo Type info of the type that should be checked if it can extend another type
- * @param {InterfaceNode} interfaceNode Node of the type that should be extended
- * @return {Boolean} True if the type can extend the given interface, false if not
- */
-function canExtend(typeInfo, interfaceNode) {
-	if (!interfaceNode) {
-		return false;
-	}
-
-	if (typeInfo.name === interfaceNode.fullyQualifiedName) {
-		return false;
-	}
-
-	function hasAllMembers(typeMembers, interfaceMembers) {
-		return interfaceMembers.every(interfaceMemberNode => {
-			if (interfaceMemberNode.optional) {
-				return true;
-			}
-
-			return typeMembers.some(typeMember => interfaceMemberNode.name === typeMember.name);
-		});
-	}
-
-	return hasAllMembers(typeInfo.properties, interfaceNode.properties) && hasAllMembers(typeInfo.methods, interfaceNode.methods);
-}
-
-/**
- * Removes all memebers of the first type info object that are also present in
- * the given interface node.
- *
- * @param {Object} typeInfo Type info object whos members should be removed
- * @param {InterfaceNode} interfaceNode Reference interface node
- */
-function removeMembers(typeInfo, interfaceNode) {
-	function filterMembers(typeMembers, interfaceMembers) {
-		return typeMembers.filter(memberInfo => !interfaceMembers.some(interfaceMember => interfaceMember.name === memberInfo.name));
-	}
-
-	typeInfo.properties = filterMembers(typeInfo.properties, interfaceNode.properties);
-	typeInfo.methods = filterMembers(typeInfo.methods, interfaceNode.methods);
-}
-
-/**
  * @param {Object} a method, property or event
  * @param {Object} b method, property or event
  * @return {number}
@@ -125,9 +93,7 @@ class DocsParser {
 	 * @param {Object} apis Hash map of Titanium type names and their definition.
 	 */
 	constructor(apis) {
-		this.titaniumNamespace = null;
-		this.proxyInterface = null;
-		this.viewInterface = null;
+		this.globalNamespace = null;
 		this.apis = apis;
 		this.tree = new EmulatedSyntaxTree();
 	}
@@ -136,18 +102,10 @@ class DocsParser {
 	 * Parses all Titanium types and generates the emulated TypeScript syntax tree.
 	 */
 	parse() {
-		this.titaniumNamespace = new NamespaceNode(this.apis['Titanium']);
-		this.tree.addNode(this.titaniumNamespace);
-		delete this.apis['Titanium'];
-		this.proxyInterface = new InterfaceNode(this.apis['Titanium.Proxy']);
-		this.titaniumNamespace.addInterface(this.proxyInterface);
-		delete this.apis['Titanium.Proxy'];
-		const uiNamespace = new NamespaceNode(this.apis['Titanium.UI']);
-		this.tree.registerNamespace(uiNamespace.fullyQualifiedName, uiNamespace);
-		this.titaniumNamespace.addNamespace(uiNamespace);
-		delete this.apis['Titanium.UI'];
-		this.viewInterface = new InterfaceNode(this.apis['Titanium.UI.View']);
-		uiNamespace.addInterface(this.viewInterface);
+		this.globalNamespace = new NamespaceNode(this.apis['Global']);
+		this.tree.addNode(this.globalNamespace);
+		this.tree.registerNamespace('Global', this.globalNamespace);
+		delete this.apis['Global'];
 
 		const namesList = Object.keys(this.apis).sort();
 		namesList.forEach(fullyQualifiedTypeName => {
@@ -158,32 +116,44 @@ class DocsParser {
 			const typeInfo = this.apis[fullyQualifiedTypeName];
 			const namespaceParts = typeInfo.name.split('.');
 			namespaceParts.pop();
-
-			if (namespaceParts[0] !== 'Titanium' && namespaceParts.length > 0) {
-				return;
-			} else if (typeInfo.name === 'Global') {
-				return;
-			} else if (typeInfo.name === 'Dictionary') {
+			if (skipApis.includes(typeInfo.name)) {
 				return;
 			}
 
 			const parentNamespace = this.findOrCreateNamespace(namespaceParts);
-			if (this.isInterface(typeInfo)) {
-				const interfaceNode = new InterfaceNode(typeInfo);
+			const isModules = this.isModulesNamespace(typeInfo);
+			const isInterface = this.isInterface(typeInfo);
+			const isClass = this.isClass(typeInfo);
+			const isNamespace = this.isNamespace(typeInfo);
+			let processed = false;
+			let namespaceNode;
+			if (isNamespace || isModules) {
+				processed = true;
+				if (!this.tree.hasNamespace(typeInfo.name)) {
+					namespaceNode = new NamespaceNode(typeInfo);
+					this.tree.registerNamespace(namespaceNode.fullyQualifiedName, namespaceNode);
+					if (parentNamespace) {
+						parentNamespace.addNamespace(namespaceNode);
+					} else {
+						this.tree.addNode(namespaceNode);
+					}
+				}
+			}
+			if ((isInterface || isClass) && !isModules) {
+				processed = true;
+				const interfaceNode = isClass ? new ClassNode(typeInfo) : new InterfaceNode(typeInfo);
+				if (namespaceNode) {
+					namespaceNode.relatedNode = interfaceNode;
+					interfaceNode.relatedNode = namespaceNode;
+				}
+
 				if (parentNamespace) {
 					parentNamespace.addInterface(interfaceNode);
 				} else {
 					this.tree.addNode(interfaceNode);
 				}
-			} else if (this.isNamespace(typeInfo)) {
-				if (!this.tree.hasNamespace(typeInfo.name)) {
-					const namespace = new NamespaceNode(typeInfo);
-					this.tree.registerNamespace(namespace.fullyQualifiedName, namespace);
-					if (parentNamespace) {
-						parentNamespace.addNamespace(namespace);
-					}
-				}
-			} else {
+			}
+			if (!processed) {
 				console.warn(`Unhandled type ${typeInfo.name}`);
 			}
 		});
@@ -205,6 +175,8 @@ class DocsParser {
 		let parentNamespace = null;
 		if (!this.tree.hasNamespace(parentNamespaceName)) {
 			const namespacePathFromRoot = [];
+			let _parent = this.globalNamespace;
+			namespaceParts.shift();
 			namespaceParts.forEach(namespaceName => {
 				namespacePathFromRoot.push(namespaceName);
 				const subordinateNamespaceName = namespacePathFromRoot.join('.');
@@ -215,8 +187,8 @@ class DocsParser {
 					}
 					const subordinateNamespace = new NamespaceNode(this.apis[subordinateNamespaceName]);
 					this.tree.registerNamespace(subordinateNamespace.fullyQualifiedName, subordinateNamespace);
-					parentNamespace.addNamespace(subordinateNamespace);
-					parentNamespace = subordinateNamespace;
+					_parent.addNamespace(subordinateNamespace);
+					_parent = subordinateNamespace;
 				} else {
 					parentNamespace = this.tree.getNamespace(subordinateNamespaceName);
 				}
@@ -244,17 +216,19 @@ class DocsParser {
 	 */
 	isInterface(typeInfo) {
 		const validSubtypes = [
-			'proxy',
 			'pseudo',
-			'view'
-		];
-		// List of modules that need to be generated as an interface instead of a namespace.
-		const namespaceBlacklist = [
-			'Titanium.App.iOS.UserDefaults',
 		];
 
-		return (validSubtypes.indexOf(typeInfo.__subtype) !== -1 && !isConstantsOnlyProxy(typeInfo))
-			|| namespaceBlacklist.indexOf(typeInfo.name) !== -1;
+		return validSubtypes.includes(typeInfo.__subtype) || knowInterfacesList.includes(typeInfo.name);
+	}
+
+	isClass(typeInfo) {
+		const validSubtypes = [
+			'module',
+			'proxy',
+			'view'
+		];
+		return validSubtypes.includes(typeInfo.__subtype) && !knowInterfacesList.includes(typeInfo.name);
 	}
 
 	/**
@@ -267,7 +241,11 @@ class DocsParser {
 	 * @return {Boolean} True if the API type is considered a namespace in TypeScript, false if not.
 	 */
 	isNamespace(typeInfo) {
-		return typeInfo.__subtype === 'module' || isConstantsOnlyProxy(typeInfo);
+		return (typeInfo.__subtype === 'module' || isConstantsOnlyProxy(typeInfo)) && !knowInterfacesList.includes(typeInfo.name);
+	}
+
+	isModulesNamespace(typeInfo) {
+		return typeInfo.name === 'Modules';
 	}
 }
 
@@ -281,9 +259,6 @@ class EmulatedSyntaxTree {
 	}
 
 	addNode(node) {
-		if (node instanceof NamespaceNode && !this.hasNamespace(node.fullyQualifiedName)) {
-			this.registerNamespace(node.fullyQualifiedName, node);
-		}
 		this.nodes.push(node);
 	}
 
@@ -328,8 +303,8 @@ class GlobalTemplateWriter {
 	 */
 	generateTitaniumDefinition(tree) {
 		this.writeHeader();
-		this.writeTiShorthand();
 		this.writeNodes(tree.nodes);
+		this.writeTiShorthand();
 	}
 
 	/**
@@ -344,13 +319,21 @@ class GlobalTemplateWriter {
 		this.output += '//                 Jan Vennemann <https://github.com/janvennemann>\n';
 		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';
 		this.output += '// TypeScript Version: 2.6\n';
+		this.output += '\n';
+		this.output += 'type NonFunctionPropertyNames<T> = {\n';
+		this.output += '	[K in keyof T]: T[K] extends Function ? never : K\n';
+		this.output += '}[keyof T];\n';
+		this.output += 'type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;\n';
+		this.output += 'type Dictionary<T> = Partial<NonFunctionProperties<T>>;\n';
+		this.output += '\n';
+		this.output += 'interface ProxyEventMap {}\n\n';
 	}
 
 	/**
 	 * Writes the "Ti" shorthand alias for the global Titanium namespace.
 	 */
 	writeTiShorthand() {
-		this.output += 'declare const Ti: typeof Titanium;\n';
+		this.output += '\nimport Ti = Titanium;\n';
 	}
 
 	/**
@@ -375,22 +358,53 @@ class GlobalTemplateWriter {
 	 * @param {Number} nestingLevel Current nesting level for indentation
 	 */
 	writeNamespaceNode(namespaceNode, nestingLevel) {
-		this.output += '\n';
+		namespaceNode.init();
+		const hasProperties = namespaceNode.properties.length > 0;
+		const hasMethods = namespaceNode.methods.length > 0;
+		const hasInterfaces = namespaceNode.interfaces.length > 0;
+		const hasNamespaces = namespaceNode.namespaces.length > 0;
+
+		if (!hasProperties && !hasMethods && !hasInterfaces && !hasNamespaces) {
+			return;
+		}
+
+		if (namespaceNode.relatedNode) {
+			if (!hasInterfaces && !hasNamespaces && !hasProperties) {
+				// empty namespace, all methods and properties will be defined in related interface
+				return;
+			}
+			if (namespaceNode.relatedNode.removed) {
+				return;
+			}
+		}
+
+		const isGlobal = namespaceNode.name === 'Global';
+		const nextNestingLevel = isGlobal ? nestingLevel : nestingLevel + 1;
+
 		this.output += this.generateJsDoc(namespaceNode, nestingLevel);
-		this.output += `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}namespace ${namespaceNode.name} {\n`;
-		if (namespaceNode.properties.length > 0) {
-			namespaceNode.properties.forEach(propertyNode => this.writeVariableNode(propertyNode, nestingLevel + 1));
+
+		if (namespaceNode.removed) {
+			this.output += `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}const ${namespaceNode.name}: never;\n`;
+			return;
 		}
-		if (namespaceNode.methods.length > 0) {
-			namespaceNode.methods.forEach(methodNode => this.writeFunctionNode(methodNode, nestingLevel + 1));
+		if (!isGlobal) {
+			this.output += `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}namespace ${namespaceNode.name} {\n`;
 		}
-		if (namespaceNode.interfaces.length > 0) {
-			namespaceNode.interfaces.forEach(interfaceNode => this.writeInterfaceNode(interfaceNode, nestingLevel + 1));
+		if (hasProperties) {
+			namespaceNode.properties.forEach(propertyNode => this.writeVariableNode(propertyNode, nextNestingLevel));
 		}
-		if (namespaceNode.namespaces.length > 0) {
-			namespaceNode.namespaces.forEach(childNamespace => this.writeNamespaceNode(childNamespace, nestingLevel + 1));
+		if (hasMethods) {
+			namespaceNode.methods.forEach(methodNode => this.writeFunctionNode(methodNode, nextNestingLevel));
 		}
-		this.output += `${this.indent(nestingLevel)}}\n`;
+		if (hasNamespaces) {
+			namespaceNode.namespaces.forEach(childNamespace => this.writeNamespaceNode(childNamespace, nextNestingLevel));
+		}
+		if (hasInterfaces) {
+			namespaceNode.interfaces.forEach(interfaceNode => this.writeInterfaceNode(interfaceNode, nextNestingLevel));
+		}
+		if (!isGlobal) {
+			this.output += `${this.indent(nestingLevel)}}\n`;
+		}
 	}
 
 	/**
@@ -400,8 +414,15 @@ class GlobalTemplateWriter {
 	 * @param {Number} nestingLevel Current nesting level for indentation
 	 */
 	writeInterfaceNode(interfaceNode, nestingLevel) {
+		interfaceNode.init();
 		this.output += this.generateJsDoc(interfaceNode, nestingLevel);
-		this.output += `${this.indent(nestingLevel)}interface ${interfaceNode.name} ${interfaceNode.extends ? 'extends ' + interfaceNode.extends + ' ' : ''}{\n`;
+		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
+		if (interfaceNode.removed) {
+			this.output += `${this.indent(nestingLevel)}${inGlobal}const ${interfaceNode.name}: never;\n`;
+			return;
+		}
+		const parent = interfaceNode.extends ? 'extends ' + interfaceNode.extends + ' ' : '';
+		this.output += `${this.indent(nestingLevel)}${inGlobal}${interfaceNode.keyWord} ${interfaceNode.name} ${parent}{\n`;
 		if (interfaceNode.properties.length > 0) {
 			interfaceNode.properties.forEach(propertyNode => this.writePropertyNode(propertyNode, nestingLevel + 1));
 		}
@@ -419,7 +440,9 @@ class GlobalTemplateWriter {
 	 */
 	writeVariableNode(variableNode, nestingLevel) {
 		this.output += this.generateJsDoc(variableNode, nestingLevel);
-		this.output += `${this.indent(nestingLevel)}${variableNode.isConstant ? 'const' : 'let'} ${variableNode.name}: ${this.normalizeType(variableNode.type)};\n\n`;
+		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
+		const isConstant = variableNode.isConstant ? 'const' : 'let';
+		this.output += `${this.indent(nestingLevel)}${inGlobal}${isConstant} ${variableNode.name}: ${this.normalizeType(variableNode.type)};\n\n`;
 	}
 
 	/**
@@ -430,7 +453,12 @@ class GlobalTemplateWriter {
 	 */
 	writePropertyNode(propertyNode, nestingLevel) {
 		this.output += this.generateJsDoc(propertyNode, nestingLevel);
-		this.output += `${this.indent(nestingLevel)}${propertyNode.isConstant ? 'readonly ' : ''}${propertyNode.name}${propertyNode.optional ? '?' : ''}: ${this.normalizeType(propertyNode.type)};\n\n`;
+		const isStatic = propertyNode.isStatic ? 'static ' : '';
+		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
+		const isReadOnly = propertyNode.isConstant ? 'readonly ' : '';
+		const type = this.normalizeType(propertyNode.type);
+		const isOptional = (type !== 'never' && propertyNode.optional) ? '?' : '';
+		this.output += `${this.indent(nestingLevel)}${inGlobal}${isStatic}${isReadOnly}${propertyNode.name}${isOptional}: ${type};\n\n`;
 	}
 
 	/**
@@ -441,8 +469,14 @@ class GlobalTemplateWriter {
 	 */
 	writeFunctionNode(functionNode, nestingLevel) {
 		this.output += this.generateJsDoc(functionNode, nestingLevel);
+		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
+		if (functionNode.removed) {
+			this.output += `${this.indent(nestingLevel)}${inGlobal}const ${functionNode.name}: never;\n`;
+			return;
+		}
 		const parametersString = this.prepareParameters(functionNode.parameters);
-		this.output += `${this.indent(nestingLevel)}function ${functionNode.name}(${parametersString}): ${this.normalizeType(functionNode.returnType)};\n\n`;
+		const type = this.normalizeType(functionNode.returnType);
+		this.output += `${this.indent(nestingLevel)}${inGlobal}function ${functionNode.name}(${parametersString}): ${type};\n\n`;
 	}
 
 	/**
@@ -453,8 +487,15 @@ class GlobalTemplateWriter {
 	 */
 	writeMethodNode(functionNode, nestingLevel) {
 		this.output += this.generateJsDoc(functionNode, nestingLevel);
+		const isStatic = functionNode.isStatic ? 'static ' : '';
+		if (functionNode.removed) {
+			this.output += `${this.indent(nestingLevel)}${isStatic}${functionNode.name}: never;\n`;
+			return;
+		}
 		const parametersString = this.prepareParameters(functionNode.parameters);
-		this.output += `${this.indent(nestingLevel)}${functionNode.name}${functionNode.optional ? '?' : ''}(${parametersString}): ${this.normalizeType(functionNode.returnType)};\n\n`;
+		const isOptional = functionNode.optional ? '?' : '';
+		const type = this.normalizeType(functionNode.returnType);
+		this.output += `${this.indent(nestingLevel)}${isStatic}${functionNode.name}${isOptional}(${parametersString}): ${type};\n\n`;
 	}
 
 	/**
@@ -489,8 +530,8 @@ class GlobalTemplateWriter {
 	/**
 	 * Normalizes a given type so it can be safely used in TypeScript.
 	 *
-	 * @param {Object} docType Type definition
-	 * @param {String} usageHint A string with a hint where this type is used (null or 'parameter')
+	 * @param {Object | String | Array <Object | String>} docType Type definition
+	 * @param {String=} usageHint A string with a hint where this type is used (null or 'parameter')
 	 * @return {String} A normalized representation of the type for usage in TypeScript
 	 */
 	normalizeType(docType, usageHint) {
@@ -500,7 +541,7 @@ class GlobalTemplateWriter {
 
 		if (Array.isArray(docType)) {
 			const normalizedTypes = docType.map(typeName => this.normalizeType(typeName));
-			return normalizedTypes.indexOf('any') !== -1 ? 'any' : normalizedTypes.join(' | ');
+			return normalizedTypes.includes('any') ? 'any' : normalizedTypes.join(' | ');
 		}
 
 		const lessThanIndex = docType.indexOf('<');
@@ -518,9 +559,13 @@ class GlobalTemplateWriter {
 					}
 				}).join(' | ');
 			} else if (baseType === 'Callback') {
-				return `(${subTypes.map((type, index) => `param${index}: ${type}`).join(', ')}) => any`;
+				if (docType === 'Callback<void>') {
+					return '() => void';
+				} else {
+					return `(${subTypes.map((type, index) => `param${index}: ${type}`).join(', ')}) => void`;
+				}
 			} else if (baseType === 'Dictionary') {
-				return 'any';
+				return `Dictionary<${subType}>`;
 			}
 		}
 
@@ -532,8 +577,12 @@ class GlobalTemplateWriter {
 				return docType.toLowerCase();
 			case 'Object':
 				return 'any';
+			case 'Array':
+				return 'any[]';
 			case 'Callback': {
-				return '() => any';
+				// simple 'Callback' is considered a poorly documented type, assume any number of `any` arguments
+				// callback without arguments and return value should be documented as `Callback<void>`
+				return '(...args: any[]) => void';
 			}
 			default: {
 				let typeName = docType;
@@ -560,7 +609,9 @@ class GlobalTemplateWriter {
 	 */
 	normalizeParameter(paramNode) {
 		if (paramNode.name === 'default') {
-			paramNode.name = 'defaultValue';
+			paramNode.name = 'default_';
+		} else if (paramNode.name === 'function') {
+			paramNode.name = 'func';
 		}
 	}
 
@@ -599,9 +650,14 @@ class GlobalTemplateWriter {
  * Used for variables in namespaces and properties in interfaces.
  */
 class VariableNode {
-	constructor(variableDoc) {
+	constructor(variableDoc, isStatic) {
 		this.name = variableDoc.name;
-		this.type = variableDoc.type;
+		this.isStatic = isStatic;
+		if (variableDoc.__hide || variableDoc.deprecated && variableDoc.deprecated.removed) {
+			this.type = 'never';
+		} else {
+			this.type = variableDoc.type;
+		}
 		this.summary = variableDoc.summary ? variableDoc.summary.trim() : '';
 		this.isConstant = variableDoc.permission === 'read-only';
 		this.optional = variableDoc.optional;
@@ -612,12 +668,17 @@ class VariableNode {
 /**
  * A node that represents a function.
  *
- * Used for funtions in namespaces and methods in interfaces.
+ * Used for functions in namespaces and methods in interfaces.
  */
 class FunctionNode {
-	constructor(functionDoc) {
+	constructor(functionDoc, isStatic) {
 		this.definition = functionDoc;
 		this.name = functionDoc.name;
+		this.isStatic = isStatic;
+
+		if (functionDoc.__hide || functionDoc.deprecated && functionDoc.deprecated.removed) {
+			this.removed = true;
+		}
 		if (functionDoc.returns) {
 			if (Array.isArray(functionDoc.returns)) {
 				this.returnType = functionDoc.returns.map(type => type.type);
@@ -654,14 +715,6 @@ class FunctionNode {
 				paramDoc.optional = true;
 			}
 
-			// Due to our "special" inheritance, we cannot use a View as a type, use any instead.
-			// @todo Find a common "baseView" type?
-			if (paramDoc.type === 'Titanium.UI.View') {
-				paramDoc.type = 'any';
-			} else if (paramDoc.type === 'Array<Titanium.UI.View>') {
-				paramDoc.type = 'any[]';
-			}
-
 			return new VariableNode(paramDoc);
 		});
 	}
@@ -672,9 +725,19 @@ class FunctionNode {
  * namesapce and interface nodes).
  */
 class MemberNode {
-	constructor() {
+	constructor(api) {
+		this.api = api;
+		this.fullyQualifiedName = api.name;
+		this.name = api.name.substring(api.name.lastIndexOf('.') + 1);
 		this.properties = [];
 		this.methods = [];
+		this.relatedNode = null;
+		this.innerNodesMap = new Map();
+		this.membersAreStatic = false;
+	}
+
+	init() {
+		throw Error('Not implemented');
 	}
 
 	parseProperties(properties) {
@@ -682,33 +745,49 @@ class MemberNode {
 			return;
 		}
 
-		properties = properties.filter(propertyDoc => {
-			// Filter out unused animate property which collides with the animate method
-			if (this.fullyQualifiedName === 'Titanium.Map.View' && propertyDoc.name === 'animate') {
-				return false;
-			}
-
-			// Filter out the Android R accessor as it is represented by a namespace already
-			if (this.fullyQualifiedName === 'Titanium.Android' && propertyDoc.name === 'R') {
-				return false;
-			}
-
-			return !propertyDoc.__hide;
-		});
-
-		this.properties = properties.sort(sortByName).map(propertyDoc => {
+		const filterFunc = this.filterProperties.bind(this);
+		this.properties = [];
+		properties
+			.filter(filterFunc)
+			.sort(sortByName)
+			.forEach(propertyDoc => {
 			// Make all properties of global interfaces optional by default
-			if (this.fullyQualifiedName.indexOf('.') === -1 && propertyDoc.optional === undefined) {
-				propertyDoc.optional = true;
-			}
+				if (this.fullyQualifiedName.indexOf('.') === -1 && propertyDoc.optional === undefined) {
+					propertyDoc.optional = true;
+				}
 
-			// Some iOS views do not have this property, so mark it as optional.
-			if (this.fullyQualifiedName === 'Titanium.Proxy' && propertyDoc.name === 'lifecycleContainer') {
-				propertyDoc.optional = true;
-			}
+				// Some iOS views do not have this property, so mark it as optional.
+				if (this.fullyQualifiedName === 'Titanium.Proxy' && propertyDoc.name === 'lifecycleContainer') {
+					propertyDoc.optional = true;
+				}
 
-			return new VariableNode(propertyDoc);
-		});
+				const node = new VariableNode(propertyDoc, this.membersAreStatic);
+				if (this.innerNodesMap.has(propertyDoc.name)) {
+					common.log(common.LOG_WARN, `Duplicate identifier "${propertyDoc.name}" on API ${this.fullyQualifiedName}`);
+					return;
+				}
+				this.innerNodesMap.set(propertyDoc.name, node);
+				this.properties.push(node);
+			});
+	}
+
+	filterProperties(propertyDoc) {
+		// Filter out unused animate property which collides with the animate method
+		if (this.fullyQualifiedName === 'Titanium.Map.View' && propertyDoc.name === 'animate') {
+			return false;
+		}
+
+		// Filter out the Ti.Android.R accessor as it is represented by a namespace already
+		if (this.fullyQualifiedName === 'Titanium.Android' && propertyDoc.name === 'R') {
+			return false;
+		}
+
+		// Filter out the Ti.App.Android.R accessor as it is represented by a namespace already
+		if (this.fullyQualifiedName === 'Titanium.App.Android' && propertyDoc.name === 'R') {
+			return false;
+		}
+
+		return true;
 	}
 
 	parseMethods(methods) {
@@ -716,88 +795,23 @@ class MemberNode {
 			return;
 		}
 
-		let filteredMethods = [];
+		this.methods = [];
+
 		methods.sort(sortByName).forEach(methodDoc => {
-			if (methodDoc.__hide) {
-				return;
-			}
-
-			// Filter out removed fieldCount method (@todo check against version in "removed" property)
-			if (this.fullyQualifiedName === 'Titanium.Database.ResultSet' && methodDoc.name === 'fieldCount') {
-				return;
-			}
-
-			// Filter out create functions for constant only proxies
-			if (/^create/.test(methodDoc.name)) {
-				const returnType = methodDoc.returns;
-				const returnTypeName = Array.isArray(returnType) ? returnType[0].type : returnType.type;
-				const returnTypeDoc = parser.apis[returnTypeName];
-				if (returnTypeDoc && isConstantsOnlyProxy(returnTypeDoc)) {
-					return;
-				}
-			}
-
-			// Generate overloads if required and add them instead of the original method
-			const overloads = this.generateMethodOverloadsIfRequired(methodDoc);
-			if (overloads.length > 0) {
-				filteredMethods = filteredMethods.concat(overloads);
-			} else {
-				filteredMethods.push(methodDoc);
-			}
-		});
-
-		this.methods = filteredMethods.map(methodDoc => {
 			if (this.fullyQualifiedName === 'Titanium.Proxy' && /LifecycleContainer$/.test(methodDoc.name)) {
 				methodDoc.optional = true;
 			}
-
-			return new FunctionNode(methodDoc);
-		});
-	}
-
-	/**
-	 * Generates overload method definitions for methods which have parameter
-	 * definitions that are not compatible with union types.
-	 *
-	 * Currently only handles one case where a parameter can be passed as both a
-	 * single value and as an array, e.g. Ti.UI.View, Array<Ti.UI.View>
-	 *
-	 * @param {Object} methodDoc Method defintions as parsed from YAML files
-	 * @return {Array<Object>} List of overload method defintions
-	 */
-	generateMethodOverloadsIfRequired(methodDoc) {
-		const parameters = methodDoc.parameters;
-		if (!parameters) {
-			return [];
-		}
-
-		const originalMethodDocJsonString = JSON.stringify(methodDoc);
-		const dictionaryTypePattern = /Dictionary<.*>/;
-		let methodOverloads = [];
-		for (let i = 0; i < parameters.length; i++) {
-			const parameter = parameters[i];
-			if (!Array.isArray(parameter.type)) {
-				continue;
-			}
-
-			let parameterOverloads = [];
-			for (const type of parameter.type) {
-				if (dictionaryTypePattern.test(type)) {
-					const anyOverloadDoc = JSON.parse(originalMethodDocJsonString);
-					anyOverloadDoc.parameters[i].type = 'any';
-					parameterOverloads = [ anyOverloadDoc ];
-					break;
+			if (this.innerNodesMap.has(methodDoc.name)) {
+				if (!methodDoc.deprecated || !methodDoc.deprecated.removed) {
+					// only currently known method is "fieldCount" from "Titanium.Database.ResultSet"
+					common.log(common.LOG_WARN, `Duplicate identifier "${methodDoc.name}" on API ${this.fullyQualifiedName}`);
 				}
-
-				const newOverloadDoc = JSON.parse(originalMethodDocJsonString);
-				newOverloadDoc.parameters[i].type = type;
-				parameterOverloads.push(newOverloadDoc);
+				return;
 			}
-
-			methodOverloads = methodOverloads.concat(parameterOverloads);
-		}
-
-		return methodOverloads;
+			const node = new FunctionNode(methodDoc, this.membersAreStatic);
+			this.innerNodesMap.set(methodDoc.name, node);
+			this.methods.push(node);
+		});
 	}
 }
 
@@ -805,18 +819,44 @@ class MemberNode {
  * A namespace in typescript represents a module in our Titanium global
  */
 class NamespaceNode extends MemberNode {
-	constructor(moduleDoc) {
-		super();
-
-		this.fullyQualifiedName = moduleDoc.name;
-		this.name = moduleDoc.name.substring(moduleDoc.name.lastIndexOf('.') + 1);
-		this.summary = moduleDoc.summary.trim();
-
-		this.parseProperties(moduleDoc.properties);
-		this.parseMethods(moduleDoc.methods);
-
+	constructor(moduleDoc, relatedNode) {
+		super(moduleDoc, relatedNode);
 		this.interfaces = [];
 		this.namespaces = [];
+	}
+	init() {
+		const moduleDoc = this.api;
+		this.summary = moduleDoc.summary.trim();
+
+		this.removed = moduleDoc.deprecated && moduleDoc.deprecated.removed;
+		if (this.relatedNode) {
+			if ((!this.interfaces.length && !this.namespaces.length) || this.removed) {
+				this.relatedNode.relatedNode = null;
+				return;
+			}
+		}
+		if (this.removed) {
+			return;
+		}
+		this.parseProperties(moduleDoc.properties);
+		if (!this.relatedNode) {
+			this.parseMethods(moduleDoc.methods);
+		}
+		if (this.interfaces.length) {
+			this.interfaces.forEach(node => this.findDuplicates(node.name));
+		}
+		if (this.namespaces.length) {
+			this.namespaces.forEach(node => this.findDuplicates(node.name));
+		}
+	}
+
+	filterProperties(propertyDoc) {
+		// If we have interface/class for this namespace, then we need here only upper cased constants
+		let onlyUpperCased = true;
+		if (this.relatedNode) {
+			onlyUpperCased = propertyDoc.name.toUpperCase() === propertyDoc.name;
+		}
+		return onlyUpperCased && super.filterProperties(propertyDoc);
 	}
 
 	addNamespace(namespaceNode) {
@@ -826,6 +866,28 @@ class NamespaceNode extends MemberNode {
 	addInterface(interfaceNode) {
 		this.interfaces.push(interfaceNode);
 	}
+
+	findDuplicates(name) {
+		if (this.innerNodesMap.has(name)) {
+			common.log(common.LOG_WARN, `Duplicate identified "${name} on ${this.fullyQualifiedName}`);
+			const node = this.innerNodesMap.get(name);
+			let found = false;
+			let idx = this.properties.indexOf(node);
+			if (idx !== -1) {
+				found = true;
+				this.properties.splice(idx);
+			}
+			idx = this.methods.indexOf(node);
+			if (idx !== -1) {
+				found = true;
+				this.methods.splice(idx);
+			}
+			if (!found) {
+				throw new Error(`Unable to found identifier ${name} in the method or properties of ${this.fullyQualifiedName}`);
+			}
+			this.innerNodesMap.delete(name);
+		}
+	}
 }
 
 /**
@@ -833,25 +895,41 @@ class NamespaceNode extends MemberNode {
  */
 class InterfaceNode extends MemberNode {
 	constructor(typeDoc) {
-		super();
-
-		this.fullyQualifiedName = typeDoc.name;
-		this.name = typeDoc.name.substring(typeDoc.name.lastIndexOf('.') + 1);
-		if (invalidTypeMap[this.name]) {
-			this.name = invalidTypeMap[this.name];
-		}
+		super(typeDoc);
+		this.removed = typeDoc.deprecated && typeDoc.deprecated.removed;
+		this.membersAreStatic = false;
+		this.keyWord = 'interface';
+	}
+	init() {
+		const typeDoc = this.api;
 		this.summary = typeDoc.summary.trim();
-
-		if (canExtend(typeDoc, parser.proxyInterface)) {
-			removeMembers(typeDoc, parser.proxyInterface);
-			this.extends = 'Titanium.Proxy';
+		if (this.removed && typeDoc.deprecated.notes) {
+			this.summary += '\n' + typeDoc.deprecated.notes;
 		}
-		if (canExtend(typeDoc, parser.viewInterface)) {
-			removeMembers(typeDoc, parser.viewInterface);
-			this.extends = 'Titanium.UI.View';
+		if (typeDoc.extends && this.name !== 'Titanium') {
+			this.extends = typeDoc.extends;
 		}
+		if (!this.removed) {
+			this.parseProperties(typeDoc.properties);
+			this.parseMethods(typeDoc.methods);
+		}
+	}
 
-		this.parseProperties(typeDoc.properties);
-		this.parseMethods(typeDoc.methods);
+	filterProperties(propertyDoc) {
+		if (this.relatedNode && propertyDoc.name === propertyDoc.name.toUpperCase()) {
+			// all upper cased constants will be present in the related namespace
+			return false;
+		}
+		return super.filterProperties(propertyDoc);
+	}
+}
+
+class ClassNode extends InterfaceNode {
+	constructor(typeDoc) {
+		super(typeDoc);
+		this.keyWord = 'class';
+		if (typeDoc.__subtype === 'module') {
+			this.membersAreStatic = true;
+		}
 	}
 }
