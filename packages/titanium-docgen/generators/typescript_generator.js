@@ -182,7 +182,7 @@ class DocsParser {
 		const parentNamespaceName = namespaceParts.join('.');
 		let parentNamespace = null;
 		if (!this.tree.hasNamespace(parentNamespaceName)) {
-			let namespacePathFromRoot = [];
+			const namespacePathFromRoot = [];
 			namespaceParts.forEach(namespaceName => {
 				namespacePathFromRoot.push(namespaceName);
 				const subordinateNamespaceName = namespacePathFromRoot.join('.');
@@ -444,7 +444,7 @@ class GlobalTemplateWriter {
 	 */
 	generateJsDoc(node, nestingLevel) {
 		let jsDoc = `${this.indent(nestingLevel)}/**\n`;
-		let summary = node.summary.replace(/\s?\n/g, `\n${this.indent(nestingLevel)} * `);
+		const summary = node.summary.replace(/\s?\n/g, `\n${this.indent(nestingLevel)} * `);
 		jsDoc += `${this.indent(nestingLevel)} * ${summary}\n`;
 		jsDoc += `${this.indent(nestingLevel)} */\n`;
 		if (node instanceof InterfaceNode && node.name === 'IOStream') {
@@ -598,7 +598,7 @@ class FunctionNode {
 		this.name = functionDoc.name;
 		if (functionDoc.returns) {
 			if (Array.isArray(functionDoc.returns)) {
-				this.returnType = functionDoc.returns.map(type =>  type.type);
+				this.returnType = functionDoc.returns.map(type => type.type);
 			} else {
 				this.returnType = functionDoc.returns.type;
 			}
@@ -707,7 +707,7 @@ class MemberNode {
 
 			// Filter out create functions for constant only proxies
 			if (/^create/.test(methodDoc.name)) {
-				const returnType  = methodDoc.returns;
+				const returnType = methodDoc.returns;
 				const returnTypeName = Array.isArray(returnType) ? returnType[0].type : returnType.type;
 				const returnTypeDoc = parser.apis[returnTypeName];
 				if (returnTypeDoc && isConstantsOnlyProxy(returnTypeDoc)) {
@@ -759,7 +759,7 @@ class MemberNode {
 			}
 
 			let parameterOverloads = [];
-			for (let type of parameter.type) {
+			for (const type of parameter.type) {
 				if (dictionaryTypePattern.test(type)) {
 					const anyOverloadDoc = JSON.parse(originalMethodDocJsonString);
 					anyOverloadDoc.parameters[i].type = 'any';
