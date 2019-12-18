@@ -94,6 +94,27 @@ function removeMembers(typeInfo, interfaceNode) {
 }
 
 /**
+ * @param {Object} a method, property or event
+ * @param {Object} b method, property or event
+ * @return {number}
+ */
+function sortByName(a, b) {
+	if (a.name > b.name) {
+		return 1;
+	}
+	if (a.name < b.name) {
+		return -1;
+	}
+	if (a.type) {
+		return -1;
+	}
+	if (b.type) {
+		return 1;
+	}
+	return 0;
+}
+
+/**
  * Parses the prepared API type docs and creates a syntax tree that can be used
  * to generate a TypeScript type definition file.
  */
@@ -128,9 +149,10 @@ class DocsParser {
 		this.viewInterface = new InterfaceNode(this.apis['Titanium.UI.View']);
 		uiNamespace.addInterface(this.viewInterface);
 
-		for (const fullyQualifiedTypeName in this.apis) {
+		const namesList = Object.keys(this.apis).sort();
+		namesList.forEach(fullyQualifiedTypeName => {
 			if (fullyQualifiedTypeName.startsWith('__')) {
-				continue;
+				return;
 			}
 
 			const typeInfo = this.apis[fullyQualifiedTypeName];
@@ -138,11 +160,11 @@ class DocsParser {
 			namespaceParts.pop();
 
 			if (namespaceParts[0] !== 'Titanium' && namespaceParts.length > 0) {
-				continue;
+				return;
 			} else if (typeInfo.name === 'Global') {
-				continue;
+				return;
 			} else if (typeInfo.name === 'Dictionary') {
-				continue;
+				return;
 			}
 
 			const parentNamespace = this.findOrCreateNamespace(namespaceParts);
@@ -164,7 +186,7 @@ class DocsParser {
 			} else {
 				console.warn(`Unhandled type ${typeInfo.name}`);
 			}
-		}
+		});
 	}
 
 	/**
@@ -674,7 +696,7 @@ class MemberNode {
 			return !propertyDoc.__hide;
 		});
 
-		this.properties = properties.map(propertyDoc => {
+		this.properties = properties.sort(sortByName).map(propertyDoc => {
 			// Make all properties of global interfaces optional by default
 			if (this.fullyQualifiedName.indexOf('.') === -1 && propertyDoc.optional === undefined) {
 				propertyDoc.optional = true;
@@ -695,7 +717,7 @@ class MemberNode {
 		}
 
 		let filteredMethods = [];
-		methods.forEach(methodDoc => {
+		methods.sort(sortByName).forEach(methodDoc => {
 			if (methodDoc.__hide) {
 				return;
 			}
