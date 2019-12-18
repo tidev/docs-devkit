@@ -998,6 +998,21 @@ class InterfaceNode extends MemberNode {
 			this.parseProperties(typeDoc.properties);
 			this.parseMethods(typeDoc.methods);
 		}
+		// FIXME: Ti.Proxy has no documented "id" property
+		// currently if we put it in docs - accessors methods will show up in
+		// every class extended from Ti.Proxy
+		if (this.fullyQualifiedName === 'Titanium.Proxy') {
+			const array = this.properties.filter(prop => prop.name === 'id');
+			if (!array.length) {
+				// injecting "id" property into "Titanium.Proxy"
+				this.properties.push(new VariableNode({
+					name: 'id',
+					optional: true,
+					summary: 'Proxy identifier',
+					type: 'string | number'
+				}, false));
+			}
+		}
 	}
 
 	filterProperties(propertyDoc) {
