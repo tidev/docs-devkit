@@ -25,6 +25,12 @@ const knowInterfacesList = [
 	'Global.console'
 ];
 
+const eventsMethodsList = [
+	'addEventListener',
+	'removeEventListener',
+	'fireEvent'
+];
+
 let parser = null;
 
 exports.exportData = function exportGlobalTemplate(apis) {
@@ -415,6 +421,10 @@ class GlobalTemplateWriter {
 	 */
 	writeInterfaceNode(interfaceNode, nestingLevel) {
 		interfaceNode.init();
+		if (interfaceNode.events.length > 0) {
+			interfaceNode.events.forEach(eventNode =>
+				this.writeInterfaceNode(eventNode, nestingLevel));
+		}
 		this.output += this.generateJsDoc(interfaceNode, nestingLevel);
 		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
 		if (interfaceNode.removed) {
@@ -495,7 +505,8 @@ class GlobalTemplateWriter {
 		const parametersString = this.prepareParameters(functionNode.parameters);
 		const isOptional = functionNode.optional ? '?' : '';
 		const type = this.normalizeType(functionNode.returnType);
-		this.output += `${this.indent(nestingLevel)}${isStatic}${functionNode.name}${isOptional}(${parametersString}): ${type};\n\n`;
+		const generic = functionNode.generic;
+		this.output += `${this.indent(nestingLevel)}${isStatic}${functionNode.name}${generic}${isOptional}(${parametersString}): ${type};\n\n`;
 	}
 
 	/**
@@ -503,9 +514,12 @@ class GlobalTemplateWriter {
 	 *
 	 * @param {Object} node The node to generte the comment for
 	 * @param {Number} nestingLevel Current nesting level for indentation
-	 * @return {Stirng} JSDoc comment
+	 * @return {String} JSDoc comment
 	 */
 	generateJsDoc(node, nestingLevel) {
+		if (!node.summary) {
+			return '';
+		}
 		let jsDoc = `${this.indent(nestingLevel)}/**\n`;
 		const summary = node.summary.replace(/\s?\n/g, `\n${this.indent(nestingLevel)} * `);
 		jsDoc += `${this.indent(nestingLevel)} * ${summary}\n`;
@@ -675,6 +689,7 @@ class FunctionNode {
 		this.definition = functionDoc;
 		this.name = functionDoc.name;
 		this.isStatic = isStatic;
+		this.generic = '';
 
 		if (functionDoc.__hide || functionDoc.deprecated && functionDoc.deprecated.removed) {
 			this.removed = true;
@@ -718,6 +733,10 @@ class FunctionNode {
 			return new VariableNode(paramDoc);
 		});
 	}
+
+	setGeneric(value) {
+		this.generic = value;
+	}
 }
 
 /**
@@ -731,9 +750,11 @@ class MemberNode {
 		this.name = api.name.substring(api.name.lastIndexOf('.') + 1);
 		this.properties = [];
 		this.methods = [];
+		this.events = [];
 		this.relatedNode = null;
 		this.innerNodesMap = new Map();
 		this.membersAreStatic = false;
+		this.proxyEventMap = null;
 	}
 
 	init() {
@@ -801,6 +822,41 @@ class MemberNode {
 			if (this.fullyQualifiedName === 'Titanium.Proxy' && /LifecycleContainer$/.test(methodDoc.name)) {
 				methodDoc.optional = true;
 			}
+			if (this.proxyEventMap && eventsMethodsList.includes(methodDoc.name)) {
+				const parameters = [ {
+					name: 'name',
+					optional: false,
+					summary: 'Name of the event.',
+					type: 'K',
+					__subtype: 'parameter'
+				} ];
+				if (methodDoc.name === 'fireEvent') {
+					parameters.push({
+						name: 'event',
+						optional: true,
+						summary: 'A dictionary of keys and values to add to the <Titanium.Event> object sent to the listeners.',
+						type: `${this.proxyEventMap.name}[K]`,
+						__subtype: 'parameter'
+					});
+				} else {
+					parameters.push({
+						name: 'callback',
+						optional: false,
+						summary: 'Callback function name.',
+						// Pass preformatted type for callback
+						type: `(this: ${this.fullyQualifiedName}, event: ${this.proxyEventMap.name}[K]) => void`,
+						thisValue: this.fullyQualifiedName,
+						__subtype: 'parameter'
+					});
+				}
+				const node = new FunctionNode({
+					name: methodDoc.name,
+					summary: methodDoc.summary,
+					parameters: parameters
+				}, this.membersAreStatic);
+				node.setGeneric(`<K extends keyof ${this.proxyEventMap.name}>`);
+				this.methods.push(node);
+			}
 			if (this.innerNodesMap.has(methodDoc.name)) {
 				if (!methodDoc.deprecated || !methodDoc.deprecated.removed) {
 					// only currently known method is "fieldCount" from "Titanium.Database.ResultSet"
@@ -812,6 +868,33 @@ class MemberNode {
 			this.innerNodesMap.set(methodDoc.name, node);
 			this.methods.push(node);
 		});
+	}
+
+	parseEvents(events) {
+		if (!events || !events.length) {
+			return;
+		}
+		const baseEvent = InterfaceNode.createBaseEvent(this);
+		const properties = [];
+		this.events.push(baseEvent);
+		events.forEach(eventDoc => {
+			const eventNode = InterfaceNode.createEvent(eventDoc, this);
+			this.events.push(eventNode);
+			const name = eventDoc.name.indexOf(':') === -1 ? eventDoc.name : `"${eventDoc.name}"`;
+			properties.push({
+				name: name,
+				optional: false,
+				summary: '',
+				type: eventNode.name
+			});
+		});
+		this.proxyEventMap = new InterfaceNode({
+			name: `${this.name}EventMap`,
+			extends: 'ProxyEventMap',
+			properties: properties,
+			summary: ''
+		});
+		this.events.push(this.proxyEventMap);
 	}
 }
 
@@ -840,6 +923,7 @@ class NamespaceNode extends MemberNode {
 		}
 		this.parseProperties(moduleDoc.properties);
 		if (!this.relatedNode) {
+			this.parseEvents(moduleDoc.events);
 			this.parseMethods(moduleDoc.methods);
 		}
 		if (this.interfaces.length) {
@@ -910,6 +994,7 @@ class InterfaceNode extends MemberNode {
 			this.extends = typeDoc.extends;
 		}
 		if (!this.removed) {
+			this.parseEvents(typeDoc.events);
 			this.parseProperties(typeDoc.properties);
 			this.parseMethods(typeDoc.methods);
 		}
@@ -923,6 +1008,46 @@ class InterfaceNode extends MemberNode {
 		return super.filterProperties(propertyDoc);
 	}
 }
+
+/**
+ * @param {MemberNode} interfaceNode node
+ * @return {InterfaceNode}
+ */
+InterfaceNode.createBaseEvent = function (interfaceNode) {
+	const name = interfaceNode.fullyQualifiedName;
+	return new InterfaceNode({
+		name: `${interfaceNode.name}BaseEvent`,
+		extends: 'Ti.Event',
+		summary: `Base event for class ${name}`,
+		properties: [
+			{ name: 'source', type: name, optional: false, summary: 'Source object that fired the event.' }
+		]
+	});
+};
+
+/**
+ * @param {Object} eventDoc event description
+ * @param {MemberNode} interfaceNode node
+ * @return {InterfaceNode}
+ */
+InterfaceNode.createEvent = function (eventDoc, interfaceNode) {
+	let properties = eventDoc.properties;
+	if (properties) {
+		properties = eventDoc.properties
+			.filter(prop => prop.name !== 'source')
+			.map(prop => {
+				prop.optional = false;
+				return prop;
+			});
+	}
+	const name = eventDoc.name.replace(':', '_');
+	return new InterfaceNode({
+		name: `${interfaceNode.name}_${name}_Event`,
+		extends: `${interfaceNode.name}BaseEvent`,
+		summary: eventDoc.summary,
+		properties: properties
+	});
+};
 
 class ClassNode extends InterfaceNode {
 	constructor(typeDoc) {
