@@ -721,11 +721,20 @@ class FunctionNode {
 			return;
 		}
 
+		// FIXME: there is no way to define rest parameter in doc
+
 		// Allow rest parameters on Ti.Filesystem.getFile
 		if (this.definition.__inherits === 'Titanium.Filesystem' && this.definition.name === 'getFile') {
 			this.parameters = [ new VariableNode({ name: 'paths', type: 'Array<string>', rest: true }) ];
 			return;
 		}
+		// Allow rest parameters on Titanium.Database.DB.execute
+		if (this.definition.__inherits === 'Titanium.Database.DB' && this.definition.name === 'execute') {
+			parameters[1].optional = false;
+			parameters[1].rest = true;
+		}
+		// NOTE: we can't do same for Titanium.Database.DB.executeAsync, because:
+		// "TS1014: A rest parameter must be last in a parameter list."
 
 		let hasOptional = false;
 		this.parameters = parameters.map(paramDoc => {
