@@ -180,6 +180,11 @@ class DocsParser {
 		const parentNamespaceName = namespaceParts.join('.');
 		let parentNamespace = null;
 		if (!this.tree.hasNamespace(parentNamespaceName)) {
+			if (this.apis[parentNamespaceName]) {
+				parentNamespace = new NamespaceNode(this.apis[parentNamespaceName]);
+				this.tree.registerNamespace(parentNamespaceName, parentNamespace);
+				return parentNamespace;
+			}
 			const namespacePathFromRoot = [];
 			let _parent = this.globalNamespace;
 			namespaceParts.shift();
@@ -584,6 +589,8 @@ class GlobalTemplateWriter {
 		}
 
 		switch (docType) {
+			case 'bool':
+				return 'boolean'; // Windows addon only
 			case 'Boolean':
 			case 'Function':
 			case 'Number':
@@ -986,7 +993,9 @@ class InterfaceNode extends MemberNode {
 	}
 	init() {
 		const typeDoc = this.api;
-		this.summary = typeDoc.summary.trim();
+		if (typeDoc.summary) {
+			this.summary = typeDoc.summary.trim();
+		}
 		if (this.removed && typeDoc.deprecated.notes) {
 			this.summary += '\n' + typeDoc.deprecated.notes;
 		}
