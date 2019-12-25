@@ -449,13 +449,12 @@ class GlobalTemplateWriter {
 				this.writeInterfaceNode(eventNode, nestingLevel));
 		}
 		this.output += this.generateJsDoc(interfaceNode, nestingLevel);
-		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
 		if (interfaceNode.removed) {
-			this.output += `${this.indent(nestingLevel)}${inGlobal}const ${interfaceNode.name}: never;\n`;
+			this.output += `${this.indent(nestingLevel)}const ${interfaceNode.name}: never;\n`;
 			return;
 		}
 		const parent = interfaceNode.extends ? 'extends ' + interfaceNode.extends + ' ' : '';
-		this.output += `${this.indent(nestingLevel)}${inGlobal}${interfaceNode.keyWord} ${interfaceNode.name} ${parent}{\n`;
+		this.output += `${this.indent(nestingLevel)}${interfaceNode.keyWord} ${interfaceNode.name} ${parent}{\n`;
 		if (interfaceNode.properties.length > 0) {
 			interfaceNode.properties.forEach(propertyNode => this.writePropertyNode(propertyNode, nestingLevel + 1));
 		}
