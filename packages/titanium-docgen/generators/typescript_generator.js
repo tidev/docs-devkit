@@ -351,14 +351,28 @@ class GlobalTemplateWriter {
 	/**
 	 * Renders all nodes from the synatx tree and adds them to the output.
 	 *
-	 * @param {MemberNode} nodes Syntax tree node to render and write
+	 * @param {Array<MemberNode>} nodes Syntax tree node to render and write
 	 */
 	writeNodes(nodes) {
-		for (const node of nodes) {
-			if (node instanceof NamespaceNode) {
-				this.writeNamespaceNode(node, 0);
-			} else if (node instanceof InterfaceNode) {
+		const copy = nodes.slice();
+		while (copy.length) {
+			const node = copy.shift();
+			if (node instanceof InterfaceNode) {
 				this.writeInterfaceNode(node, 0);
+				if (node.relatedNode) {
+					const idx = copy.indexOf(node.relatedNode);
+					const related = /** @type {NamespaceNode} */ (copy[idx]);
+					copy.splice(idx, 1);
+					this.writeNamespaceNode(related, 0);
+				}
+			} else if (node instanceof NamespaceNode) {
+				if (node.relatedNode) {
+					const idx = copy.indexOf(node.relatedNode);
+					const related = /** @type {InterfaceNode} */ (copy[idx]);
+					copy.splice(idx, 1);
+					this.writeInterfaceNode(related, 0);
+				}
+				this.writeNamespaceNode(node, 0);
 			}
 		}
 	}
@@ -985,12 +999,12 @@ class NamespaceNode extends MemberNode {
 			let idx = this.properties.indexOf(node);
 			if (idx !== -1) {
 				found = true;
-				this.properties.splice(idx);
+				this.properties.splice(idx, 1);
 			}
 			idx = this.methods.indexOf(node);
 			if (idx !== -1) {
 				found = true;
-				this.methods.splice(idx);
+				this.methods.splice(idx, 1);
 			}
 			if (!found) {
 				throw new Error(`Unable to found identifier ${name} in the method or properties of ${this.fullyQualifiedName}`);
