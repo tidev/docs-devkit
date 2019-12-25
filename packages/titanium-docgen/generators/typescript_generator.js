@@ -630,7 +630,7 @@ class GlobalTemplateWriter {
 	 */
 	normalizeParameter(paramNode) {
 		if (paramNode.name === 'default') {
-			paramNode.name = 'default_';
+			paramNode.name = 'defaultValue';
 		} else if (paramNode.name === 'function') {
 			paramNode.name = 'func';
 		}
