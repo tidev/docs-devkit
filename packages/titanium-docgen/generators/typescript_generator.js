@@ -894,6 +894,9 @@ class MemberNode {
 		const properties = [];
 		this.events.push(baseEvent);
 		events.forEach(eventDoc => {
+			if (eventDoc.deprecated && eventDoc.deprecated.removed) {
+				return;
+			}
 			const eventNode = InterfaceNode.createEvent(eventDoc, this);
 			this.events.push(eventNode);
 			const name = eventDoc.name.indexOf(':') === -1 ? eventDoc.name : `"${eventDoc.name}"`;
