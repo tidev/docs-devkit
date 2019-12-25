@@ -329,9 +329,10 @@ class GlobalTemplateWriter {
 		this.output += '// Definitions by: Axway Appcelerator <https://github.com/appcelerator>\n';
 		this.output += '//                 Jan Vennemann <https://github.com/janvennemann>\n';
 		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';
-		this.output += '// TypeScript Version: 2.6\n';
+		this.output += '// TypeScript Version: 3.0\n';
 		this.output += '\n';
 		this.output += 'type NonFunctionPropertyNames<T> = {\n';
+		this.output += '  // tslint:disable-next-line:ban-types\n';
 		this.output += '	[K in keyof T]: T[K] extends Function ? never : K\n';
 		this.output += '}[keyof T];\n';
 		this.output += 'type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;\n';
@@ -525,10 +526,13 @@ class GlobalTemplateWriter {
 		if (!node.summary) {
 			return '';
 		}
-		let jsDoc = `${this.indent(nestingLevel)}/**\n`;
-		const summary = node.summary.replace(/\s?\n/g, `\n${this.indent(nestingLevel)} * `);
-		jsDoc += `${this.indent(nestingLevel)} * ${summary}\n`;
-		jsDoc += `${this.indent(nestingLevel)} */\n`;
+		const summary = node.summary.replace(/\s?\n/g, `\n${this.indent(nestingLevel)} * `).trim();
+		let jsDoc = '';
+		if (summary) {
+			jsDoc += `${this.indent(nestingLevel)}/**\n`;
+			jsDoc += `${this.indent(nestingLevel)} * ${summary}\n`;
+			jsDoc += `${this.indent(nestingLevel)} */\n`;
+		}
 		if (node instanceof InterfaceNode && node.name === 'IOStream') {
 			jsDoc += this.indent(nestingLevel) + '// tslint:disable-next-line:interface-name\n';
 		}
@@ -573,6 +577,8 @@ class GlobalTemplateWriter {
 				return subTypes.map(typeName => {
 					if (usageHint === 'parameter') {
 						return `ReadonlyArray<${typeName}>`;
+					} else if (typeName.indexOf('<') !== -1) {
+						return `Array<${typeName}>`;
 					} else {
 						return `${typeName}[]`;
 					}
@@ -730,6 +736,7 @@ class FunctionNode {
 		}
 		// Allow rest parameters on Titanium.Database.DB.execute
 		if (this.definition.__inherits === 'Titanium.Database.DB' && this.definition.name === 'execute') {
+			parameters[1].type = 'any[]';
 			parameters[1].optional = false;
 			parameters[1].rest = true;
 		}
