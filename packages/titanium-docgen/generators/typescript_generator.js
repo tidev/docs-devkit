@@ -331,15 +331,17 @@ class GlobalTemplateWriter {
 		this.output += '// Project: https://github.com/appcelerator/titanium_mobile\n';
 		this.output += '// Definitions by: Axway Appcelerator <https://github.com/appcelerator>\n';
 		this.output += '//                 Jan Vennemann <https://github.com/janvennemann>\n';
+		this.output += '//                 Sergey Volkov <https://github.com/drauggres>\n';
 		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';
 		this.output += '// TypeScript Version: 3.0\n';
 		this.output += '\n';
-		this.output += 'type NonFunctionPropertyNames<T> = {\n';
-		this.output += '  // tslint:disable-next-line:ban-types\n';
-		this.output += '	[K in keyof T]: T[K] extends Function ? never : K\n';
+		this.output += 'type _Omit<T, K extends keyof any | undefined> = Pick<T, Exclude<keyof T, K>>;\n';
+		this.output += 'type FunctionPropertyNames<T> = {\n';
+		this.output += '	// tslint:disable-next-line:ban-types\n';
+		this.output += '	[K in keyof T]: T[K] extends Function ? K : never\n';
 		this.output += '}[keyof T];\n';
-		this.output += 'type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;\n';
-		this.output += 'type Dictionary<T> = Partial<NonFunctionProperties<T>>;\n';
+		this.output += 'type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>;\n';
+		this.output += 'type Dictionary<T> = Partial<_Omit<T, FunctionPropertyNames<Ti.Proxy>>>;';
 		this.output += '\n';
 		this.output += 'interface ProxyEventMap {}\n\n';
 	}
