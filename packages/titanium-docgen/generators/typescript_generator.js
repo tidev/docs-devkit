@@ -955,7 +955,7 @@ class NamespaceNode extends MemberNode {
 
 		this.removed = moduleDoc.deprecated && moduleDoc.deprecated.removed;
 		if (this.relatedNode) {
-			if ((!this.interfaces.length && !this.namespaces.length) || this.removed) {
+			if ((!this.interfaces.length && !this.namespaces.length && !isConstantsOnlyProxy(moduleDoc)) || this.removed) {
 				this.relatedNode.relatedNode = null;
 				return;
 			}
