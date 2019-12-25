@@ -147,6 +147,9 @@ class DocsParser {
 			}
 			if ((isInterface || isClass) && !isModules) {
 				processed = true;
+				if (namespaceNode && namespaceNode.fullyQualifiedName === 'Titanium') {
+					return;
+				}
 				const interfaceNode = isClass ? new ClassNode(typeInfo) : new InterfaceNode(typeInfo);
 				if (namespaceNode) {
 					namespaceNode.relatedNode = interfaceNode;
