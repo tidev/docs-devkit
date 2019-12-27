@@ -57,8 +57,18 @@ function isConstantsOnlyProxy(typeInfo) {
 		return false;
 	}
 
-	const ownMethods = typeInfo.methods.filter(methodDoc => methodDoc.__inherits === typeInfo.name);
-	const ownWritableProperties = typeInfo.properties.filter(propertyDoc => propertyDoc.__inherits === typeInfo.name && propertyDoc.permission !== 'read-only');
+	const ownMethods = typeInfo.methods.filter(methodDoc => {
+		if (methodDoc.__hide) {
+			return false;
+		}
+		return methodDoc.__inherits === typeInfo.name;
+	});
+	const ownWritableProperties = typeInfo.properties.filter(propertyDoc => {
+		if (propertyDoc.__hide) {
+			return false;
+		}
+		return propertyDoc.__inherits === typeInfo.name && propertyDoc.permission !== 'read-only';
+	});
 	const ownReadOnlyProperties = typeInfo.properties.filter(propertyDoc => propertyDoc.__inherits === typeInfo.name && propertyDoc.permission === 'read-only');
 	if (ownMethods.length === 0 && ownReadOnlyProperties.length > 0 && ownWritableProperties.length === 0) {
 		return true;
