@@ -350,7 +350,6 @@ class GlobalTemplateWriter {
 		this.output += '	// tslint:disable-next-line:ban-types\n';
 		this.output += '	[K in keyof T]: T[K] extends Function ? K : never\n';
 		this.output += '}[keyof T];\n';
-		this.output += 'type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>;\n';
 		this.output += 'type Dictionary<T> = Partial<_Omit<T, FunctionPropertyNames<Ti.Proxy>>>;';
 		this.output += '\n';
 		this.output += 'interface ProxyEventMap {}\n\n';
