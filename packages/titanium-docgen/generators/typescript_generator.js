@@ -514,7 +514,7 @@ class GlobalTemplateWriter {
 		this.output += this.generateJsDoc(functionNode, nestingLevel);
 		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
 		if (functionNode.removed) {
-			this.output += `${this.indent(nestingLevel)}${inGlobal}const ${functionNode.name}: never;\n`;
+			this.output += `${this.indent(nestingLevel)}${inGlobal}const ${functionNode.name}: never;\n\n`;
 			return;
 		}
 		const parametersString = this.prepareParameters(functionNode.parameters);
@@ -532,7 +532,7 @@ class GlobalTemplateWriter {
 		this.output += this.generateJsDoc(functionNode, nestingLevel);
 		const isStatic = functionNode.isStatic ? 'static ' : '';
 		if (functionNode.removed) {
-			this.output += `${this.indent(nestingLevel)}${isStatic}${functionNode.name}: never;\n`;
+			this.output += `${this.indent(nestingLevel)}${isStatic}${functionNode.name}: never;\n\n`;
 			return;
 		}
 		const parametersString = this.prepareParameters(functionNode.parameters);
