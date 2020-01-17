@@ -1,5 +1,6 @@
 'use strict';
 const common = require('../lib/common.js');
+const path = require('path');
 
 /*
  * Map of invalid types and their replacement
@@ -130,6 +131,10 @@ class DocsParser {
 			}
 
 			const typeInfo = this.apis[fullyQualifiedTypeName];
+			if (typeInfo.__file.indexOf(path.join('apidoc', 'Modules')) !== -1) {
+				// skip bundled documentation for modules
+				return;
+			}
 			const namespaceParts = typeInfo.name.split('.');
 			namespaceParts.pop();
 			if (skipApis.includes(typeInfo.name)) {
