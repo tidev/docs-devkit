@@ -19,10 +19,10 @@ let standaloneFlag = false;
 // List of "whitelisted" types provided via cli flag
 // if we are unable to find these types we do not error
 // This gives more control versus the standalone Flag which just ignores any type errors
-const whitelist = [];
+const whitelistedTypes = [];
 
 // Constants that are valid, but are windows specific, so would fail validation
-const WINDOWS_CONSTANTS = [
+const whitelistedConstants = [
 	'Titanium.UI.Windows.ListViewScrollPosition.*'
 ];
 
@@ -244,7 +244,7 @@ function validateAPINames(names, type, className) {
 		}
 
 		// This is a whitelisted type, so ignore it
-		if (whitelist.includes(parent)) {
+		if (whitelistedTypes.includes(parent)) {
 			return;
 		}
 
@@ -288,7 +288,7 @@ function validateClass(className) {
 		if (standaloneFlag) {
 			return new Problem(`Cannot validate class: ${className} (standalone flag is set)`, WARNING);
 		}
-		if (whitelist.includes(className)) {
+		if (whitelistedTypes.includes(className)) {
 			return null;
 		}
 		return new Problem(`Not a valid or known class/type: ${className}`);
@@ -321,7 +321,7 @@ function validateConstants(constants) {
  */
 function validateConstant(constant) {
 	// skip windows constants that are OK, but would be marked invalid
-	if (WINDOWS_CONSTANTS.includes(constant)) {
+	if (whitelistedConstants.includes(constant)) {
 		return null;
 	}
 
@@ -926,11 +926,12 @@ function validateKey(obj, syntax, currentKey, className, fullKeyPath) {
  * Output CLI usage
  */
 function cliUsage () {
-	common.log('Usage: node validate.js [--standalone] [--quiet] [--whitelisted Type.Name,Type.Two] [<PATH_TO_YAML_FILES>]');
+	common.log('Usage: node validate.js [--standalone] [--quiet] [--whitelisted Type.Name,Type.Two] [--constant Titanium.Namespace.CONSTANT] [<PATH_TO_YAML_FILES>]');
 	common.log('\nOptions:');
 	common.log('\t--quiet, -q\tSuppress non-error messages');
 	common.log('\t--standalone, -s\tdisable error checking for inherited APIs');
 	common.log('\t--whitelisted, -w\tdisable error checking for unresolved types. Can be specified multiple times. Accepts a comma separated list of types.');
+	common.log('\t--constant, -c\tdisable error checking for unresolved constant references. Can be specified multiple times. Accepts a comma separated list of constants.');
 }
 
 // Start of Main Flow
@@ -960,7 +961,18 @@ if (argc > 2) {
 					process.exit(1);
 				}
 				const types = process.argv[++x].split(',');
-				whitelist.push(...types);
+				whitelistedTypes.push(...types);
+				break;
+			case '--constant':
+			case '-c' :
+				// Read next arg as a whitelisted constant reference
+				if (x === argc - 1) {
+					common.log(common.LOG_WARN, 'Must supply name of whitelisted constant references');
+					cliUsage();
+					process.exit(1);
+				}
+				const constants = process.argv[++x].split(',');
+				whitelistedConstants.push(...constants);
 				break;
 			case '--quiet':
 			case '-q':
@@ -978,8 +990,12 @@ if (argc > 2) {
 	}
 }
 
-if (whitelist.length !== 0) {
-	common.log('Whitelist mode enabled. Errors will not be logged for failure to resolve these types: ' + whitelist);
+if (whitelistedTypes.length !== 0) {
+	common.log('Whitelist mode enabled. Errors will not be logged for failure to resolve these types: ' + whitelistedTypes);
+}
+
+if (whitelistedConstants.length !== 0) {
+	common.log('Whitelist constant mode enabled. Errors will not be logged for failure to resolve these constants: ' + whitelistedConstants);
 }
 
 if (!fs.existsSync(basePath) || !fs.statSync(basePath).isDirectory()) {
