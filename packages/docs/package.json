@@ -1,6 +1,6 @@
 {
   "name": "docs",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "Docs for the Titanium docs-devkit",
   "repository": "https://github.com/appcelerator/docs-devkit.git",
   "author": "Axway Appcelerator",
@@ -16,7 +16,7 @@
     "@vuepress/plugin-back-to-top": "1.0.2",
     "fs-extra": "^8.1.0",
     "vuepress": "^1.0.2",
-    "vuepress-plugin-apidocs": "^4.1.0",
+    "vuepress-plugin-apidocs": "^4.2.0",
     "vuepress-plugin-versioning": "^4.0.1",
     "vuepress-theme-titanium": "^4.0.1",
     "vuex": "^3.1.1",

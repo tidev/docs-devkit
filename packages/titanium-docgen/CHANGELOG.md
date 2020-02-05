@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/appcelerator/docs-devkit/compare/v4.1.0...v4.2.0) (2020-02-05)
+
+
+### Features
+
+* **docgen:** accept whitelist of constants references to skip ([#26](https://github.com/appcelerator/docs-devkit/issues/26)) ([3b1c537](https://github.com/appcelerator/docs-devkit/commit/3b1c537))
+
+
+
+
+
 # [4.1.0](https://github.com/appcelerator/docs-devkit/compare/v4.0.1...v4.1.0) (2019-12-12)
 
 

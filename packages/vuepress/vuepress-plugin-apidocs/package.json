@@ -1,6 +1,6 @@
 {
   "name": "vuepress-plugin-apidocs",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "Plugin for VuePress to render API reference documentation",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,7 @@
     "@vuepress/shared-utils": "^1.0.2",
     "axios": "^0.19.0",
     "fs-extra": "^8.1.0",
-    "titanium-docgen": "^4.1.0",
+    "titanium-docgen": "^4.2.0",
     "vue-content-loader": "^0.2.2"
   },
   "peerDependencies": {
