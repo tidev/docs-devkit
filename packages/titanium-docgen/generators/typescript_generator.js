@@ -19,7 +19,7 @@ const skipApis = [
 ];
 
 // List of modules that need to be generated as an interface instead of a namespace.
-const knowInterfacesList = [
+const forcedInterfaces = [
 	'Titanium.App.iOS.UserDefaults',
 	'Global.String',
 	'Global.JSON',
@@ -248,7 +248,7 @@ class DocsParser {
 			'pseudo',
 		];
 
-		return validSubtypes.includes(typeInfo.__subtype) || knowInterfacesList.includes(typeInfo.name);
+		return validSubtypes.includes(typeInfo.__subtype) || forcedInterfaces.includes(typeInfo.name);
 	}
 
 	isClass(typeInfo) {
@@ -257,7 +257,7 @@ class DocsParser {
 			'proxy',
 			'view'
 		];
-		return validSubtypes.includes(typeInfo.__subtype) && !knowInterfacesList.includes(typeInfo.name);
+		return validSubtypes.includes(typeInfo.__subtype) && !forcedInterfaces.includes(typeInfo.name);
 	}
 
 	/**
@@ -270,7 +270,7 @@ class DocsParser {
 	 * @return {Boolean} True if the API type is considered a namespace in TypeScript, false if not.
 	 */
 	isNamespace(typeInfo) {
-		return (typeInfo.__subtype === 'module' || isConstantsOnlyProxy(typeInfo)) && !knowInterfacesList.includes(typeInfo.name);
+		return (typeInfo.__subtype === 'module' || isConstantsOnlyProxy(typeInfo)) && !forcedInterfaces.includes(typeInfo.name);
 	}
 
 	isModulesNamespace(typeInfo) {
@@ -470,7 +470,8 @@ class GlobalTemplateWriter {
 			return;
 		}
 		const parent = interfaceNode.extends ? 'extends ' + interfaceNode.extends + ' ' : '';
-		this.output += `${this.indent(nestingLevel)}${interfaceNode.keyWord} ${interfaceNode.name} ${parent}{\n`;
+		const isTopLevelClass = this instanceof ClassNode && nestingLevel === 0 ? 'declare ' : '';
+		this.output += `${this.indent(nestingLevel)}${isTopLevelClass}${interfaceNode.keyWord} ${interfaceNode.name} ${parent}{\n`;
 		if (interfaceNode.properties.length > 0) {
 			interfaceNode.properties.forEach(propertyNode => this.writePropertyNode(propertyNode, nestingLevel + 1));
 		}
