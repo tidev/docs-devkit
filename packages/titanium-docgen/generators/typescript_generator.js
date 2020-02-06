@@ -170,13 +170,12 @@ class DocsParser {
 		}
 
 		const parentNamespace = this.findOrCreateNamespace(namespaceParts);
-		const isModules = this.isModulesNamespace(typeInfo);
 		const isInterface = this.isInterface(typeInfo);
 		const isClass = this.isClass(typeInfo);
 		const isNamespace = this.isNamespace(typeInfo);
 		let processed = false;
 		let namespaceNode;
-		if (isNamespace || isModules) {
+		if (isNamespace) {
 			processed = true;
 			if (!this.tree.hasNamespace(typeInfo.name)) {
 				namespaceNode = new NamespaceNode(typeInfo);
@@ -188,7 +187,7 @@ class DocsParser {
 				}
 			}
 		}
-		if ((isInterface || isClass) && !isModules) {
+		if (isInterface || isClass) {
 			processed = true;
 			if (namespaceNode && namespaceNode.fullyQualifiedName === 'Titanium') {
 				return namespaceNode;
@@ -280,10 +279,6 @@ class DocsParser {
 	 */
 	isNamespace(typeInfo) {
 		return (typeInfo.__subtype === 'module' || isConstantsOnlyProxy(typeInfo)) && !forcedInterfaces.includes(typeInfo.name);
-	}
-
-	isModulesNamespace(typeInfo) {
-		return typeInfo.name === 'Modules';
 	}
 }
 
