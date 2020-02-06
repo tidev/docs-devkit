@@ -10,6 +10,7 @@ const yaml = require('js-yaml'),
 	fs = require('fs'),
 	colors = require('colors'), // eslint-disable-line no-unused-vars
 	nodeappc = require('node-appc'),
+	path = require('path'),
 	MarkdownIt = require('markdown-it'),
 	ignoreList = [ 'node_modules', '.travis.yml' ],
 	LOG_INFO = 0,
@@ -153,19 +154,19 @@ function errorMessage() {
 
 /**
  * Recursively find, load and parse YAML files
- * @param {Object} path Root path to start search
+ * @param {Object} rootPath Root path to start search
  * @returns {Object} Dictionary containing the parsed data and any YAML errors
  */
-exports.parseYAML = function parseYAML(path) {
+exports.parseYAML = function parseYAML(rootPath) {
 	const rv = {
 		data: {},
 		errors: []
 	};
-	let currentFile = path;
+	let currentFile = rootPath;
 	try {
-		const fsArray = fs.readdirSync(path);
+		const fsArray = fs.readdirSync(rootPath);
 		fsArray.forEach(function (fsElement) {
-			const elem = path + '/' + fsElement,
+			const elem = path.join(rootPath, fsElement),
 				stat = fs.statSync(elem);
 			currentFile = elem;
 
