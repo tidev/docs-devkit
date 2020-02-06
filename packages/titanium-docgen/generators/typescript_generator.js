@@ -829,7 +829,7 @@ class MemberNode {
 	}
 
 	parseProperties(properties) {
-		if (!properties) {
+		if (!properties || !properties.length) {
 			return;
 		}
 
@@ -872,6 +872,10 @@ class MemberNode {
 
 		// Filter out the Ti.App.Android.R accessor as it is represented by a namespace already
 		if (this.fullyQualifiedName === 'Titanium.App.Android' && propertyDoc.name === 'R') {
+			return false;
+		}
+
+		if (propertyDoc.__inherits && propertyDoc.__inherits !== this.fullyQualifiedName && !this.membersAreStatic) {
 			return false;
 		}
 
