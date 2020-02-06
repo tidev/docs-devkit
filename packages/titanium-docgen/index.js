@@ -312,7 +312,7 @@ function hideAPIMembers(apis, type) {
  * @param {Object} api Property object
  * @param {string} className Name of the class
  * @param {string} deprecate Mark accessors as "deprecated" since (>= 8.0.0)
- * @param {string} remove Mark accessors as "removed" since (>= 9.0.0)
+ * @param {string} remove Mark accessors as "removed" since (>= 10.0.0)
  * @return {*}
  */
 function getDeprecation(getOrSet, api, className, deprecate, remove) {
@@ -347,7 +347,7 @@ function getDeprecation(getOrSet, api, className, deprecate, remove) {
  * @param {String} className Name of the class
  * @param {Array<Object>} methods Array of defined methods on the API
  * @param {string} deprecate Mark accessors as "deprecated" since (>= 8.0.0)
- * @param {string} remove Mark accessors as "removed" since (>= 9.0.0)
+ * @param {string} remove Mark accessors as "removed" since (>= 10.0.0)
  * @returns {Array<Object>} Array of methods
  */
 function generateAccessors(apis, className, methods, deprecate, remove) {
@@ -438,7 +438,7 @@ function getSubtype (api) {
  * Process API class
  * @param {Object} api API object to build (and use as base)
  * @param {string} deprecate Mark accessors as "deprecated" since (>= 8.0.0)
- * @param {string} remove Mark accessors as "removed" since (>= 9.0.0)
+ * @param {string} remove Mark accessors as "removed" since (>= 10.0.0)
  * @return {Object} api
  */
 function processAPIs (api, deprecate, remove) {
@@ -965,8 +965,8 @@ let removeAccessors = '';
 if (nodeappc.version.gte(version, '8.0.0')) {
 	deprecateAccessors = '8.0.0';
 }
-if (nodeappc.version.gte(version, '9.0.0')) {
-	removeAccessors = '9.0.0';
+if (nodeappc.version.gte(version, '10.0.0')) {
+	removeAccessors = '10.0.0';
 }
 
 // Process YAML files
