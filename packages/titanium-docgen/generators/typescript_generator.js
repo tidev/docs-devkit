@@ -26,7 +26,7 @@ const knowInterfacesList = [
 	'Global.console'
 ];
 
-const eventsMethodsList = [
+const eventsMethods = [
 	'addEventListener',
 	'removeEventListener',
 	'fireEvent'
@@ -893,7 +893,11 @@ class MemberNode {
 			if (this.fullyQualifiedName === 'Titanium.Proxy' && /LifecycleContainer$/.test(methodDoc.name)) {
 				methodDoc.optional = true;
 			}
-			if (this.proxyEventMap && eventsMethodsList.includes(methodDoc.name)) {
+			const isEventMethod = eventsMethods.includes(methodDoc.name);
+			if (!isEventMethod && methodDoc.__inherits && methodDoc.__inherits !== this.fullyQualifiedName && !this.membersAreStatic) {
+				return;
+			}
+			if (this.proxyEventMap && isEventMethod) {
 				const parameters = [ {
 					name: 'name',
 					optional: false,
