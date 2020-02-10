@@ -21,9 +21,7 @@ const skipApis = [
 // List of modules that need to be generated as an interface instead of a namespace.
 const forcedInterfaces = [
 	'Titanium.App.iOS.UserDefaults',
-	'Global.String',
-	'Global.JSON',
-	'Global.console'
+	'Global.String'
 ];
 
 const eventsMethods = [
@@ -494,7 +492,7 @@ class GlobalTemplateWriter {
 	writeVariableNode(variableNode, nestingLevel) {
 		this.output += this.generateJsDoc(variableNode, nestingLevel);
 		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
-		const isConstant = variableNode.isConstant ? 'const' : 'let';
+		const isConstant = variableNode.isConstant ? 'const' : inGlobal ? 'var' : 'let';
 		this.output += `${this.indent(nestingLevel)}${inGlobal}${isConstant} ${variableNode.name}: ${this.normalizeType(variableNode.type)};\n\n`;
 	}
 
