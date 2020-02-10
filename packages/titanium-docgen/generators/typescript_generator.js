@@ -696,11 +696,17 @@ class GlobalTemplateWriter {
 	 */
 	prepareParameterString(paramNode) {
 		this.normalizeParameter(paramNode);
-		let parameter = paramNode.rest ? '...' + paramNode.name : paramNode.name;
-		if (paramNode.optional) {
+		let parameter = paramNode.repeatable ? '...' + paramNode.name : paramNode.name;
+
+		// TS1047: A rest parameter cannot be optional.
+		if (paramNode.optional && !paramNode.repeatable) {
 			parameter += '?';
 		}
-		parameter += `: ${this.normalizeType(paramNode.type, paramNode.rest ? null : 'parameter')}`;
+		let type = this.normalizeType(paramNode.type, paramNode.repeatable ? null : 'parameter');
+		if (paramNode.repeatable && type.indexOf('Array<') !== 0 && type.indexOf('[]') !== type.length - 2) {
+			type = type.indexOf(' | ') !== -1 ? `Array<${type}>` : `${type}[]`;
+		}
+		parameter += `: ${type}`;
 
 		return parameter;
 	}
@@ -729,7 +735,7 @@ class VariableNode {
 		}
 		this.isConstant = variableDoc.permission === 'read-only';
 		this.optional = variableDoc.optional;
-		this.rest = variableDoc.rest || false;
+		this.repeatable = variableDoc.repeatable || false;
 	}
 }
 
@@ -773,22 +779,6 @@ class FunctionNode {
 		if (!parameters) {
 			return;
 		}
-
-		// FIXME: there is no way to define rest parameter in doc
-
-		// Allow rest parameters on Ti.Filesystem.getFile
-		if (this.definition.__inherits === 'Titanium.Filesystem' && this.definition.name === 'getFile') {
-			this.parameters = [ new VariableNode({ name: 'paths', type: 'Array<string>', rest: true }) ];
-			return;
-		}
-		// Allow rest parameters on Titanium.Database.DB.execute
-		if (this.definition.__inherits === 'Titanium.Database.DB' && this.definition.name === 'execute') {
-			parameters[1].type = 'any[]';
-			parameters[1].optional = false;
-			parameters[1].rest = true;
-		}
-		// NOTE: we can't do same for Titanium.Database.DB.executeAsync, because:
-		// "TS1014: A rest parameter must be last in a parameter list."
 
 		let hasOptional = false;
 		this.parameters = parameters.map(paramDoc => {
@@ -942,9 +932,17 @@ class MemberNode {
 				}
 				return;
 			}
-			const node = new FunctionNode(methodDoc, this.membersAreStatic);
-			this.innerNodesMap.set(methodDoc.name, node);
-			this.methods.push(node);
+
+			// Generate overloads if required and add them instead of the original method
+			const overloads = this.generateMethodOverloadsIfRequired(methodDoc);
+			if (!overloads.length) {
+				overloads.push(methodDoc);
+			}
+			overloads.forEach(doc => {
+				const node = new FunctionNode(doc, this.membersAreStatic);
+				this.innerNodesMap.set(doc.name, node);
+				this.methods.push(node);
+			});
 		});
 	}
 
@@ -976,6 +974,62 @@ class MemberNode {
 			summary: ''
 		});
 		this.events.push(this.proxyEventMap);
+	}
+
+	/**
+	 * Generates overload method definitions for methods which have parameter
+	 * definitions that are not compatible with union types.
+	 *
+	 * Currently only handles one case where a parameter can be passed as both a
+	 * single (repeatable) value and as an array, e.g. ...Ti.UI.View[], Array<Ti.UI.View>
+	 *
+	 * @param {Object} methodDoc Method definitions as parsed from YAML files
+	 * @return {Array<Object>} List of overload method definitions
+	 */
+	generateMethodOverloadsIfRequired(methodDoc) {
+		const parameters = methodDoc.parameters;
+		if (!parameters) {
+			return [];
+		}
+
+		// TODO: proper types for Titanium.Database.DB.executeAsync, problem is:
+		// "TS1014: A rest parameter must be last in a parameter list."
+
+		const originalMethodDocJsonString = JSON.stringify(methodDoc);
+		const arrayTypePattern = /Array<.*>/;
+		let methodOverloads = [];
+		let hasRepeatableAndArray = false;
+		const last = parameters.length - 1;
+		const parameter = parameters[last];
+		if (!Array.isArray(parameter.type) || !parameter.repeatable) {
+			return [methodDoc];
+		}
+
+		let parameterOverloads = [];
+		for (const type of parameter.type) {
+			if (arrayTypePattern.test(type)) {
+				hasRepeatableAndArray = true;
+				const arrayOverloadDoc = JSON.parse(originalMethodDocJsonString);
+				arrayOverloadDoc.parameters[last].repeatable = false;
+				arrayOverloadDoc.parameters[last].type = type;
+				parameterOverloads.push(arrayOverloadDoc);
+			} else {
+				const newOverloadDoc = JSON.parse(originalMethodDocJsonString);
+				newOverloadDoc.parameters[last].type = type;
+				newOverloadDoc.parameters[last].optional = false;
+				parameterOverloads.push(newOverloadDoc);
+			}
+		}
+
+		if (hasRepeatableAndArray) {
+			methodOverloads = methodOverloads.concat(parameterOverloads);
+		}
+
+		if (hasRepeatableAndArray) {
+			return methodOverloads;
+		} else {
+			return [JSON.parse(originalMethodDocJsonString)];
+		}
 	}
 }
 
