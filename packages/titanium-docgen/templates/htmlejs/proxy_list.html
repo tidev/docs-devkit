@@ -8,7 +8,7 @@
 	<th>Summary</th>
 </tr>
 <% data.proxies.forEach(function (member) { %>
-	<% include member_list.html %>
+	<%- include('member_list.html', { member }) %>
 <% }); %>
 </table>
 

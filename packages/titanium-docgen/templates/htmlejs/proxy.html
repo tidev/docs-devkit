@@ -3,12 +3,12 @@
 <% } else { %>
 <div class="apidoc_container apidoc_object">
 <% } %>
-<% include header.html %>
+<%- include('header.html', { data }) %>
 <% if (data.typestr == "module") { %>
-	<% include proxy_list.html %>
+	<% include('proxy_list.html', { data }) %>
 <% } %>
-<% include property_list.html %>
-<% include method_list.html %>
-<% include event_list.html %>
-<% include footer.html %>
+<%- include('property_list.html', { data }); %>
+<%- include('method_list.html', { data }) %>
+<%- include('event_list.html', { data }) %>
+<%- include('footer.html', { data }) %>
 </div>
