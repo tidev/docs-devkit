@@ -3,7 +3,7 @@
 
 	<% if (data.isModule) { %>
 		<% data.methods.forEach(function (member) { %>	
-			<% include module_member.html %>
+			<%- include('module_member.html', { member }) %>
 		<% }); %>
 	<% } else { %>
 		<table>
@@ -12,7 +12,7 @@
 			<th>Summary</th>
 		</tr>
 		<% data.methods.forEach(function (member) { %>	
-			<% include member_list.html %>
+			<%- include('member_list.html', { member }) %>
 		<% }); %>
 		</table>
 	<% } %> 

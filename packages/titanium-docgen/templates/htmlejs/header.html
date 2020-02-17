@@ -1,12 +1,12 @@
-<% include page_nav.html %>
+<%- include('page_nav.html', { data }) %>
 <% if (~['event', 'method', 'property'].indexOf(data.typestr)) {
 	data.name = data.parent.name + '.' + data.name;
 } %>
 <h1 class="namespace"><%- data.name %></h1>
 
-<% include parent_info.html %>
+<%- include('parent_info.html', { data }) %>
 
-<% include platforms.html %>
+<%- include('platforms.html', { data }) %>
 
 <% if (data.deprecated) { %>
     <div class="deprecation_warning">
@@ -47,8 +47,8 @@
 <h2 id="summary">Summary</h2>
 <div class="summary"><%- data.summary %></div>
 
-<% include description.html %>
+<%- include('description.html', { data }) %>
 
-<% include examples.html %>
+<%- include('examples.html', { data }) %>
 
 
