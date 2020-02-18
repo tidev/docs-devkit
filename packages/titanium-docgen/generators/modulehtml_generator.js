@@ -3,7 +3,7 @@
  */
 'use strict';
 
-const exporter = require('../lib/html_generator.js');
+const exporter = require('./html_generator.js');
 
 /**
  * Returns a JSON object formatted for HTML EJS templates
