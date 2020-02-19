@@ -41,6 +41,7 @@ var common = require('./lib/common.js'),
 	cssFile = '',
 	addOnDocs = [],
 	searchPlatform = null,
+	version = '',
 	argc = 0,
 	path = '',
 	templateStr = '';
@@ -917,12 +918,15 @@ if (basePaths.length === 0) {
 	process.exit(1);
 }
 
-const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'));
-if (nodeappc.version.gte(version, '8.0.0')) {
-	accessorsDeprecatedSince = '8.0.0';
-}
-if (nodeappc.version.gte(version, '10.0.0')) {
-	accessorsRemovedSince = '10.0.0';
+const sdkPackageJson = pathMod.resolve(basePaths[0], '..', 'package.json');
+if (fs.existsSync(sdkPackageJson)) {
+	version = require(sdkPackageJson).version;
+	if (nodeappc.version.gte(version, '8.0.0')) {
+		accessorsDeprecatedSince = '8.0.0';
+	}
+	if (nodeappc.version.gte(version, '10.0.0')) {
+		accessorsRemovedSince = '10.0.0';
+	}
 }
 
 // Parse YAML files
