@@ -56,6 +56,10 @@ function isConstantsOnlyProxy(typeInfo) {
 		return false;
 	}
 
+	if (typeInfo.name === 'RProxy') {
+		return false;
+	}
+
 	const ownMethods = typeInfo.methods.filter(methodDoc => {
 		if (methodDoc.__hide) {
 			return false;
@@ -473,7 +477,7 @@ class GlobalTemplateWriter {
 			return;
 		}
 		const parent = interfaceNode.extends ? 'extends ' + interfaceNode.extends + ' ' : '';
-		const isTopLevelClass = this instanceof ClassNode && nestingLevel === 0 ? 'declare ' : '';
+		const isTopLevelClass = interfaceNode instanceof ClassNode && nestingLevel === 0 ? 'declare ' : '';
 		this.output += `${this.indent(nestingLevel)}${isTopLevelClass}${interfaceNode.keyWord} ${interfaceNode.name} ${parent}{\n`;
 		if (interfaceNode.properties.length > 0) {
 			interfaceNode.properties.forEach(propertyNode => this.writePropertyNode(propertyNode, nestingLevel + 1));
@@ -856,16 +860,6 @@ class MemberNode {
 	filterProperties(propertyDoc) {
 		// Filter out unused animate property which collides with the animate method
 		if (this.fullyQualifiedName === 'Titanium.Map.View' && propertyDoc.name === 'animate') {
-			return false;
-		}
-
-		// Filter out the Ti.Android.R accessor as it is represented by a namespace already
-		if (this.fullyQualifiedName === 'Titanium.Android' && propertyDoc.name === 'R') {
-			return false;
-		}
-
-		// Filter out the Ti.App.Android.R accessor as it is represented by a namespace already
-		if (this.fullyQualifiedName === 'Titanium.App.Android' && propertyDoc.name === 'R') {
 			return false;
 		}
 
