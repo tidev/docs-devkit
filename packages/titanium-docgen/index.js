@@ -15,6 +15,8 @@ var common = require('./lib/common.js'),
 	exec = require('child_process').exec, // eslint-disable-line security/detect-child-process
 	os = require('os'),
 	pathMod = require('path'),
+	accessorsDeprecatedSince = '',
+	accessorsRemovedSince = '',
 	assert = common.assertObjectKey,
 	basePaths = [],
 	processFirst = [ 'Titanium.Proxy', 'Titanium.Module', 'Titanium.UI.View' ],
@@ -39,6 +41,7 @@ var common = require('./lib/common.js'),
 	cssFile = '',
 	addOnDocs = [],
 	searchPlatform = null,
+	version = '',
 	argc = 0,
 	path = '',
 	templateStr = '';
@@ -307,10 +310,42 @@ function hideAPIMembers(apis, type) {
 }
 
 /**
+ * Return deprecation object if required
+ * @param {boolean} getOrSet True for getter, False for setter
+ * @param {Object} api Property object
+ * @param {string} className Name of the class
+ * @return {*}
+ */
+function getAccessorDeprecation(getOrSet, api, className) {
+	if (api.deprecated && api.deprecated.removed) {
+		return api.deprecated;
+	}
+	if (accessorsDeprecatedSince) {
+		const deprecated = {};
+		if (api.deprecated) {
+			Object.keys(api.deprecated).forEach(key => {
+				// `api.deprecated` contains only primitives, no need for a deep clone
+				deprecated[key] = api.deprecated[key];
+			});
+		}
+		if (accessorsRemovedSince && !deprecated.removed) {
+			deprecated.removed = accessorsRemovedSince;
+		}
+		deprecated.since = accessorsDeprecatedSince;
+		if (!deprecated.notes) {
+			deprecated.notes = `${getOrSet ? 'Access' : 'Set the value using'} <${className}.${api.name}> instead.`;
+		}
+		return deprecated;
+	} else {
+		return api.deprecated;
+	}
+}
+
+/**
  * Generates accessors from the given list of properties
  * @param {Array<Object>} apis Array of property objects
  * @param {String} className Name of the class
- * @param {String} methods Array of defined methods on the API
+ * @param {Array<Object>} methods Array of defined methods on the API
  * @returns {Array<Object>} Array of methods
  */
 function generateAccessors(apis, className, methods) {
@@ -328,7 +363,7 @@ function generateAccessors(apis, className, methods) {
 			rv.push({
 				name: getterName,
 				summary: 'Gets the value of the <' + className + '.' + api.name + '> property.',
-				deprecated: api.deprecated || { since: '8.0.0', notes: 'Access <' + className + '.' + api.name + '> instead.' },
+				deprecated: getAccessorDeprecation(true, api, className),
 				platforms: api.platforms,
 				since: api.since,
 				returns: { type: api.type, __subtype: 'return' },
@@ -344,7 +379,7 @@ function generateAccessors(apis, className, methods) {
 			rv.push({
 				name: setterName,
 				summary: 'Sets the value of the <' + className + '.' + api.name + '> property.',
-				deprecated: api.deprecated || { since: '8.0.0', notes: 'Set the value using <' + className + '.' + api.name + '> instead.'  },
+				deprecated: getAccessorDeprecation(false, api, className),
 				platforms: api.platforms,
 				since: api.since,
 				parameters: [ {
@@ -883,6 +918,17 @@ if (basePaths.length === 0) {
 	process.exit(1);
 }
 
+const sdkPackageJson = pathMod.resolve(basePaths[0], '..', 'package.json');
+if (fs.existsSync(sdkPackageJson)) {
+	version = require(sdkPackageJson).version;
+	if (nodeappc.version.gte(version, '8.0.0')) {
+		accessorsDeprecatedSince = '8.0.0';
+	}
+	if (nodeappc.version.gte(version, '10.0.0')) {
+		accessorsRemovedSince = '10.0.0';
+	}
+}
+
 // Parse YAML files
 originalPaths = originalPaths.concat(basePaths);
 basePaths.forEach(function (basePath) {
@@ -940,7 +986,6 @@ formats.forEach(function (format) {
 	// For changes format, make sure we have a start version and it's less than the end version if defined
 	if (format === 'changes') {
 		if (!processedData.__startVersion) {
-			const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'));
 			processedData.__startVersion = version;
 		}
 		if (processedData.__endVersion) {
@@ -957,7 +1002,6 @@ formats.forEach(function (format) {
 	if (format === 'modulehtml') {
 		processedData.__modules = modules;
 	} else if (format === 'typescript') {
-		const { version } = require(pathMod.resolve(basePaths[0], '..', 'package.json'));
 		processedData.__version = version;
 	}
 	if (searchPlatform) {
