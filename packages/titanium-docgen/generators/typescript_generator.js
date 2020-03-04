@@ -56,7 +56,7 @@ function isConstantsOnlyProxy(typeInfo) {
 		return false;
 	}
 
-	if (typeInfo.name === 'RProxy') {
+	if (typeInfo.name === 'R') {
 		return false;
 	}
 
