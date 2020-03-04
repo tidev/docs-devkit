@@ -20,6 +20,7 @@ const skipApis = [
 
 // List of modules that need to be generated as an interface instead of a namespace.
 const forcedInterfaces = [
+	'Titanium.Android.R',
 	'Titanium.App.iOS.UserDefaults',
 	'Global.String'
 ];
@@ -53,10 +54,6 @@ exports.exportData = function exportGlobalTemplate(apis) {
  */
 function isConstantsOnlyProxy(typeInfo) {
 	if (typeInfo.__subtype !== 'proxy') {
-		return false;
-	}
-
-	if (typeInfo.name === 'R') {
 		return false;
 	}
 
@@ -1068,10 +1065,10 @@ class NamespaceNode extends MemberNode {
 			this.parseMethods(moduleDoc.methods);
 		}
 		if (this.interfaces.length) {
-			this.interfaces.forEach(node => this.findDuplicates(node.name));
+			this.interfaces.forEach(node => this.findDuplicates(node));
 		}
 		if (this.namespaces.length) {
-			this.namespaces.forEach(node => this.findDuplicates(node.name));
+			this.namespaces.forEach(node => this.findDuplicates(node));
 		}
 	}
 
@@ -1098,13 +1095,18 @@ class NamespaceNode extends MemberNode {
 		this.interfaces.push(interfaceNode);
 	}
 
-	findDuplicates(name) {
+	findDuplicates(inputNode) {
+		const name = inputNode.name;
 		if (this.innerNodesMap.has(name)) {
-			common.log(common.LOG_WARN, `Duplicate identified "${name} on ${this.fullyQualifiedName}`);
 			const node = this.innerNodesMap.get(name);
 			let found = false;
 			let idx = this.properties.indexOf(node);
 			if (idx !== -1) {
+				if (inputNode instanceof InterfaceNode) {
+					// TypeScript allows interface and property with same name in one namespace
+					// only known case is Titanium.Android.R
+					return;
+				}
 				found = true;
 				this.properties.splice(idx, 1);
 			}
@@ -1116,6 +1118,7 @@ class NamespaceNode extends MemberNode {
 			if (!found) {
 				throw new Error(`Unable to found identifier ${name} in the method or properties of ${this.fullyQualifiedName}`);
 			}
+			common.log(common.LOG_WARN, `Duplicate identified "${name} on ${this.fullyQualifiedName}`);
 			this.innerNodesMap.delete(name);
 		}
 	}
