@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/appcelerator/docs-devkit/compare/v4.2.0...v4.3.0) (2020-03-05)
+
+
+### Bug Fixes
+
+* **docgen:** build correct path ([#27](https://github.com/appcelerator/docs-devkit/issues/27)) ([2f085f0](https://github.com/appcelerator/docs-devkit/commit/2f085f0))
+* **docgen:** ts definition for Ti.Android.R ([#31](https://github.com/appcelerator/docs-devkit/issues/31)) ([388df48](https://github.com/appcelerator/docs-devkit/commit/388df48))
+* **docgen:** use correct include syntax for ejs3 ([e4dde5d](https://github.com/appcelerator/docs-devkit/commit/e4dde5d))
+* **docgen/modulehtml:** correct require path ([e00f175](https://github.com/appcelerator/docs-devkit/commit/e00f175))
+
+
+### Features
+
+* **docgen:** improve typescript generator ([#25](https://github.com/appcelerator/docs-devkit/issues/25)) ([34f07c5](https://github.com/appcelerator/docs-devkit/commit/34f07c5))
+* **docgen:** improved accessors deprecation generation ([#24](https://github.com/appcelerator/docs-devkit/issues/24)) ([5981029](https://github.com/appcelerator/docs-devkit/commit/5981029))
+
+
+
+
+
 # [4.2.0](https://github.com/appcelerator/docs-devkit/compare/v4.1.0...v4.2.0) (2020-02-05)
 
 
