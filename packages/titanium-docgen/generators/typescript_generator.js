@@ -20,6 +20,7 @@ const skipApis = [
 
 // List of modules that need to be generated as an interface instead of a namespace.
 const forcedInterfaces = [
+	'Titanium.Android.R',
 	'Titanium.App.iOS.UserDefaults',
 	'Global.String'
 ];
@@ -263,7 +264,8 @@ class DocsParser {
 			'proxy',
 			'view'
 		];
-		return validSubtypes.includes(typeInfo.__subtype) && !forcedInterfaces.includes(typeInfo.name);
+		return validSubtypes.includes(typeInfo.__subtype) && !forcedInterfaces.includes(typeInfo.name)
+				&& !(typeInfo.createable === false && isConstantsOnlyProxy(typeInfo));
 	}
 
 	/**
@@ -472,7 +474,7 @@ class GlobalTemplateWriter {
 			return;
 		}
 		const parent = interfaceNode.extends ? 'extends ' + interfaceNode.extends + ' ' : '';
-		const isTopLevelClass = this instanceof ClassNode && nestingLevel === 0 ? 'declare ' : '';
+		const isTopLevelClass = interfaceNode instanceof ClassNode && nestingLevel === 0 ? 'declare ' : '';
 		this.output += `${this.indent(nestingLevel)}${isTopLevelClass}${interfaceNode.keyWord} ${interfaceNode.name} ${parent}{\n`;
 		if (interfaceNode.properties.length > 0) {
 			interfaceNode.properties.forEach(propertyNode => this.writePropertyNode(propertyNode, nestingLevel + 1));
@@ -858,16 +860,6 @@ class MemberNode {
 			return false;
 		}
 
-		// Filter out the Ti.Android.R accessor as it is represented by a namespace already
-		if (this.fullyQualifiedName === 'Titanium.Android' && propertyDoc.name === 'R') {
-			return false;
-		}
-
-		// Filter out the Ti.App.Android.R accessor as it is represented by a namespace already
-		if (this.fullyQualifiedName === 'Titanium.App.Android' && propertyDoc.name === 'R') {
-			return false;
-		}
-
 		if (propertyDoc.__inherits && propertyDoc.__inherits !== this.fullyQualifiedName && !this.membersAreStatic) {
 			return false;
 		}
@@ -882,14 +874,14 @@ class MemberNode {
 
 		this.methods = [];
 
-		methods.sort(sortByName).forEach(methodDoc => {
+		const filterFunc = this.filterMethods.bind(this);
+
+		methods.filter(filterFunc).sort(sortByName).forEach(methodDoc => {
 			if (this.fullyQualifiedName === 'Titanium.Proxy' && /LifecycleContainer$/.test(methodDoc.name)) {
 				methodDoc.optional = true;
 			}
 			const isEventMethod = eventsMethods.includes(methodDoc.name);
-			if (!isEventMethod && methodDoc.__inherits && methodDoc.__inherits !== this.fullyQualifiedName && !this.membersAreStatic) {
-				return;
-			}
+
 			if (this.proxyEventMap && isEventMethod) {
 				const parameters = [ {
 					name: 'name',
@@ -944,6 +936,11 @@ class MemberNode {
 				this.methods.push(node);
 			});
 		});
+	}
+
+	filterMethods(methodDoc) {
+		const isEventMethod = eventsMethods.includes(methodDoc.name);
+		return !(!isEventMethod && methodDoc.__inherits && methodDoc.__inherits !== this.fullyQualifiedName && !this.membersAreStatic);
 	}
 
 	parseEvents(events) {
@@ -1067,21 +1064,24 @@ class NamespaceNode extends MemberNode {
 			this.parseEvents(moduleDoc.events);
 			this.parseMethods(moduleDoc.methods);
 		}
-		if (this.interfaces.length) {
-			this.interfaces.forEach(node => this.findDuplicates(node.name));
-		}
 		if (this.namespaces.length) {
-			this.namespaces.forEach(node => this.findDuplicates(node.name));
+			this.namespaces.forEach(node => this.findDuplicates(node));
 		}
 	}
 
 	filterProperties(propertyDoc) {
 		// If we have interface/class for this namespace, then we need here only upper cased constants
 		let onlyUpperCased = true;
+		let excluded = propertyDoc.__hide;
 		if (this.relatedNode) {
 			onlyUpperCased = propertyDoc.name.toUpperCase() === propertyDoc.name;
 		}
-		return onlyUpperCased && super.filterProperties(propertyDoc);
+		return onlyUpperCased && !excluded &&  super.filterProperties(propertyDoc);
+	}
+
+	filterMethods(methodDoc) {
+		let excluded = methodDoc.__hide;
+		return !excluded && super.filterMethods(methodDoc);
 	}
 
 	addNamespace(namespaceNode) {
@@ -1092,9 +1092,9 @@ class NamespaceNode extends MemberNode {
 		this.interfaces.push(interfaceNode);
 	}
 
-	findDuplicates(name) {
+	findDuplicates(inputNode) {
+		const name = inputNode.name;
 		if (this.innerNodesMap.has(name)) {
-			common.log(common.LOG_WARN, `Duplicate identified "${name} on ${this.fullyQualifiedName}`);
 			const node = this.innerNodesMap.get(name);
 			let found = false;
 			let idx = this.properties.indexOf(node);
@@ -1110,6 +1110,7 @@ class NamespaceNode extends MemberNode {
 			if (!found) {
 				throw new Error(`Unable to found identifier ${name} in the method or properties of ${this.fullyQualifiedName}`);
 			}
+			common.log(common.LOG_WARN, `Duplicate identified "${name} on ${this.fullyQualifiedName}`);
 			this.innerNodesMap.delete(name);
 		}
 	}
