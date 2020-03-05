@@ -1064,9 +1064,6 @@ class NamespaceNode extends MemberNode {
 			this.parseEvents(moduleDoc.events);
 			this.parseMethods(moduleDoc.methods);
 		}
-		if (this.interfaces.length) {
-			this.interfaces.forEach(node => this.findDuplicates(node));
-		}
 		if (this.namespaces.length) {
 			this.namespaces.forEach(node => this.findDuplicates(node));
 		}
@@ -1102,11 +1099,6 @@ class NamespaceNode extends MemberNode {
 			let found = false;
 			let idx = this.properties.indexOf(node);
 			if (idx !== -1) {
-				if (inputNode instanceof InterfaceNode) {
-					// TypeScript allows interface and property with same name in one namespace
-					// only known case is Titanium.Android.R
-					return;
-				}
 				found = true;
 				this.properties.splice(idx, 1);
 			}
