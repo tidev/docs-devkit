@@ -351,6 +351,7 @@ class GlobalTemplateWriter {
 		this.output += '// Definitions by: Axway Appcelerator <https://github.com/appcelerator>\n';
 		this.output += '//                 Jan Vennemann <https://github.com/janvennemann>\n';
 		this.output += '//                 Sergey Volkov <https://github.com/drauggres>\n';
+		this.output += '//                 Mathias Lorenzen <https://github.com/ffMathy>\n';
 		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';
 		this.output += '// TypeScript Version: 3.0\n';
 		this.output += '\n';
@@ -481,6 +482,10 @@ class GlobalTemplateWriter {
 		}
 		if (interfaceNode.methods.length > 0) {
 			interfaceNode.methods.forEach(methodNode => this.writeMethodNode(methodNode, nestingLevel + 1));
+		}
+		if (interfaceNode.indexSignature) {
+			const { name, type, returnType } = interfaceNode.indexSignature;
+			this.output += `${this.indent(nestingLevel + 1)}[${name}: ${type}]: ${returnType};\n`;
 		}
 		this.output += `${this.indent(nestingLevel)}}\n`;
 	}
@@ -1125,6 +1130,7 @@ class InterfaceNode extends MemberNode {
 		this.removed = typeDoc.deprecated && typeDoc.deprecated.removed;
 		this.membersAreStatic = false;
 		this.keyWord = 'interface';
+		this.indexSignature = null;
 	}
 	init() {
 		const typeDoc = this.api;
@@ -1157,6 +1163,14 @@ class InterfaceNode extends MemberNode {
 					type: 'string | number'
 				}, false));
 			}
+		} else if (this.fullyQualifiedName === 'ListDataItem') {
+			// We don't have a way to sepcify this in our apidocs, so this currently
+			// needs to be hard coded here.
+			this.indexSignature = {
+				name: 'index',
+				type: 'string',
+				returnType: 'any'
+			};
 		}
 	}
 
