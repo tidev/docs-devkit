@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.1](https://github.com/appcelerator/docs-devkit/compare/v4.3.0...v4.3.1) (2020-04-17)
+
+
+### Bug Fixes
+
+* **docgen:** allow unknown properties on ListDataItem ([774051d](https://github.com/appcelerator/docs-devkit/commit/774051d))
+
+
+
+
+
 # [4.3.0](https://github.com/appcelerator/docs-devkit/compare/v4.2.0...v4.3.0) (2020-03-05)
 
 
