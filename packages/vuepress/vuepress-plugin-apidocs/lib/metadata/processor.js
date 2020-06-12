@@ -67,9 +67,9 @@ class MetadataProcessor {
 
       return true
     }
-    metadata.properties = metadata.properties.filter(filterInherited)
-    metadata.methods = metadata.methods.filter(filterInherited)
-    metadata.events = metadata.events.filter(filterInherited)
+    metadata.properties = (metadata.properties || []).filter(filterInherited)
+    metadata.methods = (metadata.methods || []).filter(filterInherited)
+    metadata.events = (metadata.events || []).filter(filterInherited)
   }
 
   transformMembersAndCollectHeaders (memberType, metadata) {
