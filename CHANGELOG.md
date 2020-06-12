@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.4.0](https://github.com/appcelerator/docs-devkit/compare/v4.3.1...v4.4.0) (2020-06-12)
+
+
+### Bug Fixes
+
+* **docgen:** avoid outputting null and empty array values to shrink output json ([3908195](https://github.com/appcelerator/docs-devkit/commit/3908195))
+
+
+### Features
+
+* **validate:** warning for misxed case event names, split String vs ASCII validation ([ed21978](https://github.com/appcelerator/docs-devkit/commit/ed21978))
+
+
+
+
+
 ## [4.3.1](https://github.com/appcelerator/docs-devkit/compare/v4.3.0...v4.3.1) (2020-04-17)
 
 
