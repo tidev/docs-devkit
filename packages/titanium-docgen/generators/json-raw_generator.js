@@ -89,9 +89,13 @@ function exportParams(apis, type, filename) {
 		apis.forEach(function (member) {
 			const annotatedMember = {};
 			annotatedMember.name = member.name;
-			annotatedMember.deprecated = exportDeprecated(member);
+			if (assert(member, 'deprecated')) {
+				annotatedMember.deprecated = exportDeprecated(member);
+			}
 			annotatedMember.summary = exportSummary(member);
-			annotatedMember.description = exportDescription(member);
+			if (assert(member, 'description')) {
+				annotatedMember.description = exportDescription(member);
+			}
 			annotatedMember.type = member.type || 'String';
 			if (type === 'properties') {
 				annotatedMember.filename = filename.slice(0, filename.indexOf('-event')) + '.' + member.name + '-callback-property';
@@ -185,12 +189,18 @@ function exportAPIs(api, type) {
 				continue;
 			}
 			annotatedMember.name = member.name;
-			annotatedMember.deprecated = exportDeprecated(member);
+			if (assert(member, 'deprecated')) {
+				annotatedMember.deprecated = exportDeprecated(member);
+			}
 			annotatedMember.summary = exportSummary(member);
-			annotatedMember.description = exportDescription(member);
+			if (assert(member, 'description')) {
+				annotatedMember.description = exportDescription(member);
+			}
 			annotatedMember.filename = api.name + '.' + cleanAPIName(member.name) + '-' + member.__subtype;
 			annotatedMember.platforms = exportPlatforms(member);
-			annotatedMember.inherits = member.__inherits !== api.name ? member.__inherits : null;
+			if (member.__inherits !== api.name) {
+				annotatedMember.inherits = member.__inherits;
+			}
 
 			switch (type) {
 				case 'events':
@@ -202,12 +212,18 @@ function exportAPIs(api, type) {
 					}
 					break;
 				case 'methods':
-					annotatedMember.examples = exportExamples(member);
-					annotatedMember.parameters = exportParams(member.parameters, 'parameters', annotatedMember.filename);
+					if (assert(member, 'examples')) {
+						annotatedMember.examples = exportExamples(member);
+					}
+					if (assert(member, 'parameters')) {
+						annotatedMember.parameters = exportParams(member.parameters, 'parameters', annotatedMember.filename);
+					}
 					annotatedMember.returns = exportReturnTypes(member);
 					break;
 				case 'properties':
-					annotatedMember.examples = exportExamples(member);
+					if (assert(member, 'examples')) {
+						annotatedMember.examples = exportExamples(member);
+					}
 					annotatedMember.type = member.type || 'String';
 					if (assert(member, 'availability')) {
 						annotatedMember.availability = member.availability;
@@ -250,18 +266,33 @@ exports.exportData = function exportJSON(apis) {
 		const annotatedClass = {
 			name: cls.name,
 			summary: exportSummary(cls),
-			deprecated: exportDeprecated(cls),
-			events: exportAPIs(cls, 'events'),
-			examples: exportExamples(cls),
-			methods: exportAPIs(cls, 'methods'),
 			extends: cls['extends'] || 'Object',
-			properties: exportAPIs(cls, 'properties'),
-			description: exportDescription(cls),
 			platforms: exportPlatforms(cls),
 			filename: exportClassFilename(cls),
-			type: cls.__subtype || 'object',
-			subtype: null
+			type: cls.__subtype || 'object'
 		};
+		// Avoid setting null/empty array values - trims down large filesize
+		if (assert(cls, 'deprecated')) {
+			annotatedClass.deprecated = exportDeprecated(cls);
+		}
+		if (assert(cls, 'description')) {
+			annotatedClass.description = exportDescription(cls);
+		}
+		if (assert(cls, 'events')) {
+			annotatedClass.events = exportAPIs(cls, 'events');
+		}
+		if (assert(cls, 'examples')) {
+			annotatedClass.examples = exportExamples(cls);
+		}
+		if (assert(cls, 'methods')) {
+			annotatedClass.methods = exportAPIs(cls, 'methods');
+		}
+		if (assert(cls, 'properties')) {
+			annotatedClass.properties = exportAPIs(cls, 'properties');
+		}
+		if (annotatedClass.filename === null) {
+			delete annotatedClass.filename;
+		}
 		if (~[ 'proxy', 'view' ].indexOf(annotatedClass.type)) {
 			annotatedClass.subtype = annotatedClass.type;
 			annotatedClass.type = 'object';
