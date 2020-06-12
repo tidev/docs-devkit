@@ -59,7 +59,7 @@ const Deprecated = {
 
 const validSyntax = {
 	required: {
-		name: 'String',
+		name: 'ASCIIString',
 		summary: 'String',
 	},
 	optional: {
@@ -81,7 +81,7 @@ const validSyntax = {
 		since: 'Since',
 		events: [ {
 			required: {
-				name: 'String',
+				name: 'LowercaseASCIIString',
 				summary: 'String',
 			},
 			optional: {
@@ -92,7 +92,7 @@ const validSyntax = {
 				osver: 'OSVersions',
 				properties: [ {
 					required: {
-						name: 'String',
+						name: 'ASCIIString',
 						summary: 'String',
 						type: 'DataType',
 					},
@@ -111,7 +111,7 @@ const validSyntax = {
 		} ],
 		methods: [ {
 			required: {
-				name: 'String',
+				name: 'ASCIIString',
 				summary: 'String'
 			},
 			optional: {
@@ -124,7 +124,7 @@ const validSyntax = {
 				osver: 'OSVersions',
 				parameters: [ {
 					required: {
-						name: 'String',
+						name: 'ASCIIString',
 						summary: 'String',
 						type: 'DataType'
 					},
@@ -142,7 +142,7 @@ const validSyntax = {
 		} ],
 		properties: [ {
 			required: {
-				name: 'String',
+				name: 'ASCIIString',
 				summary: 'String',
 				type: 'DataType'
 			},
@@ -631,13 +631,26 @@ function validateSince(version) {
 }
 
 /**
- * Validate string
+ * Validates string type
  * @param {*} str possible string value
- * @returns {null|Problem} possible Problem if value isn't a string or contains non-ASCII characters
+ * @returns {null|Problem} possible Problem if value isn't a string
  */
 function validateString(str) {
 	if (typeof str !== 'string') {
 		return new Problem(`Not a string value: ${str}`);
+	}
+	return null;
+}
+
+/**
+ * Validates string type and only ASCII characetrs (typically used to make method/property/event/parameter names ASCII only)
+ * @param {*} str possible string value
+ * @returns {null|Problem} possible Problem if value isn't a string or contains non-ASCII characters
+ */
+function validateASCIIString(str) {
+	let problem = validateString(str);
+	if (problem) {
+		return problem;
 	}
 	if (!/^[\x00-\x7F]*$/.test(str)) { // eslint-disable-line no-control-regex
 		return new Problem('String contains non-ASCII characters.');
@@ -646,7 +659,23 @@ function validateString(str) {
 }
 
 /**
- * Validate markdown
+ * Validate string
+ * @param {*} str possible string value
+ * @returns {null|Problem} possible Problem if value isn't a string or contains non-ASCII characters
+ */
+function validateLowercaseString(str) {
+	let problem = validateASCIIString(str);
+	if (problem) {
+		return problem;
+	}
+	if (str.toLowerCase() !== str) {
+		return new Problem('Name should be all lowercase.', WARNING);
+	}
+	return null;
+}
+
+/**
+ * Validatea markdown content (string type, can be converted from markdwn to html without erroring)
  * @param {string} str possible markdown string
  * @returns {null|Problem} possible Problem if not valid markdown (or string!)
  */
@@ -885,8 +914,12 @@ function validateKey(obj, syntax, currentKey, className, fullKeyPath) {
 			return possibleProblemArrayAsMap(fullKeyPath, validateReturns(obj));
 		case 'Since':
 			return possibleProblemArrayAsMap(fullKeyPath, validateSince(obj));
+		case 'LowercaseASCIIString':
+			return possibleProblemAsMap(fullKeyPath, validateLowercaseString(obj));
 		case 'String':
 			return possibleProblemAsMap(fullKeyPath, validateString(obj));
+		case 'ASCIIString':
+			return possibleProblemAsMap(fullKeyPath, validateASCIIString(obj));
 		case 'Markdown':
 			return possibleProblemAsMap(fullKeyPath, validateMarkdown(obj));
 		case 'Platforms':
