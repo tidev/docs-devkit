@@ -21,7 +21,7 @@
   </div>
   <div class="danger custom-block" v-else-if="!isKnownType || error">
     <p class="custom-block-title">TYPE NOT FOUND</p>
-    <p>Failed to load API docs metadata for type "{{typeName}}". Error: {{error.message}}</p>
+    <p>Failed to load API docs metadata for type "{{typeName}}".<span v-if="error"> Error: {{error.message}}</span></p>
   </div>
   <content-loader :width="740" :height="100" class="content-loading" v-else>
     <rect x="0" y="0" rx="3" ry="3" width="400" height="14" />
