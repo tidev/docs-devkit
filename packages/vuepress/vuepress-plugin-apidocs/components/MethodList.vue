@@ -15,8 +15,8 @@
       <DeprecationAlert :deprecated="method.deprecated"/>
       <div class="member-summary" v-html="method.summary"></div>
       <div class="member-description" v-html="method.description"></div>
-      <h4 v-if="method.parameters.length">Parameters</h4>
-      <table v-if="method.parameters.length" class="table parameter-table">
+      <h4 v-if="method.parameters && method.parameters.length">Parameters</h4>
+      <table v-if="method.parameters && method.parameters.length" class="table parameter-table">
         <thead>
           <tr>
             <th>Name</th>
