@@ -15,7 +15,6 @@
 .sidebar-heading
   .sidebar-arrow
     position absolute
-    top 0.4em
     right 0.5rem
     width: 1rem
     height: 1rem
