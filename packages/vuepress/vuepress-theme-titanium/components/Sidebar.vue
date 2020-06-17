@@ -62,22 +62,16 @@ export default {
   }
 }
 
-function markActiveItemRecursive (item, currentAnchor, depth = 0) {
+function markActiveItemRecursive (item, currentAnchor) {
   const selfActive = isActive(currentAnchor, item.path)
   let active = selfActive
-  if (item.type === 'auto') {
+  if (item.children) {
     let childActive = false
     for (const c of item.children) {
-      c.path = item.basePath + '#' + c.slug
-      if (markActiveItemRecursive(c, currentAnchor, depth + 1)) {
-        childActive = true
+      if (!c.path) {
+        c.path = item.path.replace(hashRE, '') + '#' + c.slug
       }
-    }
-    active = selfActive || childActive
-  } else if (item.type === 'group') {
-    let childActive = false
-    for (const c of item.children) {
-      if (markActiveItemRecursive(c, currentAnchor, depth + 1)) {
+      if (markActiveItemRecursive(c, currentAnchor)) {
         childActive = true
       }
     }
@@ -87,7 +81,7 @@ function markActiveItemRecursive (item, currentAnchor, depth = 0) {
     const children = groupHeaders(item.headers)
     for (const c of children) {
       c.path = item.path + '#' + c.slug
-      if (markActiveItemRecursive(c, currentAnchor, depth + 1)) {
+      if (markActiveItemRecursive(c, currentAnchor)) {
         childActive = true
       }
     }
