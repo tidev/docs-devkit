@@ -12,6 +12,7 @@ sidebarDepth: 0
 
 - Content layout using Flexboxes
 - Global footer with configurable sitemap
+- Optional secondary content sidebar that shows current page headers only.
 - Built-in active header links behavior that does not rely on router state (no automatic URL changing while you scroll)
 - Loads initial [Vuex](https://vuex.vuejs.org/) state from SSR
 - Full support for the [versioning plugin](../guide/versioning.md)

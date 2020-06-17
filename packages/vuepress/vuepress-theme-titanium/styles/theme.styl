@@ -9,7 +9,7 @@
 @require './table'
 
 // Custom vars
-$apiSidebarWidth = 12rem
+$contentSidebarWidth = 12rem
 
 html, body
   padding 0
@@ -67,21 +67,25 @@ body
   overflow-y auto
   overflow-x hidden
 
-.api-sidebar-wrapper
+.content-sidebar-wrapper
   background-color #fff
   position sticky
   top $navbarHeight
   height "calc(100vh - %s)" % $navbarHeight
-  width $apiSidebarWidth
+  width $contentSidebarWidth
   align-self: flex-start;
   flex 0 0 auto
+  padding 2rem 1rem 2rem 0
+  box-sizing border-box
 
 .content:not(.custom)
   @extend $wrapper
   > *:first-child
     margin-top $navbarHeight
+
   a:hover
     text-decoration underline
+
   p.demo
     padding 1rem 1.5rem
     border 1px solid #ddd
@@ -92,6 +96,7 @@ body
 .content.custom
   padding 0
   margin 0
+
   img
     max-width 100%
 
@@ -113,6 +118,7 @@ blockquote
   border-left .5rem solid #dfe2e5
   margin 0.5rem 0
   padding .25rem 0 .25rem 1rem
+
   & > p
     margin 0
 
@@ -125,22 +131,21 @@ strong
 h1, h2, h3, h4, h5, h6
   font-weight 600
   line-height 1.25
+
   .content:not(.custom) > &
     margin-top (0.5rem - $navbarHeight)
     padding-top ($navbarHeight + 1rem)
     margin-bottom 0
+
     &:first-child
       margin-top -1.5rem
       margin-bottom 1rem
+
       + p, + pre, + .custom-block
         margin-top 2rem
-    a.header-anchor
-      &:hover
-        text-decoration none
 
-h1, h2
-  a.header-anchor
-    visibility hidden
+    &:hover .header-anchor
+      opacity: 1
 
 h1, h2, h3, h4, strong
   color #2c3e50
@@ -162,17 +167,16 @@ a.header-anchor
   margin-left -0.87em
   padding-right 0.23em
   margin-top 0.125em
+  opacity 0
+
   &:hover
     text-decoration none
 
 code, kbd, .line-number
-  font-family "Roboto Mono", Monaco, courier, monospace;
-
-p
-  word-spacing 0.05em
+  font-family source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace
 
 p, ul, ol
-  line-height 1.6em
+  line-height 1.7
 
 hr
   border 0
@@ -186,13 +190,15 @@ caption
   caption-side bottom
 
 .theme-container
-  &.sidebar-open,&.api-sidebar-open
+  &.sidebar-open,&.content-sidebar-open
     .sidebar-mask
       display: block
+
   &.no-navbar
     .content:not(.custom) > h1, h2, h3, h4, h5, h6
         margin-top 1.5rem
         padding-top 0
+
     .sidebar
       top 0
 

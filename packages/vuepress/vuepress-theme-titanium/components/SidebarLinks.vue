@@ -7,10 +7,11 @@
       <SidebarGroup
         v-if="item.type === 'group'"
         :item="item"
-        :open="i === openGroupIndex"
+        :open="openGroups[i]"
         :collapsable="item.collapsable || item.collapsible"
         :depth="depth"
         @toggle="toggleGroup(i)"
+        @open="openGroup(i)"
       />
       <SidebarLink
         v-else
@@ -24,7 +25,6 @@
 <script>
 import SidebarGroup from './SidebarGroup.vue'
 import SidebarLink from './SidebarLink.vue'
-import { isActive } from '../util'
 
 export default {
   name: 'SidebarLinks',
@@ -39,7 +39,7 @@ export default {
 
   data () {
     return {
-      openGroupIndex: 0
+      openGroups: []
     }
   },
 
@@ -47,40 +47,27 @@ export default {
     this.refreshIndex()
   },
 
-  watch: {
-    '$route' () {
-      this.refreshIndex()
-    }
-  },
-
   methods: {
     refreshIndex () {
-      const index = resolveOpenGroupIndex(
-        this.$route,
-        this.items
-      )
-      if (index > -1) {
-        this.openGroupIndex = index
-      }
+      this.openGroups = resolveOpenGroups(this.items)
     },
 
     toggleGroup (index) {
-      this.openGroupIndex = index === this.openGroupIndex ? -1 : index
+      this.$set(this.openGroups, index, !this.openGroups[index])
     },
 
-    isActive (page) {
-      return isActive(this.$route, page.regularPath)
+    openGroup (index) {
+      this.$set(this.openGroups, index, true)
     }
   }
 }
 
-function resolveOpenGroupIndex (route, items) {
+function resolveOpenGroups (items) {
+  const openGroups = []
   for (let i = 0; i < items.length; i++) {
     const item = items[i]
-    if (item.type === 'group' && item.children.some(c => c.type === 'page' && isActive(route, c.path))) {
-      return i
-    }
+    openGroups[i] = item.active
   }
-  return -1
+  return openGroups
 }
 </script>

@@ -10,7 +10,7 @@
 <script>
 import Vue from 'vue'
 import { setGlobalInfo } from '@app/util'
-import Footer from '../components/Footer.vue'
+import Footer from '@theme/components/Footer.vue'
 
 export default {
   components: {

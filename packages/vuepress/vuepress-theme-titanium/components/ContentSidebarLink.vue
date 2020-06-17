@@ -30,15 +30,15 @@ function renderLink (h, to, text, active) {
     },
     class: {
       active,
-      'api-sidebar-link': true
+      'content-sidebar-link': true
     }
   }, text)
 }
 
 function renderChildren (h, children, path, route, maxDepth, depth = 1) {
   if (!children || depth > maxDepth) return null
-  return h('ul', { class: 'api-sidebar-sub-headers' }, children.map(c => {
-    return h('li', { class: 'api-sidebar-sub-header' }, [
+  return h('ul', { class: 'content-sidebar-sub-headers' }, children.map(c => {
+    return h('li', { class: 'content-sidebar-sub-header' }, [
       renderLink(h, path + '#' + c.slug, c.title, c.active),
       renderChildren(h, c.children, path, route, maxDepth, depth + 1)
     ])
@@ -47,13 +47,12 @@ function renderChildren (h, children, path, route, maxDepth, depth = 1) {
 </script>
 
 <style lang="stylus">
-.api-sidebar-content
-  .api-sidebar
-    .api-sidebar-sub-headers
-      padding-left 0.7rem
-      font-size 0.95em
+.content-sidebar
+  .content-sidebar-sub-headers
+    padding-left 0.7rem
+    font-size 0.95em
 
-a.api-sidebar-link
+a.content-sidebar-link
   font-weight 400
   color $textColor
   padding 0.35rem 1rem 0.35rem 0.7rem
@@ -69,7 +68,7 @@ a.api-sidebar-link
   &.active
     font-weight 600
     color $accentColor
-  .api-sidebar-sub-headers &
+  .content-sidebar-sub-headers &
     font-size 0.95em
     padding-top 0.25rem
     padding-bottom 0.25rem
@@ -79,13 +78,12 @@ a.api-sidebar-link
       font-weight 500
 
 @media (max-width: $MQMobile)
-  a.api-sidebar-link
+  a.content-sidebar-link
     padding-left 2rem
-  .api-sidebar-content
-    .api-sidebar
-      .api-sidebar-sub-headers
-        padding-left 1rem
-        font-size 0.95em
-        .api-sidebar-link
-          padding-left 2rem
+  .content-sidebar
+    .content-sidebar-sub-headers
+      padding-left 1rem
+      font-size 0.95em
+      .content-sidebar-link
+        padding-left 2rem
 </style>

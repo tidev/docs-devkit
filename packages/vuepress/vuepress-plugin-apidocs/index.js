@@ -62,9 +62,6 @@ module.exports = (options = {}, context) => {
         return
       }
 
-      page.frontmatter.layout = 'ApiLayout'
-      page.frontmatter.sidebarDepth = 0
-
       const typeName = page.frontmatter.metadataKey || page.title
       const version = page.version || 'next'
       const metadata = metadataService.findMetadata(typeName, version)
@@ -76,6 +73,10 @@ module.exports = (options = {}, context) => {
 
       page.metadataKey = typeName
       page.frontmatter.pageClass = 'api-page'
+      page.frontmatter.contentSidebar = true
+      page.frontmatter.sidebarDepth = 0
+      page.frontmatter.prev = false
+      page.frontmatter.next = false
 
       if (processed[version] && processed[version][typeName]) {
         const metadataProcessor = processed[version][typeName]

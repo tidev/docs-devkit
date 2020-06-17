@@ -146,6 +146,9 @@ export function resolveSidebarItems (page, regularPath, site, localePath, versio
     return []
   } else {
     const { base, config } = resolveMatchingConfig(regularPath, sidebarConfig)
+    if (config === 'auto') {
+      return resolveHeaders(page)
+    }
     return config
       ? config.map(item => resolveItem(item, pages, base))
       : []
@@ -253,11 +256,6 @@ function resolveItem (item, pages, base, groupDepth = 1) {
       title: item[1]
     })
   } else {
-    if (groupDepth > 3) {
-      console.error(
-        '[vuepress] detected a too deep nested sidebar group.'
-      )
-    }
     const children = item.children || []
     if (children.length === 0 && item.path) {
       return Object.assign(resolvePage(pages, item.path, base), {
