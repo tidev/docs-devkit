@@ -102,10 +102,15 @@ export default {
   &.is-sub-group
     padding-left 0
     & > .sidebar-heading
-      font-size 0.95em
+      font-size 1em
       line-height 1.4
       font-weight normal
       padding 0.35rem 1rem 0.35rem 2rem
+      margin 0
+      & > .sidebar-arrow
+        top 0.5rem
+        width 0.8rem
+        height 0.8rem
       &:not(.clickable)
         opacity 0.5
     & > .sidebar-group-items
@@ -113,13 +118,17 @@ export default {
       & > li > .sidebar-link
         font-size: 0.95em;
         border-left none
+  &.depth-0
+    & > .sidebar-links
+      .active
+        border-left-color transparent
   &.depth-1
     &.is-sub-group
       & > .sidebar-heading
         border-left-color transparent
   &.depth-2
     & > .sidebar-heading
-      border-left none
+      border-left-color transparent
 
 .sidebar-heading
   color $textColor
@@ -128,7 +137,7 @@ export default {
   font-size 1.1em
   font-weight bold
   // text-transform uppercase
-  padding 0 1.5rem
+  padding 0 1.5rem 0 1.25rem
   width 100%
   box-sizing border-box
   margin 0 0 0.5rem 0
@@ -144,18 +153,7 @@ export default {
     &:hover
       color $accentColor
   .sidebar-arrow
-    position absolute
-    top 0.4em
-    right 0.5rem
-    width: 1rem
-    height: 1rem
-    transition transform .15s ease
-    &.right
-      transform: rotate(90deg)
-    &.down
-      transform: rotate(180deg)
-  &:.open .sidebar-arrow
-    top -0.18em
+    top 0.4rem
 
 .sidebar-group-items
   transition height .1s ease-out
