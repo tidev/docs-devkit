@@ -1,8 +1,14 @@
 <template>
   <aside class="sidebar">
     <NavLinks/>
+
     <slot name="top"/>
-    <SidebarLinks :depth="0" :items="preparedItems"/>
+
+    <SidebarLinks
+      :depth="0"
+      :items="preparedItems"
+    />
+
     <slot name="bottom"/>
   </aside>
 </template>
@@ -24,10 +30,10 @@ export default {
   },
   props: ['items'],
   mounted () {
-    Vue.$vuepress.$on('anchorChanged', this.onAnchorChanged)
+    Vue.$vuepress.$on('sidebarAnchorChanged', this.onAnchorChanged)
   },
   beforeDestroy () {
-    Vue.$vuepress.store.$off('anchorChanged', this.onAnchorChanged)
+    Vue.$vuepress.store.$off('sidebarAnchorChanged', this.onAnchorChanged)
   },
   computed: {
     preparedItems () {
@@ -42,7 +48,7 @@ export default {
         currentAnchor = { path: this.$route.path }
       }
       const preparedItems = this.items.map(item => {
-        markActiveItem(item, currentAnchor)
+        markActiveItemRecursive(item, currentAnchor)
         return Object.assign({}, item)
       })
 
@@ -56,28 +62,22 @@ export default {
   }
 }
 
-function markActiveItem (item, currentAnchor) {
-  if (item.type === 'group') {
-    item.children.forEach(c => {
-      if (c.type === 'group') {
-        return markActiveItem(c, currentAnchor)
-      } else {
-        markActiveItemRecursive(c, currentAnchor)
-      }
-    })
-  } else {
-    markActiveItemRecursive(item, currentAnchor)
-  }
-}
-
-function markActiveItemRecursive (item, currentAnchor) {
+function markActiveItemRecursive (item, currentAnchor, depth = 0) {
   const selfActive = isActive(currentAnchor, item.path)
   let active = selfActive
   if (item.type === 'auto') {
     let childActive = false
     for (const c of item.children) {
       c.path = item.basePath + '#' + c.slug
-      if (markActiveItemRecursive(c, currentAnchor)) {
+      if (markActiveItemRecursive(c, currentAnchor, depth + 1)) {
+        childActive = true
+      }
+    }
+    active = selfActive || childActive
+  } else if (item.type === 'group') {
+    let childActive = false
+    for (const c of item.children) {
+      if (markActiveItemRecursive(c, currentAnchor, depth + 1)) {
         childActive = true
       }
     }
@@ -87,14 +87,16 @@ function markActiveItemRecursive (item, currentAnchor) {
     const children = groupHeaders(item.headers)
     for (const c of children) {
       c.path = item.path + '#' + c.slug
-      if (markActiveItemRecursive(c, currentAnchor)) {
+      if (markActiveItemRecursive(c, currentAnchor, depth + 1)) {
         childActive = true
       }
     }
     item.children = children
     active = selfActive || childActive
   }
+
   item.active = active
+
   return active
 }
 
@@ -140,6 +142,19 @@ function isActive (currentAnchor, path) {
       font-weight bold
     & > li:not(:first-child)
       margin-top .75rem
+
+  &::-webkit-scrollbar
+    width 6px
+
+    &-track
+      background #fff
+
+    &-thumb
+      background #e2e2e2
+      border-radius 3px
+
+    &-thumb:hover
+      background #d6d6d6
 
 @media (max-width: $MQMobile)
   .sidebar

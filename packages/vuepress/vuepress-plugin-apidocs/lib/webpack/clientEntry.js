@@ -3,37 +3,43 @@
 import { createApp } from '@vuepress/core/lib/client/app.js'
 import { sync } from 'vuex-router-sync'
 
-const { app, router } = createApp(false /* isServer */)
-
-const store = app.$options.store
-if (window.__INITIAL_STATE__) {
-  store.replaceState(window.__INITIAL_STATE__)
-}
-sync(store, router)
-
-window.__VUEPRESS_VERSION__ = {
+window.__VUEPRESS__ = {
   version: VUEPRESS_VERSION,
   hash: LAST_COMMIT_HASH
 }
 
-router.onReady(() => {
-  if (!window.__INITIAL_STATE__) {
-    fetchMetadata(router.currentRoute)
+createApp(false /* isServer */).then(({ app, router }) => {
+  const store = app.$options.store
+  if (window.__INITIAL_STATE__) {
+    store.replaceState(window.__INITIAL_STATE__)
+  }
+  sync(store, router)
+
+  window.__VUEPRESS_VERSION__ = {
+    version: VUEPRESS_VERSION,
+    hash: LAST_COMMIT_HASH
   }
 
-  router.beforeResolve((to, from, next) => {
-    if (to.path === from.path) {
-      return next()
+  router.onReady(() => {
+    const pages = app.$site.pages
+    if (!window.__INITIAL_STATE__) {
+      fetchMetadata(router.currentRoute, pages, store)
     }
-    fetchMetadata(to).then(next, next)
-  })
 
-  app.$mount('#app')
+    router.beforeResolve((to, from, next) => {
+      if (to.path === from.path) {
+        return next()
+      }
+      fetchMetadata(to, pages, store).then(next, next)
+    })
+
+    app.$mount('#app')
+  })
 })
 
-function fetchMetadata (route) {
+function fetchMetadata (route, pages, store) {
   return new Promise((resolve, reject) => {
-    const page = findPageForPath(app.$site.pages, route.path)
+    const page = findPageForPath(pages, route.path)
     if (!page) {
       return resolve()
     }

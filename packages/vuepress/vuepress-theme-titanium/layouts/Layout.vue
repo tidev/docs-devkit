@@ -8,6 +8,7 @@
     <Navbar
       v-if="shouldShowNavbar"
       @toggle-sidebar="toggleSidebar"
+      @toggle-content-sidebar="toggleContentSidebar"
     />
 
     <div
@@ -44,25 +45,29 @@
         slot="bottom"
       />
     </Page>
+
+    <ContentSidebar v-if="$page.frontmatter.contentSidebar"/>
   </div>
 </template>
 
 <script>
-import throttle from 'lodash.throttle'
+import throttle from 'lodash/throttle'
 import Vue from 'vue'
 
-import Home from '../components/Home.vue'
-import Page from '../components/Page.vue'
-import Navbar from '../components/Navbar.vue'
-import Sidebar from '../components/Sidebar.vue'
+import ContentSidebar from '@theme/components/ContentSidebar.vue'
+import Home from '@theme/components/Home.vue'
+import Page from '@theme/components/Page.vue'
+import Navbar from '@theme/components/Navbar.vue'
+import Sidebar from '@theme/components/Sidebar.vue'
 import { resolveSidebarItems, calculateCurrentAnchor } from '../util'
 
 export default {
-  components: { Home, Page, Sidebar, Navbar },
+  components: { ContentSidebar, Home, Page, Sidebar, Navbar },
 
   data () {
     return {
-      isSidebarOpen: false
+      isSidebarOpen: false,
+      isContentSidebarOpen: false
     }
   },
 
@@ -119,12 +124,21 @@ export default {
   watch: {
     '$page': function () {
       this.$sidebarLinks = null
-      Vue.$vuepress.$emit('anchorChanged', null)
+      this.$contentLinks = null
+      this.anchors = {}
+      Vue.$vuepress.$emit('sidebarAnchorChanged', null)
+      Vue.$vuepress.$emit('contentAnchorChanged', null)
     }
   },
 
   mounted () {
     window.addEventListener('scroll', this.onScroll)
+
+    this.$router.afterEach(() => {
+      this.isSidebarOpen = false
+    })
+
+    this.anchors = {}
   },
 
   beforeDestroy () {
@@ -134,6 +148,10 @@ export default {
   methods: {
     toggleSidebar (to) {
       this.isSidebarOpen = typeof to === 'boolean' ? to : !this.isSidebarOpen
+    },
+
+    toggleContentSidebar (to) {
+      this.isContentSidebarOpen = typeof to === 'boolean' ? to : !this.isContentSidebarOpen
     },
 
     // side swipe
@@ -160,19 +178,29 @@ export default {
       if (!this.$sidebarLinks) {
         this.$sidebarLinks = [].slice.call(document.querySelectorAll('.sidebar-link'))
       }
+      if (!this.$contentLinks) {
+        this.$contentLinks = [].slice.call(document.querySelectorAll('.content-sidebar-link'))
+      }
 
-      const currentAnchor = calculateCurrentAnchor(this.$sidebarLinks)
+      this.checkForChangedAnchor('sidebar')
+      this.checkForChangedAnchor('content')
+    }, 300),
+
+    checkForChangedAnchor (type) {
+      const currentAnchor = calculateCurrentAnchor(this[`$${type}Links`])
       if (!currentAnchor) {
         return
       }
-      if (!this.currentAnchor || this.currentAnchor.hash !== currentAnchor.hash) {
-        this.currentAnchor = {
+      const lastAnchor = this.anchors[type]
+      if (!lastAnchor || lastAnchor.hash !== currentAnchor.hash) {
+        const anchor = {
           hash: currentAnchor.hash,
           path: this.$route.path
         }
-        Vue.$vuepress.$emit('anchorChanged', this.currentAnchor)
+        this.anchors[type] = anchor
+        Vue.$vuepress.$emit(`${type}AnchorChanged`, anchor)
       }
-    }, 300)
+    }
   }
 }
 </script>

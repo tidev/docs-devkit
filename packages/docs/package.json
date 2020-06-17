@@ -13,9 +13,9 @@
     "createVersion": "vuepress version docs"
   },
   "dependencies": {
-    "@vuepress/plugin-back-to-top": "1.0.2",
+    "@vuepress/plugin-back-to-top": "1.5.2",
     "fs-extra": "^8.1.0",
-    "vuepress": "^1.0.2",
+    "vuepress": "^1.5.2",
     "vuepress-plugin-apidocs": "^4.4.1",
     "vuepress-plugin-versioning": "^4.0.1",
     "vuepress-theme-titanium": "^4.0.1",

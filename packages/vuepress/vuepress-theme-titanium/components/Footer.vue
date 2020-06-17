@@ -63,7 +63,7 @@ export default {
     max-width $contentWidth
     >.sitemap-section
       >h5
-        color #ca2127
+        color $accentColor
       >ul
         list-style none
         padding-left 0

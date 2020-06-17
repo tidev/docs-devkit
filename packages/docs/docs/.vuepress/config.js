@@ -71,7 +71,8 @@ module.exports = context => ({
         }
       }
     }],
-    'apidocs',
+    // use full name or vuepress tries to load `../../apidocs` folder
+    'vuepress-plugin-apidocs',
     '@vuepress/back-to-top'
   ]
 })

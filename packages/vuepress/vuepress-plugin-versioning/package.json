@@ -20,7 +20,7 @@
     "directory": "packages/vuepress/vuepress-plugin-versioning"
   },
   "dependencies": {
-    "@vuepress/shared-utils": "^1.0.2",
+    "@vuepress/shared-utils": "^1.5.2",
     "fs-extra": "^8.1.0"
   }
 }

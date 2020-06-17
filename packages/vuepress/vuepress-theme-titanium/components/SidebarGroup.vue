@@ -1,77 +1,148 @@
 <template>
-  <div
+  <section
     class="sidebar-group"
-    :class="{ first, collapsable }"
+    :class="[
+      {
+        collapsable,
+        'is-sub-group': depth !== 0
+      },
+      `depth-${depth}`
+    ]"
   >
-    <p
-      class="sidebar-heading"
-      :class="{ open }"
-      @click="$emit('toggle')"
+    <RouterLink
+      v-if="item.path"
+      class="sidebar-heading clickable"
+      :class="{
+        open,
+        'active': item.active
+      }"
+      :to="item.path"
+      @click.native.self="toggleItem(item)"
     >
       <span>{{ item.title }}</span>
-
-      <svg
+      <SidebarArrow
         v-if="collapsable"
-        class="sidebar-arrow"
         :class="open ? 'down' : 'right'"
-        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 49.484 28.284"
-      >
-        <g transform="translate(-229 -126.358)">
-          <rect fill="currentColor" width="35" height="5" rx="2" transform="translate(229 151.107) rotate(-45)"/>
-          <rect fill="currentColor" width="35" height="5" rx="2" transform="translate(274.949 154.642) rotate(-135)"/>
-        </g>
-      </svg>
+        @toggle="$emit('toggle')"
+      />
+    </RouterLink>
+
+    <p
+      v-else
+      class="sidebar-heading"
+      :class="{ open }"
+      @click.self="toggleItem(item)"
+    >
+      <span>{{ item.title }}</span>
+      <SidebarArrow
+        v-if="collapsable"
+        :class="open ? 'down' : 'right'"
+        @toggle="$emit('toggle')"
+      />
     </p>
 
     <DropdownTransition>
-      <ul
-        ref="items"
-        class="sidebar-group-items"
+      <SidebarLinks
         v-if="open || !collapsable"
-      >
-        <li v-for="(child, index) in item.children" :key="index">
-          <SidebarLink :item="child"/>
-        </li>
-      </ul>
+        class="sidebar-group-items"
+        :items="item.children"
+        :sidebar-depth="item.sidebarDepth"
+        :depth="depth + 1"
+      />
     </DropdownTransition>
-  </div>
+  </section>
 </template>
 
 <script>
-import DropdownTransition from './DropdownTransition.vue'
-import SidebarLink from './SidebarLink.vue'
+import DropdownTransition from '@theme/components/DropdownTransition.vue'
+import SidebarArrow from '@theme/components/SidebarArrow.vue'
 
 export default {
   name: 'SidebarGroup',
-  props: ['item', 'first', 'open', 'collapsable'],
-  components: { SidebarLink, DropdownTransition }
+
+  components: {
+    DropdownTransition,
+    SidebarArrow
+  },
+
+  props: [
+    'item',
+    'open',
+    'collapsable',
+    'depth'
+  ],
+
+  // ref: https://vuejs.org/v2/guide/components-edge-cases.html#Circular-References-Between-Components
+  beforeCreate () {
+    this.$options.components.SidebarLinks = require('@theme/components/SidebarLinks.vue').default
+  },
+
+  methods: {
+    toggleItem (item) {
+      if (item.type === 'group' && item.path) {
+        this.$emit('open')
+        return
+      }
+
+      this.$emit('toggle')
+    }
+  }
 }
 </script>
 
 <style lang="stylus">
 .sidebar-group
-  &:not(.first)
-    margin-top 1em
   .sidebar-group
     padding-left 0.5em
   &:not(.collapsable)
-    .sidebar-heading
+    .sidebar-heading:not(.clickable)
       cursor auto
       color inherit
+  // refine styles of nested sidebar groups
+  &.is-sub-group
+    padding-left 0
+    & > .sidebar-heading
+      font-size 0.95em
+      line-height 1.4
+      font-weight normal
+      padding 0.35rem 1rem 0.35rem 2rem
+      &:not(.clickable)
+        opacity 0.5
+    & > .sidebar-group-items
+      padding-left 1rem
+      & > li > .sidebar-link
+        font-size: 0.95em;
+        border-left none
+  &.depth-1
+    &.is-sub-group
+      & > .sidebar-heading
+        border-left-color transparent
+  &.depth-2
+    & > .sidebar-heading
+      border-left none
 
 .sidebar-heading
-  color #999
+  color $textColor
   transition color .15s ease
   cursor pointer
   font-size 1.1em
   font-weight bold
   // text-transform uppercase
   padding 0 1.5rem
-  margin-top 0
-  margin-bottom 0.5rem
+  width 100%
+  box-sizing border-box
+  margin 0 0 0.5rem 0
+  border-left 0.25rem solid transparent
   position relative
   &.open, &:hover
     color inherit
+  &.clickable
+    &.active
+      font-weight 600
+      color $accentColor
+      border-left-color $accentColor
+    &:hover
+      color $accentColor
   .sidebar-arrow
     position absolute
     top 0.4em
@@ -88,5 +159,6 @@ export default {
 
 .sidebar-group-items
   transition height .1s ease-out
+  font-size 0.95em
   overflow hidden
 </style>

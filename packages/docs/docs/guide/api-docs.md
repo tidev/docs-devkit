@@ -31,7 +31,7 @@ For advanced configration options see the [plugin docs](../plugins/apidocs-plugi
 
 ## Metadata
 
-Type information will be loaded from a metadata file. You can generate the required metadata file from any TDoc compliant set of YAML files using a new command that this plugin adds to the VuePress CLI.
+Type information will be loaded from a metadata file. You can generate the required metadata file from any TDoc compliant set of YAML files using the new `metadata` command that this plugin adds to the VuePress CLI.
 
 ```sh
 vuepress metadata docs ../apidocs
@@ -78,9 +78,9 @@ Both components can be configured with the `type` and `version` props (both are 
 
 Simply inserting the above components anywhere in markdown files is great for smaller types. However this has some caveats. For example, VuePress will not pick up the extra headings that will be dynamically rendered by the component. To mitigate this behavior, the plugin has special API pages.
 
-By default all markdown files under `/api` will be considered as API pages. These pages are dedicated to a single type and have their layout set to `ApiLayout`, which allows to further customize an API page. The [Titanium theme](../theme) for example, adds an extra navigation bar to the right side of a page for easier navigation within a type.
+By default all markdown files under `/api` will be considered as API pages. These pages are dedicated to a single type and receive a special frontmatter configuration, which allows to further customize an API page. The [Titanium theme](../theme) for example, adds an extra navigation bar to the right side of a page for easier navigation within a type.
 
-In addition to the layout change, API pages also have SSR [data pre-fetching](https://ssr.vuejs.org/guide/data.html) enabled out of the box.
+In addition, API pages have SSR [data pre-fetching](https://ssr.vuejs.org/guide/data.html) enabled out of the box.
 
 ### Demo
 

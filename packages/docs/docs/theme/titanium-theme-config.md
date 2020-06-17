@@ -1,8 +1,41 @@
+---
+contentSidebar: true
+sidebarDepth: 0
+---
+
 # Titanium Theme Config
 
 ::: tip
 This theme supports all [options](https://v1.vuepress.vuejs.org/theme/default-theme-config.html) of the VuePress default theme.
 :::
+
+## Sidebar
+
+An additional sidebar to the right with the first two level of headers (h2 and h3) of the current page can be displayed by setting the `contentSidebar` option in a page's [frontmatter](https://vuepress.vuejs.org/guide/frontmatter.html).
+
+```yaml
+---
+contentSidebar: true
+sidebarDepth: 0
+---
+```
+
+This is especially usefull when you already have a lot of content in the main sidebar and can help to avoid overloading it with too many items. You may need to adjust the `sidebarDepth` for the main sidebar to prevent showing the page headers there as well.
+
+::: tip
+A demo of the sidebar can be seen on this page.
+:::
+
+The title of the sidebar can be configured via `contentSidebarTitle`. If not set it defaults to "Contents".
+
+```js
+// .vuepress/config.js
+module.exports = {
+  themeConfig: {
+    contentSidebarTitle: 'On this page'
+  }
+}
+```
 
 ## Footer
 
