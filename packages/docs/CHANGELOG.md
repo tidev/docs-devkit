@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.5.0](https://github.com/appcelerator/docs-devkit/compare/v4.4.1...v4.5.0) (2020-06-18)
+
+
+### Features
+
+* support nested sidebars ([1e28793](https://github.com/appcelerator/docs-devkit/commit/1e28793))
+
+
+
+
+
 ## [4.4.1](https://github.com/appcelerator/docs-devkit/compare/v4.4.0...v4.4.1) (2020-06-12)
 
 **Note:** Version bump only for package docs

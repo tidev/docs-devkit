@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.5.0](https://github.com/appcelerator/docs-devkit/compare/v4.4.1...v4.5.0) (2020-06-18)
+
+
+### Bug Fixes
+
+* mark all nested sidebar items active ([fcc5312](https://github.com/appcelerator/docs-devkit/commit/fcc5312))
+* nested sidebars without path ([62bacb1](https://github.com/appcelerator/docs-devkit/commit/62bacb1))
+* pass reactive data to ensure child component updates ([1776df0](https://github.com/appcelerator/docs-devkit/commit/1776df0))
+* sidebar css fixes ([396ac84](https://github.com/appcelerator/docs-devkit/commit/396ac84))
+
+
+### Features
+
+* support nested sidebars ([1e28793](https://github.com/appcelerator/docs-devkit/commit/1e28793))
+
+
+
+
+
 ## [4.4.1](https://github.com/appcelerator/docs-devkit/compare/v4.4.0...v4.4.1) (2020-06-12)
 
 
