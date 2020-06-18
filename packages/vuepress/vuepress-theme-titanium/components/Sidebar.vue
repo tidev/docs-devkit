@@ -25,7 +25,8 @@ export default {
   components: { SidebarLinks, NavLinks },
   data: function () {
     return {
-      currentAnchor: null
+      currentAnchor: null,
+      sidebarItems: this.items
     }
   },
   props: ['items'],
@@ -35,10 +36,15 @@ export default {
   beforeDestroy () {
     Vue.$vuepress.store.$off('sidebarAnchorChanged', this.onAnchorChanged)
   },
+  watch: {
+    items (newItems) {
+      this.sidebarItems = newItems
+    }
+  },
   computed: {
     preparedItems () {
-      if (this.items.length === 0) {
-        return this.items
+      if (this.sidebarItems.length === 0) {
+        return this.sidebarItems
       }
 
       let currentAnchor = this.currentAnchor
@@ -47,7 +53,7 @@ export default {
       } else if (!currentAnchor) {
         currentAnchor = { path: this.$route.path }
       }
-      const preparedItems = this.items.map(item => {
+      const preparedItems = this.sidebarItems.map(item => {
         markActiveItemRecursive(item, currentAnchor)
         return Object.assign({}, item)
       })
@@ -85,11 +91,11 @@ function markActiveItemRecursive (item, currentAnchor) {
         childActive = true
       }
     }
-    item.children = children
+    Vue.set(item, 'children', children)
     active = selfActive || childActive
   }
 
-  item.active = active
+  Vue.set(item, 'active', active)
 
   return active
 }
