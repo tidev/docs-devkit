@@ -111,8 +111,6 @@ export default {
         top 0.5rem
         width 0.8rem
         height 0.8rem
-      &:not(.clickable)
-        opacity 0.5
     & > .sidebar-group-items
       padding-left 1rem
       & > li > .sidebar-link
@@ -143,8 +141,6 @@ export default {
   margin 0 0 0.5rem 0
   border-left 0.25rem solid transparent
   position relative
-  &.open, &:hover
-    color inherit
   &.clickable
     &.active
       font-weight 600

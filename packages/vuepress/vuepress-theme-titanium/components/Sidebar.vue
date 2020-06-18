@@ -74,7 +74,7 @@ function markActiveItemRecursive (item, currentAnchor) {
   if (item.children) {
     let childActive = false
     for (const c of item.children) {
-      if (!c.path) {
+      if (!c.path && item.path) {
         c.path = item.path.replace(hashRE, '') + '#' + c.slug
       }
       if (markActiveItemRecursive(c, currentAnchor)) {
