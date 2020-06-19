@@ -1004,7 +1004,7 @@ class MemberNode {
 		const last = parameters.length - 1;
 		const parameter = parameters[last];
 		if (!Array.isArray(parameter.type) || !parameter.repeatable) {
-			return [methodDoc];
+			return [ methodDoc ];
 		}
 
 		let parameterOverloads = [];
@@ -1030,7 +1030,7 @@ class MemberNode {
 		if (hasRepeatableAndArray) {
 			return methodOverloads;
 		} else {
-			return [JSON.parse(originalMethodDocJsonString)];
+			return [ JSON.parse(originalMethodDocJsonString) ];
 		}
 	}
 }
