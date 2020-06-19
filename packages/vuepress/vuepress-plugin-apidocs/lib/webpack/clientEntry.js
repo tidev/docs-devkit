@@ -8,6 +8,8 @@ window.__VUEPRESS__ = {
   hash: LAST_COMMIT_HASH
 }
 
+const pageLookupCache = new Map()
+
 createApp(false /* isServer */).then(({ app, router }) => {
   const store = app.$options.store
   if (window.__INITIAL_STATE__) {
@@ -22,6 +24,10 @@ createApp(false /* isServer */).then(({ app, router }) => {
 
   router.onReady(() => {
     const pages = app.$site.pages
+    for (let i = 0; i < pages.length; i++) {
+      const path = pages[i].path.toLowerCase()
+      pageLookupCache.set(path, i)
+    }
     if (!window.__INITIAL_STATE__) {
       fetchMetadata(router.currentRoute, pages, store)
     }
@@ -60,12 +66,5 @@ function fetchMetadata (route, pages, store) {
 }
 
 function findPageForPath (pages, path) {
-  for (let i = 0; i < pages.length; i++) {
-    const page = pages[i]
-    if (page.path.toLowerCase() === path.toLowerCase()) {
-      return page
-    }
-  }
-
-  return null
+  return pages[pageLookupCache.get(path)]
 }

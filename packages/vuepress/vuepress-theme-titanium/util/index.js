@@ -61,6 +61,12 @@ export function isActive (route, path) {
 }
 
 export function resolvePage (pages, rawPath, base) {
+  if (!resolvePage.cache) {
+    resolvePage.cache = new Map()
+    pages.forEach((page, i) => {
+      resolvePage.cache.set(normalize(page.regularPath), i)
+    })
+  }
   if (isExternal(rawPath)) {
     return {
       type: 'external',
@@ -71,13 +77,13 @@ export function resolvePage (pages, rawPath, base) {
     rawPath = resolvePath(rawPath, base)
   }
   const path = normalize(rawPath)
-  for (let i = 0; i < pages.length; i++) {
-    if (normalize(pages[i].regularPath) === path) {
-      return Object.assign({}, pages[i], {
-        type: 'page',
-        path: ensureExt(pages[i].path)
-      })
-    }
+  const cache = resolvePage.cache
+  if (cache.has(path)) {
+    const page = pages[cache.get(path)]
+    return Object.assign({}, page, {
+      type: 'page',
+      path: ensureExt(page.path)
+    })
   }
   console.error(`[vuepress] No matching page found for sidebar item "${rawPath}"`)
   return {}
