@@ -159,7 +159,6 @@ function exportPlatforms(api) {
 	const rv = [];
 	for (const platform in api.since) {
 		rv.push({
-			pretty_name: common.PRETTY_PLATFORM[platform],
 			since: api.since[platform],
 			name: platform
 		});
