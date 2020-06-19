@@ -3,10 +3,17 @@ export const extRE = /\.(md|html)$/
 export const endingSlashRE = /\/$/
 export const outboundRE = /^(https?:|mailto:|tel:)/
 
+const normalizedMap = new Map();
+
 export function normalize (path) {
-  return decodeURI(path)
+  if (normalizedMap.has(path)) {
+    return normalizedMap.get(path);
+  }
+  const result = decodeURI(path)
     .replace(hashRE, '')
     .replace(extRE, '')
+  normalizedMap.set(path, result);
+  return result;
 }
 
 export function getHash (path) {
