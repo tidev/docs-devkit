@@ -11,27 +11,6 @@ const common = require('../lib/common.js'),
 let doc = {};
 
 /**
- * Replace unsafe HMTL characters with dashes
- * @param {string} api api name
- * @return {string} replaced ':' with '-'
- */
-function cleanAPIName(api) {
-	return api.replace(/:/g, '-');
-}
-
-/**
- * Convert classname to filename
- * @param {string} name class name
- * @return {string|null} file basename for the class
- */
-function exportClassFilename(name) {
-	if (assert(doc, name)) {
-		return (doc[name].__subtype === 'module') ? name + '-module' : name + '-object';
-	}
-	return null;
-}
-
-/**
  * Export deprecated field
  * @param {object} api api object
  * @return {object|null}
@@ -80,10 +59,9 @@ function exportExamples(api) {
  * Export method parameters or event properties field
  * @param {object[]} apis api tree
  * @param {string} type type name
- * @param {string} filename file name
  * @return {object[]}
  */
-function exportParams(apis, type, filename) {
+function exportParams(apis, type) {
 	const rv = [];
 	if (apis) {
 		apis.forEach(function (member) {
@@ -97,12 +75,8 @@ function exportParams(apis, type, filename) {
 				annotatedMember.description = exportDescription(member);
 			}
 			annotatedMember.type = member.type || 'String';
-			if (type === 'properties') {
-				annotatedMember.filename = filename.slice(0, filename.indexOf('-event')) + '.' + member.name + '-callback-property';
-			}
 			if (type === 'parameters') {
 				annotatedMember.optional = member.optional || false;
-				annotatedMember.filename = filename + '.' + member.name + '-param';
 			}
 			rv.push(annotatedMember);
 		});
@@ -195,7 +169,6 @@ function exportAPIs(api, type) {
 			if (assert(member, 'description')) {
 				annotatedMember.description = exportDescription(member);
 			}
-			annotatedMember.filename = api.name + '.' + cleanAPIName(member.name) + '-' + member.__subtype;
 			annotatedMember.platforms = exportPlatforms(member);
 			if (member.__inherits !== api.name) {
 				annotatedMember.inherits = member.__inherits;
@@ -207,7 +180,7 @@ function exportAPIs(api, type) {
 						if ('Titanium.Event' in doc) {
 							member.properties = member.properties.concat(doc['Titanium.Event'].properties);
 						}
-						annotatedMember.properties = exportParams(member.properties, 'properties', annotatedMember.filename);
+						annotatedMember.properties = exportParams(member.properties, 'properties');
 					}
 					break;
 				case 'methods':
@@ -215,7 +188,7 @@ function exportAPIs(api, type) {
 						annotatedMember.examples = exportExamples(member);
 					}
 					if (assert(member, 'parameters')) {
-						annotatedMember.parameters = exportParams(member.parameters, 'parameters', annotatedMember.filename);
+						annotatedMember.parameters = exportParams(member.parameters, 'parameters');
 					}
 					annotatedMember.returns = exportReturnTypes(member);
 					break;
@@ -267,7 +240,6 @@ exports.exportData = function exportJSON(apis) {
 			summary: exportSummary(cls),
 			extends: cls['extends'] || 'Object',
 			platforms: exportPlatforms(cls),
-			filename: exportClassFilename(cls),
 			type: cls.__subtype || 'object'
 		};
 		// Avoid setting null/empty array values - trims down large filesize
@@ -288,9 +260,6 @@ exports.exportData = function exportJSON(apis) {
 		}
 		if (assert(cls, 'properties')) {
 			annotatedClass.properties = exportAPIs(cls, 'properties');
-		}
-		if (annotatedClass.filename === null) {
-			delete annotatedClass.filename;
 		}
 		if (~[ 'proxy', 'view' ].indexOf(annotatedClass.type)) {
 			annotatedClass.subtype = annotatedClass.type;
