@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.1](https://github.com/appcelerator/docs-devkit/compare/v4.5.0...v4.5.1) (2020-06-19)
+
+
+### Performance Improvements
+
+* **docgen:** don't include filename properties in json-raw output ([#36](https://github.com/appcelerator/docs-devkit/issues/36)) ([0eca516](https://github.com/appcelerator/docs-devkit/commit/0eca516))
+* **docgen:** don't include pretty_name in json-raw output ([#34](https://github.com/appcelerator/docs-devkit/issues/34)) ([7e5decd](https://github.com/appcelerator/docs-devkit/commit/7e5decd))
+
+
+
+
+
 # [4.4.0](https://github.com/appcelerator/docs-devkit/compare/v4.3.1...v4.4.0) (2020-06-12)
 
 

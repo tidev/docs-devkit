@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.1](https://github.com/appcelerator/docs-devkit/compare/v4.5.0...v4.5.1) (2020-06-19)
+
+
+### Performance Improvements
+
+* cache page lookup ([4c27c0f](https://github.com/appcelerator/docs-devkit/commit/4c27c0f))
+
+
+
+
+
 # [4.5.0](https://github.com/appcelerator/docs-devkit/compare/v4.4.1...v4.5.0) (2020-06-18)
 
 
