@@ -34,7 +34,7 @@ export function createMetadataModule (store, Vue, baseUrl) {
             })
           })
         }
-        const url = `${baseUrl}metadata/${id.toLowerCase()}.json`
+        const url = `${baseUrl}metadata/${id.toLowerCase()}.json`
         commit(LOADING, id)
         const { data } = await http.get(url)
         commit(LOADED, { id, metadata: data })
