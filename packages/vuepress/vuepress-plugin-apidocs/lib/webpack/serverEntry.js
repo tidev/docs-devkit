@@ -1,4 +1,3 @@
-import metadata from '@dynamic/metadata'
 import originalServerEntry from '@vuepress/core/lib/client/serverEntry'
 import { sync } from 'vuex-router-sync'
 
@@ -28,11 +27,11 @@ export default context => new Promise((resolve, reject) => {
       }
 
       const version = app.$page.version || 'next'
-      const versionedMetadataKey = `${version}/${metadataKey}`
+      const fullMetadataKey = `${version}/${metadataKey}`
       store.replaceState({
         metadata: {
           metadata: {
-            [versionedMetadataKey]: metadata[version][metadataKey]
+            [fullMetadataKey]: require(`@dynamic/metadata/${fullMetadataKey.toLowerCase()}.json`)
           },
           requests: {}
         }
