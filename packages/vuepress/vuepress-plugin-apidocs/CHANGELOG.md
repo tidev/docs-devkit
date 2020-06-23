@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.2](https://github.com/appcelerator/docs-devkit/compare/v4.5.1...v4.5.2) (2020-06-23)
+
+
+### Performance Improvements
+
+* **ssr:** load type metadata on api pages only ([c3b728a](https://github.com/appcelerator/docs-devkit/commit/c3b728a))
+
+
+
+
+
 ## [4.5.1](https://github.com/appcelerator/docs-devkit/compare/v4.5.0...v4.5.1) (2020-06-19)
 
 
