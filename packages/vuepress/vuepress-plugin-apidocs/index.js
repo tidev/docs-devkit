@@ -111,15 +111,8 @@ module.exports = (options = {}, context) => {
         JSON.stringify(typeLinks)
       )
 
-      fs.ensureDirSync(metadataDir)
-      for (const version in processed) {
-        fs.ensureDirSync(path.join(metadataDir, version))
-        for (const typeName in processed[version]) {
-          const metadata = metadataService.findMetadata(typeName, version)
-          const destPath = path.join(metadataDir, version, `${typeName.toLowerCase()}.json`)
-          fs.writeFileSync(destPath, JSON.stringify(metadata))
-        }
-      }
+      await fs.ensureDir(metadataDir)
+      return Promise.all(Object.keys(processed).map(version => readyVersion(metadataDir, version)))
     },
 
     /**
@@ -191,7 +184,7 @@ module.exports = (options = {}, context) => {
      */
     async generated () {
       // @todo check context.markdown.$data.typeLinks for existence
-      await fs.copy(metadataDir, path.resolve(context.outDir, 'metadata'))
+      return fs.copy(metadataDir, path.resolve(context.outDir, 'metadata'))
     },
 
     /**
@@ -271,4 +264,24 @@ function findMetadataWithLowerCasedKey (lowerCasedTypeName, version) {
   }
 
   return null
+}
+
+/**
+ * @param {string} metadataDir directory to place metadata
+ * @param {string} version version string
+ */
+async function readyVersion (metadataDir, version) {
+  await fs.ensureDir(path.join(metadataDir, version))
+  return Promise.all(Object.keys(processed[version]).map(typeName => readyVersionedType(metadataDir, version, typeName)))
+}
+
+/**
+ * @param {string} metadataDir directory to place metadata
+ * @param {string} version version string
+ * @param {string} typeName current type
+ */
+async function readyVersionedType (metadataDir, version, typeName) {
+  const metadata = metadataService.findMetadata(typeName, version)
+  const destPath = path.join(metadataDir, version, `${typeName.toLowerCase()}.json`)
+  return fs.writeJson(destPath, metadata)
 }
