@@ -374,7 +374,7 @@ function validateDataType(type, fullTypeContext) {
 		return errors;
 	}
 
-	// Check for compound types: Array<>, Callback<>, Function<>, Dictionary<>
+	// Check for compound types: Array<>, Callback<>, Function<>, Dictionary<>, Set<>, Promise<>, Map<>
 	const lessThanIndex = type.indexOf('<');
 	const greaterThanIndex = type.lastIndexOf('>');
 	if (lessThanIndex !== -1 && greaterThanIndex !== -1) {
@@ -384,7 +384,8 @@ function validateDataType(type, fullTypeContext) {
 		// Compound data type
 		const baseType = type.slice(0, lessThanIndex);
 		const subType = type.slice(lessThanIndex + 1, greaterThanIndex);
-		if (baseType === 'Callback' || baseType === 'Function') {
+		// TODO: Enforce Map can only have two subtypes
+		if (baseType === 'Callback' || baseType === 'Function' || baseType === 'Map') {
 			// functions can have multiple arguments as sub-types...
 			const errors = [];
 			subType.split(',').forEach(sub => {
@@ -392,8 +393,8 @@ function validateDataType(type, fullTypeContext) {
 			});
 			return errors;
 		}
-		// arrays and dictionaries can only have a single argument
-		if (baseType !== 'Array' && baseType !== 'Dictionary') {
+		// Arrays, Dictionaries, Sets and Promises can only have a single argument
+		if (baseType !== 'Array' && baseType !== 'Dictionary' && baseType !== 'Promise' && baseType !== 'Set') {
 			return [ new Problem(`Base type for complex types must be one of Array, Callback, Dictionary, Function, but received ${baseType}`) ];
 		}
 		// If we have an Array<Object> should we complain about that too?

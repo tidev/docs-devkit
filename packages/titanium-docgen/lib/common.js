@@ -32,8 +32,33 @@ exports.ADDON_VERSIONS = {
 	windowsphone: '4.1.0'
 };
 
-// TODO: Add null, undefined, Arguments, Function?
-exports.DATA_TYPES = [ 'Array', 'Boolean', 'Callback', 'Date', 'Dictionary', 'Number', 'Object', 'String', 'Error', 'RegExp' ];
+// TODO: Add null, undefined, Arguments, Infinity, NaN, Symbol, BigInt stuff?
+exports.DATA_TYPES = [
+	'Array',
+	'ArrayBuffer',
+	'Boolean',
+	'Callback', // alias for Function
+	'Date',
+	'Dictionary', // alias for generic JS Object
+	'Error',
+	'Float32Array',
+	'Float64Array',
+	'Function',
+	'Int16Array',
+	'Int32Array',
+	'Int8Array',
+	'Map',
+	'Number',
+	'Object',
+	'Promise',
+	'RegExp',
+	'Set',
+	'String',
+	'Uint16Array',
+	'Uint32Array',
+	'Uint8Array',
+	'Uint8ClampedArray'
+];
 exports.PRETTY_PLATFORM = {
 	android: 'Android',
 	blackberry: 'BlackBerry',

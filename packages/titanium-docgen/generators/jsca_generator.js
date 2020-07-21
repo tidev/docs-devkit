@@ -232,7 +232,7 @@ function exportType(api) {
 			rv = api.type;
 		}
 
-		if (rv.indexOf('Array') === 0) {
+		if (rv.indexOf('Array') === 0 && rv.indexOf('ArrayBuffer') !== 0) {
 			rv = 'Array';
 		} else if (rv.indexOf('Callback') === 0) {
 			rv = 'Function';

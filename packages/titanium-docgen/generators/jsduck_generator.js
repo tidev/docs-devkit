@@ -222,7 +222,8 @@ function exportType(api) {
 			types = [ api.type ];
 		}
 		types.forEach(function (type) {
-			if (type.indexOf('Array') === 0) {
+			// Handle ArrayBuffer/Uint8Array/etc properly!
+			if (type.indexOf('Array<') === 0) {
 				rv.push(exportType({ type: type.slice(type.indexOf('<') + 1, type.lastIndexOf('>')) }) + '[]');
 			} else {
 				rv.push(type);
