@@ -14,6 +14,7 @@
         </div>
       </div>
     </div>
+    <DeprecationAlert :deprecated="metadata.deprecated" />
     <div class="tip custom-block" v-if="metadata.type === 'pseudo'">
       <p class="custom-block-title">NOTE</p>
       <p>This is an abstract type. Any object of this structure can be used where this type is used.</p>
@@ -38,10 +39,15 @@
 import { ContentLoader } from 'vue-content-loader'
 
 import AvailabilityInfo from '../components/AvailabilityInfo'
+import DeprecationAlert from '../components/DeprecationAlert'
 import TypeComponentMixin from '../lib/utils/type-component-mixin'
 
 export default {
-  components: { AvailabilityInfo, ContentLoader },
+  components: {
+    AvailabilityInfo,
+    DeprecationAlert,
+    ContentLoader
+  },
   mixins: [TypeComponentMixin]
 }
 </script>

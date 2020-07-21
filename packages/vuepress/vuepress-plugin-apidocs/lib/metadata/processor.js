@@ -40,6 +40,9 @@ class MetadataProcessor {
       return self.renderToken(tokens, idx, options)
     }
     metadata.summary = this.renderMarkdown(metadata.summary)
+    if (metadata.deprecated) {
+      metadata.deprecated.notes = this.renderMarkdown(metadata.deprecated.notes)
+    }
     this.transformMembersAndCollectHeaders('properties', metadata)
     this.transformMembersAndCollectHeaders('methods', metadata)
     this.transformMembersAndCollectHeaders('events', metadata)
