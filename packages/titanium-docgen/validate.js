@@ -359,6 +359,26 @@ function validateConstant(constant) {
 }
 
 /**
+ * Parses the generic portion of a complex type string (the stuff inside the brackets)
+ * so for "Map<Number, String>", this would get "<Number, String>". Has to handle recursive complex types proeprly.
+ * @param {string} rawSubTypeString i.e. "Object", "void", "Map<Number, String>, Set<String>"
+ * @returns {string[]}
+ */
+function parseSubTypes(rawSubTypeString) {
+	const regex = /([^,<\s]+(<.+?>)?)/gm;
+	const types = [];
+	let m;
+	while ((m = regex.exec(rawSubTypeString)) !== null) {
+		// This is necessary to avoid infinite loops with zero-width matches
+		if (m.index === regex.lastIndex) {
+			regex.lastIndex++;
+		}
+		types.push(m[0]);
+	}
+	return types;
+}
+
+/**
  * Validate type
  * @param {string|string[]} type array of strings, or single string with a type name
  * @param {string|null} fullTypeContext full context of the type (for recursion), i.e. 'Callback<Object>' or 'Array<Object>'
@@ -374,51 +394,60 @@ function validateDataType(type, fullTypeContext) {
 		return errors;
 	}
 
-	// Check for compound types: Array<>, Callback<>, Function<>, Dictionary<>
+	// Check for compound types: Array<>, Callback<>, Function<>, Dictionary<>, Set<>, Promise<>, Map<>
 	const lessThanIndex = type.indexOf('<');
 	const greaterThanIndex = type.lastIndexOf('>');
 	if (lessThanIndex !== -1 && greaterThanIndex !== -1) {
-		if (type === 'Callback<void>') {
-			return [];
-		}
 		// Compound data type
 		const baseType = type.slice(0, lessThanIndex);
-		const subType = type.slice(lessThanIndex + 1, greaterThanIndex);
-		if (baseType === 'Callback' || baseType === 'Function') {
-			// functions can have multiple arguments as sub-types...
-			const errors = [];
-			subType.split(',').forEach(sub => {
-				errors.push(...validateDataType(sub.trim(), type));
-			});
-			return errors;
+		if (!common.COMPLEX_TYPES.has(baseType)) {
+			return [ new Problem(`${baseType} is not a valid complex type, must be one of ${Array.from(common.COMPLEX_TYPES.keys())}: ${fullTypeContext || type}`) ];
 		}
-		// arrays and dictionaries can only have a single argument
-		if (baseType !== 'Array' && baseType !== 'Dictionary') {
-			return [ new Problem(`Base type for complex types must be one of Array, Callback, Dictionary, Function, but received ${baseType}`) ];
+		const subTypes = parseSubTypes(type.slice(lessThanIndex + 1, greaterThanIndex));
+		const argCount = common.COMPLEX_TYPES.get(baseType);
+		// Enforce complex types have correct number of generics specified
+		if (argCount !== 0 && subTypes.length !== argCount) {
+			return [ new Problem(`${type} must have ${argCount} generic type(s) specified, but had ${subTypes.length}: ${fullTypeContext || type}`) ];
 		}
-		// If we have an Array<Object> should we complain about that too?
-		return validateDataType(subType, type);
+		// Special case for Callback<void> or Function<void>
+		if (argCount === 0 && subTypes.length === 1 && subTypes[0] === 'void') {
+			return [];
+		}
+		// check the generic types
+		const errors = [];
+		subTypes.forEach(sub => {
+			errors.push(...validateDataType(sub.trim(), type));
+		});
+		return errors;
 	}
 
-	// Warn about generic Dictonary/Object types
-	if ([ 'Dictionary', 'Object' ].includes(type)) {
-		// TODO: How can we mark/skip the valid cases here? Some APIs really do need to say "Object" as the arg/return value
-		return [ new Problem(`Please define a new type rather than using the generic Object/Dictionary references: ${fullTypeContext || type}`, WARNING) ];
-	}
+	// not written as a compound type...
+	const errors = [];
 
 	// Is this a built in Javascript type?
 	if (common.DATA_TYPES.includes(type)) {
-		return [];
+		// Should it have been written as a complex type?
+		if (common.COMPLEX_TYPES.has(type)) {
+			const argCount = common.COMPLEX_TYPES.get(type); // may be 0 if Function/Callback
+			// Enforce as ERROR if Promise/Set/Map doesn't have exact generic type count
+			const severity = [ 'Map', 'Set', 'Promise' ].includes(type) ? ERROR : WARNING;
+			errors.push(new Problem(`${type} ${severity === ERROR ? 'must' : 'should'} have ${argCount || 'any number of'} generic type(s) specified, but had 0: ${fullTypeContext || type}`, severity));
+		} else if (type === 'Object') {
+			// Warn about generic Object types (Dictionary is handled above as a complex type)
+			// TODO: How can we mark/skip the valid cases here? Some APIs really do need to say "Object" as the arg/return value
+			errors.push(new Problem(`Please define a new type rather than using the generic Object type reference: ${fullTypeContext || type}`, WARNING));
+		}
+		return errors;
 	}
 
 	// Is this a type in our APIDocs, or on our whitelist? (or are we on standalone mode?)
 	const possibleProblem = validateClass(type);
 	if (possibleProblem) {
-		return [ possibleProblem ];
+		errors.push(possibleProblem);
 	}
 
 	// class/type is fine or whitelisted
-	return [];
+	return errors;
 }
 
 /**

@@ -32,8 +32,38 @@ exports.ADDON_VERSIONS = {
 	windowsphone: '4.1.0'
 };
 
-// TODO: Add null, undefined, Arguments, Function?
-exports.DATA_TYPES = [ 'Array', 'Boolean', 'Callback', 'Date', 'Dictionary', 'Number', 'Object', 'String', 'Error', 'RegExp' ];
+exports.SIMPLE_TYPES = [
+	'ArrayBuffer',
+	'Boolean',
+	'Date',
+	'Error',
+	'Float32Array',
+	'Float64Array',
+	'Int16Array',
+	'Int32Array',
+	'Int8Array',
+	'Number',
+	'Object',
+	'RegExp',
+	'String',
+	'Uint16Array',
+	'Uint32Array',
+	'Uint8Array',
+	'Uint8ClampedArray'
+];
+// Mapping from base type name to number of generic types required (0 means 0-Infinity)
+exports.COMPLEX_TYPES = new Map([
+	[ 'Array',  1 ],
+	[ 'Callback', 0 ], // alias for Function
+	[ 'Dictionary', 1 ], // alias for generic JS Object
+	[ 'Function', 0 ],
+	[ 'Map', 2 ],
+	[ 'Promise', 1 ],
+	[ 'Set', 1 ],
+]);
+
+// TODO: Add null, undefined, Arguments, Infinity, NaN, Symbol, BigInt stuff?
+exports.DATA_TYPES = [].concat(exports.SIMPLE_TYPES, Array.from(exports.COMPLEX_TYPES.keys()));
 exports.PRETTY_PLATFORM = {
 	android: 'Android',
 	blackberry: 'BlackBerry',
