@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.6.0](https://github.com/appcelerator/docs-devkit/compare/v4.5.2...v4.6.0) (2020-07-21)
+
+
+### Features
+
+* **docgen:** support es6+ JS builtins ([#41](https://github.com/appcelerator/docs-devkit/issues/41)) ([d405ab4](https://github.com/appcelerator/docs-devkit/commit/d405ab4))
+
+
+
+
+
 ## [4.5.1](https://github.com/appcelerator/docs-devkit/compare/v4.5.0...v4.5.1) (2020-06-19)
 
 

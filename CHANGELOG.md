@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.6.0](https://github.com/appcelerator/docs-devkit/compare/v4.5.2...v4.6.0) (2020-07-21)
+
+
+### Bug Fixes
+
+* show proxy deprecation note ([#40](https://github.com/appcelerator/docs-devkit/issues/40)) ([5a26734](https://github.com/appcelerator/docs-devkit/commit/5a26734))
+
+
+### Features
+
+* **docgen:** support es6+ JS builtins ([#41](https://github.com/appcelerator/docs-devkit/issues/41)) ([d405ab4](https://github.com/appcelerator/docs-devkit/commit/d405ab4))
+* font awesome plugin ([#39](https://github.com/appcelerator/docs-devkit/issues/39)) ([bcb1512](https://github.com/appcelerator/docs-devkit/commit/bcb1512))
+
+
+
+
+
 ## [4.5.2](https://github.com/appcelerator/docs-devkit/compare/v4.5.1...v4.5.2) (2020-06-23)
 
 

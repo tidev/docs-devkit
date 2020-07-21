@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.6.0](https://github.com/appcelerator/docs-devkit/compare/v4.5.2...v4.6.0) (2020-07-21)
+
+
+### Bug Fixes
+
+* show proxy deprecation note ([#40](https://github.com/appcelerator/docs-devkit/issues/40)) ([5a26734](https://github.com/appcelerator/docs-devkit/commit/5a26734))
+
+
+
+
+
 ## [4.5.2](https://github.com/appcelerator/docs-devkit/compare/v4.5.1...v4.5.2) (2020-06-23)
 
 
