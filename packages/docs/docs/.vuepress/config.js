@@ -73,6 +73,7 @@ module.exports = context => ({
     }],
     // use full name or vuepress tries to load `../../apidocs` folder
     'vuepress-plugin-apidocs',
+    'fontawesome',
     '@vuepress/back-to-top'
   ]
 })
@@ -86,7 +87,8 @@ function getGuideSidebar (groupA, groupB) {
         '',
         'getting-started',
         'versioning',
-        'api-docs'
+        'api-docs',
+        'fontawesome'
       ]
     },
     {
@@ -108,6 +110,7 @@ function getPluginSidebar (pluginTitle, pluginIntro) {
         ['', pluginIntro],
         'versioning-plugin',
         'apidocs-plugin',
+        'fontawesome-plugin'
       ]
     }
   ]

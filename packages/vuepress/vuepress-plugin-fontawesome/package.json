@@ -1,0 +1,27 @@
+{
+  "name": "vuepress-plugin-fontawesome",
+  "version": "0.0.0",
+  "description": "FontAwesome plugin for VuePress",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vuepress",
+    "fontawesome",
+    "font",
+    "awesome",
+    "icons"
+  ],
+  "author": "Axway Appcelerator",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/appcelerator/docs-devkit.git",
+    "directory": "packages/vuepress/vuepress-plugin-fontawesome"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.29",
+    "@fortawesome/vue-fontawesome": "^0.1.10"
+  }
+}
