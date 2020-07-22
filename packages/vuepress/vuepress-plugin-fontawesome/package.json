@@ -1,5 +1,5 @@
 {
-  "name": "vuepress-plugin-fontawesome",
+  "name": "@titanium-sdk/vuepress-plugin-fontawesome",
   "version": "4.6.0",
   "description": "FontAwesome plugin for VuePress",
   "main": "index.js",
@@ -23,5 +23,8 @@
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.29",
     "@fortawesome/vue-fontawesome": "^0.1.10"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
