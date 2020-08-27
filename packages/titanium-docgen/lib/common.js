@@ -20,12 +20,13 @@ const yaml = require('js-yaml'),
 let logLevel = LOG_INFO;
 let md;
 
-exports.VALID_PLATFORMS = [ 'android', 'blackberry', 'iphone', 'ipad', 'windowsphone' ];
+exports.VALID_PLATFORMS = [ 'android', 'blackberry', 'iphone', 'ipad', 'windowsphone', 'macos' ];
 exports.VALID_OSES = [ 'android', 'blackberry', 'ios', 'windowsphone' ];
 exports.DEFAULT_VERSIONS = {
 	android: '0.8',
 	iphone: '0.8',
-	ipad: '0.8'
+	ipad: '0.8',
+	macos: '9.2.0'
 };
 exports.ADDON_VERSIONS = {
 	blackberry: '3.1.2',
@@ -70,6 +71,7 @@ exports.PRETTY_PLATFORM = {
 	ios: 'iOS',
 	iphone: 'iPhone',
 	ipad: 'iPad',
+	macos: 'macOS',
 	tizen: 'Tizen',
 	windowsphone: 'Windows'
 };

@@ -48,6 +48,7 @@ export default {
         case 'ios': return require('@apidocs/assets/apple-logo.png')
         case 'iphone': return require('@apidocs/assets/iphone-logo.png')
         case 'ipad': return require('@apidocs/assets/ipad-logo.png')
+        case 'macos': return require('@apidocs/assets/macos-logo.png')
         case 'windowsphone': return require('@apidocs/assets/windows-logo.png')
       }
     }

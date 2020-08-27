@@ -142,7 +142,7 @@ exports.exportData = function exportHTML(apis) {
 	}
 
 	const coverage = {};
-	[ 'iphone', 'ipad', 'android', 'windowsphone' ].forEach(function (platform) {
+	[ 'iphone', 'ipad', 'macos', 'android', 'windowsphone' ].forEach(function (platform) {
 		if (platform in rv.coverage) {
 			coverage[platform] = rv.coverage[platform];
 			delete rv.coverage[platform];
