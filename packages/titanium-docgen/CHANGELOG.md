@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.7.0](https://github.com/appcelerator/docs-devkit/compare/v4.6.1...v4.7.0) (2020-08-28)
+
+
+### Features
+
+* support macos ([bc3462f](https://github.com/appcelerator/docs-devkit/commit/bc3462f))
+* **docgen:** Add more validations for since/deprecated, duplicated platform listings ([b28357b](https://github.com/appcelerator/docs-devkit/commit/b28357b))
+
+
+
+
+
 # [4.6.0](https://github.com/appcelerator/docs-devkit/compare/v4.5.2...v4.6.0) (2020-07-21)
 
 
