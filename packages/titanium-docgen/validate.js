@@ -41,7 +41,7 @@ const Deprecated = {
 		since: 'Since'
 	},
 	optional: {
-		removed: 'String',
+		removed: 'Removed',
 		notes: 'String'
 	}
 };
@@ -468,6 +468,7 @@ function validateDefault(val) {
  * @returns {null|Problem} possible Problem if not valid
  */
 function validatePlatforms(platforms) {
+	// FIXME: If something explicitly lists a platform excluded at some higher level, we should error/warn!
 	if (!Array.isArray(platforms)) {
 		return new Problem('must be an array of valid platform names');
 	}
@@ -628,13 +629,23 @@ function validateReturns(ret) {
 /**
  * Validate since version
  * @param {object|string} version object holding platform/os to version string; or a normal version string
+ * @param {Set<string>} platformsInContext the set of platforms this api member is listed as available on
  * @returns {Problem[]} array of Problems (may be empty)
  */
-function validateSince(version) {
+function validateSince(version, platformsInContext) {
 	const errors = [];
 	// since values may be listed per-platform
 	if (typeof version === 'object') {
 		for (const platform in version) {
+			// Validate the platform specified is valid in this context (i.e. this api member is actually available on this platform!)
+			if (!platformsInContext.has(platform)) {
+				errors.push(new Problem(`Platform specified in 'since' ('${platform}') isn't one of the platforms this API is marked as available upon: ${Array.from(platformsInContext)}`));
+			}
+			// TODO: Check if the since value is extraneous (duplicates the inherited value)
+			// This can be true if they explitly state the same value *or* if the implict "default" value for a platform would have been used
+			// i.e. macos default is 9.2.0, so even if the property/method states a blanket "3.3.0", 9.2.0 would be used for macos
+			// so we do not need to break it out by platform!
+			// (Or do we want to encourage explicit values if they align with default?)
 			if (platform in common.DEFAULT_VERSIONS) {
 				try {
 					// is it reporting a version before our initial version of the platform?
@@ -656,6 +667,31 @@ function validateSince(version) {
 	if (possibleProblem) {
 		errors.push(possibleProblem);
 	}
+	return errors;
+}
+
+/**
+ * Validate deprecated.removed version
+ * @param {string} version raw version number string
+ * @param {Set<string>} platformsInContext the set of platforms this api member is listed as available on
+ * @returns {Problem[]} array of Problems (may be empty)
+ */
+function validateRemoved(version, platformsInContext) {
+	const errors = [];
+	const possibleProblem = validateVersion(version);
+	// If we can't parse it as a version, we can't compare, so just return the initial error
+	if (possibleProblem) {
+		errors.push(possibleProblem);
+		return errors;
+	}
+	// FIXME: if the platform isn't listed explicitly at this level, we may just ignore it
+	// How can we get access to the list of explicit platforms?! It'd be up the hierarchy from current object
+	platformsInContext.forEach(p => {
+		const earliestVersion = common.DEFAULT_VERSIONS[p];
+		if (nodeappc.version.lt(version, earliestVersion)) {
+			errors.push(new Problem(`API was removed in version: ${version}, but lists a platform introduced in ${earliestVersion}: ${p}`));
+		}
+	});
 	return errors;
 }
 
@@ -779,18 +815,31 @@ function generateFullPath(baseNamespace, keyName) {
  * @param {string} currentKey current key
  * @param {string} className Name of class being validated
  * @param {string} fullKeyPath full namespace of the key
+ * @param {Set<string>} platformsInContext set of platforms this API is declared to be filtered to
  * @returns {Map<String, Problem[]>} mapping from keys to array of problems found for that key
  */
-function validateObjectAgainstSyntax(obj, syntax, type, currentKey, className, fullKeyPath) {
+function validateObjectAgainstSyntax(obj, syntax, type, currentKey, className, fullKeyPath, platformsInContext) {
 	// If syntax is a dictionary, validate object against syntax dictionary
 	let result = new Map();
+
+	// Narrow the set of platforms
+	// TODO: allow method parameters to narrow too?
+	if (type === 'properties' || type === 'methods' || type === 'events') {
+		// If the set is the exact same **and** they specified a platforms explicitly, warn that it was unnecessary?
+		const before = platformsInContext.size;
+		platformsInContext = filterPlatforms(obj, platformsInContext);
+		const after = platformsInContext.size;
+		if (before === after && obj.platforms) {
+			result.set(generateFullPath(fullKeyPath, 'platforms'), [ new Problem(`Unnecessary platforms listing which is the same as the inherited set: ${obj.platforms}`, WARNING) ]);
+		}
+	}
 
 	// Ensure required keys exist and then validate them
 	const requiredKeys = syntax.required;
 	for (const requiredKey in requiredKeys) {
 		const fullRequiredKeyPath = generateFullPath(fullKeyPath, requiredKey);
 		if (requiredKey in obj) {
-			result = mergeMaps(result, validateKey(obj[requiredKey], requiredKeys[requiredKey], requiredKey, className, fullRequiredKeyPath));
+			result = mergeMaps(result, validateKey(obj[requiredKey], requiredKeys[requiredKey], requiredKey, className, fullRequiredKeyPath, platformsInContext));
 		} else {
 			// We're missing a required field. Check the parent to see if it's filled in there.
 			// Only do this check when we're overriding an event, property or method, not top-level fields like 'summary'
@@ -823,7 +872,7 @@ function validateObjectAgainstSyntax(obj, syntax, type, currentKey, className, f
 	const optionalKeys = syntax.optional;
 	for (const optionalKey in optionalKeys) {
 		if (optionalKey in obj) {
-			result = mergeMaps(result, validateKey(obj[optionalKey], optionalKeys[optionalKey], optionalKey, className, generateFullPath(fullKeyPath, optionalKey)));
+			result = mergeMaps(result, validateKey(obj[optionalKey], optionalKeys[optionalKey], optionalKey, className, generateFullPath(fullKeyPath, optionalKey), platformsInContext));
 		}
 	}
 
@@ -884,9 +933,10 @@ function getPropertyName(fullKeyPath) {
  * @param {String} currentKey Current key being validated
  * @param {String} className Name of class being validated
  * @param {string} fullKeyPath full namespace of the current key
+ * @param {Set<string>} platformsInContext set of platforms this API member is said to be filtered to
  * @returns {Map<String, Problem[]>} keys are the key paths, values are an array of Problems found for that specific apidoc tree member
  */
-function validateKey(obj, syntax, currentKey, className, fullKeyPath) {
+function validateKey(obj, syntax, currentKey, className, fullKeyPath, platformsInContext) {
 	// if a value is an Array in the syntax definition, it basically means that the given element can have 0+ instances of the wrapped object/syntax
 	if (Array.isArray(syntax)) {
 		if (syntax.length !== 1) {
@@ -894,7 +944,7 @@ function validateKey(obj, syntax, currentKey, className, fullKeyPath) {
 			return possibleProblemAsMap(fullKeyPath, new Problem(`Syntax tree definition has more than one Array element at ${syntax}. Please fix it.`));
 		}
 
-		// Should only contain one enrty, an object holding the definition of elements allowed in the array for this key
+		// Should only contain one entry, an object holding the definition of elements allowed in the array for this key
 		const firstSyntaxElement = syntax[0];
 		if (typeof firstSyntaxElement !== 'object') {
 			return possibleProblemAsMap(fullKeyPath, new Problem(`Syntax tree definition has a non-Object Array element at ${syntax}. Please fix it.`));
@@ -911,14 +961,14 @@ function validateKey(obj, syntax, currentKey, className, fullKeyPath) {
 		obj.forEach((elem, index) => {
 			const name = elem.name || '__noname';
 			const nameOrIndex = elem.name || index;
-			problemMap = mergeMaps(problemMap, validateObjectAgainstSyntax(elem, firstSyntaxElement, currentKey, name, className, `${fullKeyPath}[${nameOrIndex}]`));
+			problemMap = mergeMaps(problemMap, validateObjectAgainstSyntax(elem, firstSyntaxElement, currentKey, name, className, `${fullKeyPath}[${nameOrIndex}]`, platformsInContext));
 		});
 		return problemMap;
 	}
 
 	// we're matching a given parsed apidoc tree item/node against the defined syntax tree/object (defined at the top of this file)
 	if (typeof syntax === 'object') {
-		return validateObjectAgainstSyntax(obj, syntax, null, currentKey, className, fullKeyPath);
+		return validateObjectAgainstSyntax(obj, syntax, null, currentKey, className, fullKeyPath, platformsInContext);
 	}
 
 	// We have a specific syntax element to validate against
@@ -937,12 +987,14 @@ function validateKey(obj, syntax, currentKey, className, fullKeyPath) {
 			return possibleProblemAsMap(fullKeyPath, validateNumber(obj));
 		case 'OSVersions':
 			return possibleProblemArrayAsMap(fullKeyPath, validateOSVersions(obj));
+		case 'Removed':
+			return possibleProblemArrayAsMap(fullKeyPath, validateRemoved(obj, platformsInContext));
 		case 'Primitive':
 			return possibleProblemAsMap(fullKeyPath, validatePrimitive(obj));
 		case 'Returns':
 			return possibleProblemArrayAsMap(fullKeyPath, validateReturns(obj));
 		case 'Since':
-			return possibleProblemArrayAsMap(fullKeyPath, validateSince(obj));
+			return possibleProblemArrayAsMap(fullKeyPath, validateSince(obj, platformsInContext));
 		case 'LowercaseASCIIString':
 			return possibleProblemAsMap(fullKeyPath, validateLowercaseString(obj));
 		case 'String':
@@ -982,6 +1034,22 @@ function validateKey(obj, syntax, currentKey, className, fullKeyPath) {
 			// This should never happen!
 			return possibleProblemAsMap(fullKeyPath, new Problem(`Did not validate: ${currentKey} = ${obj}`, WARNING));
 	}
+}
+
+/**
+ * @param {object} obj api member from YML
+ * @param {Set<string>} defaultPlatforms the default set of platforms inherited
+ * @returns {Set<string>} the set of platforms this api member is said to be filtered to
+ */
+function filterPlatforms(obj, defaultPlatforms) {
+	// if the api member explicitly declares a set of platforms use it. Otherwise fall back to the inherited set (or the implicit default)
+	const platformsInContext = new Set(obj.platforms ? obj.platforms : defaultPlatforms);
+
+	// Now remove exclude-platforms
+	if (obj['exclude-platforms']) {
+		obj['exclude-platforms'].forEach(p => platformsInContext.delete(p));
+	}
+	return platformsInContext;
 }
 
 /**
@@ -1075,6 +1143,8 @@ if (Object.keys(doc).length === 0) {
 }
 
 common.createMarkdown(doc);
+// TODO: Move to common?
+const DEFAULT_PLATFORMS = new Set(Object.keys(common.DEFAULT_VERSIONS));
 
 // Keep track of all errors/warnings across all files
 let totalErrorCount = 0;
@@ -1088,7 +1158,8 @@ for (const key in doc) {
 	let warningCount = 0;
 	let output = '';
 	try {
-		const keysToProblems = validateKey(cls, validSyntax, null, key, null);
+		const platformsInContext = filterPlatforms(cls, DEFAULT_PLATFORMS);
+		const keysToProblems = validateKey(cls, validSyntax, null, key, null, platformsInContext);
 		keysToProblems.forEach((problems, key) => {
 			problems.forEach(p => {
 				if (p.isError()) {
