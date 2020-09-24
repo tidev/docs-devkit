@@ -21,14 +21,20 @@ const skipApis = [
 // List of modules that need to be generated as an interface instead of a namespace.
 const forcedInterfaces = [
 	'Titanium.Android.R',
-	'Titanium.App.iOS.UserDefaults',
-	'Global.String'
+	'Titanium.App.iOS.UserDefaults'
 ];
 
 const eventsMethods = [
 	'addEventListener',
 	'removeEventListener',
 	'fireEvent'
+];
+
+const globalIgnoreList = [
+	'Global',
+	'CollatorOptions',
+	'DateTimeFormatOptions',
+	'NumberFormatOptions'
 ];
 
 let parser = null;
@@ -355,6 +361,9 @@ class GlobalTemplateWriter {
 		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';
 		this.output += '// TypeScript Version: 3.0\n';
 		this.output += '\n';
+		this.output += '// Base definitions that can\'t be generated yet\n';
+		this.output += '/// <reference path="base.d.ts" />\n';
+		this.output += '\n';
 		this.output += 'type _Omit<T, K extends keyof any | undefined> = Pick<T, Exclude<keyof T, K>>;\n';
 		this.output += 'type FunctionPropertyNames<T> = {\n';
 		this.output += '	// tslint:disable-next-line:ban-types\n';
@@ -381,6 +390,11 @@ class GlobalTemplateWriter {
 		const copy = nodes.slice().sort(sortByFQN);
 		while (copy.length) {
 			const node = copy.shift();
+			if (globalIgnoreList.includes(node.name)) {
+				// @fixme: Global type definitions need special massaging so we handle them manually right now
+				// @see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/titanium/globals.d.ts
+				continue;
+			}
 			if (node instanceof InterfaceNode) {
 				this.writeInterfaceNode(node, 0);
 				if (node.relatedNode) {
@@ -428,8 +442,7 @@ class GlobalTemplateWriter {
 			}
 		}
 
-		const isGlobal = namespaceNode.name === 'Global';
-		const nextNestingLevel = isGlobal ? nestingLevel : nestingLevel + 1;
+		const nextNestingLevel = nestingLevel + 1;
 
 		this.output += this.generateJsDoc(namespaceNode, nestingLevel);
 
@@ -437,9 +450,8 @@ class GlobalTemplateWriter {
 			this.output += `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}const ${namespaceNode.name}: never;\n`;
 			return;
 		}
-		if (!isGlobal) {
-			this.output += `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}namespace ${namespaceNode.name} {\n`;
-		}
+
+		this.output += `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}namespace ${namespaceNode.name} {\n`;
 		if (hasProperties) {
 			namespaceNode.properties.forEach(propertyNode => this.writeVariableNode(propertyNode, nextNestingLevel));
 		}
@@ -452,9 +464,7 @@ class GlobalTemplateWriter {
 		if (hasInterfaces) {
 			namespaceNode.interfaces.sort(sortByFQN).forEach(interfaceNode => this.writeInterfaceNode(interfaceNode, nextNestingLevel));
 		}
-		if (!isGlobal) {
-			this.output += `${this.indent(nestingLevel)}}\n`;
-		}
+		this.output += `${this.indent(nestingLevel)}}\n`;
 	}
 
 	/**
