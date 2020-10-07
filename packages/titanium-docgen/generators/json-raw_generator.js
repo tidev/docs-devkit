@@ -10,6 +10,9 @@ const common = require('../lib/common.js'),
 	assert = common.assertObjectKey;
 let doc = {};
 
+// eslint-disable-next-line security/detect-child-process
+const exec = require('child_process').execSync;
+
 /**
  * Export deprecated field
  * @param {object} api api object
@@ -222,6 +225,40 @@ function exportAPIs(api, type) {
 	return rv;
 }
 
+const REPO_URLS = new Map();
+/**
+ * Convert a filepath on disk to the URL of the repo on github for that file
+ * @param {string} filepath file path (should be root of git clone)
+ * @returns {string}
+ */
+function getRepoUrl(filepath) {
+	if (REPO_URLS.has(filepath)) {
+		return REPO_URLS.get(filepath);
+	}
+	const stdout = exec('git config --get remote.origin.url', { cwd: filepath }).toString().trim();
+	const m = stdout.match(/^(git@|https:\/\/)github.com[:/]([\w-]+)\/([\w_-]+)\.git$/);
+	if (!m) {
+		const result = 'https://github.com/appcelerator/titanium_mobile/edit/master/';
+		REPO_URLS.set(filepath, result);
+		return result;
+	}
+	const org = m[2];
+	const repo = m[3];
+	const result = `https://github.com/${org}/${repo}/edit/master/`;
+	REPO_URLS.set(filepath, result);
+	return result;
+}
+
+function editUrl(api) {
+	const file = api.__file;
+	// we need to strip path to remove al the way up to /apidoc to get the relative path
+	const apiDocIndex = file.indexOf('apidoc/');
+	const relPath = file.slice(apiDocIndex);
+	const basePath = file.slice(0, apiDocIndex);
+	const repoUrl = getRepoUrl(basePath);
+	return `${repoUrl}${relPath}`;
+}
+
 /**
  * Annotate JSON data for consumption by third-party tools
  * @param {object[]} apis api tree
@@ -240,7 +277,8 @@ exports.exportData = function exportJSON(apis) {
 			summary: exportSummary(cls),
 			extends: cls['extends'] || 'Object',
 			platforms: exportPlatforms(cls),
-			type: cls.__subtype || 'object'
+			type: cls.__subtype || 'object',
+			editUrl: editUrl(cls)
 		};
 		// Avoid setting null/empty array values - trims down large filesize
 		if (assert(cls, 'deprecated')) {
