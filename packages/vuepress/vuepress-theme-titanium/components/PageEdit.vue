@@ -53,6 +53,10 @@ export default {
         return
       }
 
+      if (!isNil(this.$page.frontmatter.editUrl)) {
+        return this.$page.frontmatter.editUrl
+      }
+
       const {
         repo,
         editLinks,
