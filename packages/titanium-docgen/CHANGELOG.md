@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.8.0](https://github.com/appcelerator/docs-devkit/compare/v4.7.0...v4.8.0) (2020-10-08)
+
+
+### Bug Fixes
+
+* **ts:** exclude global types ([#45](https://github.com/appcelerator/docs-devkit/issues/45)) ([a4e5814](https://github.com/appcelerator/docs-devkit/commit/a4e5814))
+
+
+### Features
+
+* **titanium-docgen:** include editUrl in json-raw output for types ([5b0890c](https://github.com/appcelerator/docs-devkit/commit/5b0890c))
+
+
+
+
+
 # [4.7.0](https://github.com/appcelerator/docs-devkit/compare/v4.6.1...v4.7.0) (2020-08-28)
 
 
