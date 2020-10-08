@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.8.1](https://github.com/appcelerator/docs-devkit/compare/v4.8.0...v4.8.1) (2020-10-08)
+
+
+### Bug Fixes
+
+* **docgen:** better match git repo URIs, report bad via console ([444d94f](https://github.com/appcelerator/docs-devkit/commit/444d94f))
+
+
+
+
+
 # [4.8.0](https://github.com/appcelerator/docs-devkit/compare/v4.7.0...v4.8.0) (2020-10-08)
 
 
