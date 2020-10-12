@@ -70,14 +70,14 @@ export default {
       margin-left: 0.8rem
       display flex
       flex-shrink 0
+      align-items center
 
       &>.platform-logo
         height 1rem
         width 1rem
-        vertical-align top
 
       &>span
-        margin-left: 0.4rem
+        margin-left: 0.25rem
 
 @media (max-width: $MQMobile)
   .availability

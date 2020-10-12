@@ -46,15 +46,16 @@ export default {
 
 <style lang="stylus">
 .member-list
-  & h2, h3, h4
-    margin-top: -3.1rem;
-    padding-top: 4.6rem;
-    margin-bottom: 0;
-
   .member-header
     display flex
+    align-items center
 
-    &>h3, h4
+    & > h3, h4
       flex-grow 1
-</style>
+      margin-top 0
 
+  h1, h2, h3
+    &:hover
+      a
+        opacity 1
+</style>
