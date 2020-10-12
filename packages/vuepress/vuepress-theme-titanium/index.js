@@ -22,6 +22,7 @@ module.exports = (options, ctx) => ({
     '@vuepress/nprogress',
     ['container', { type: 'tip' }],
     ['container', { type: 'warning' }],
-    ['container', { type: 'danger' }]
+    ['container', { type: 'danger' }],
+    require('./plugins/smoothScroll')
   ]
 })
