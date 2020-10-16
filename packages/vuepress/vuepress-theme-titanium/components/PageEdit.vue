@@ -66,9 +66,8 @@ export default {
         docsDirPages = 'website/pages'
       } = this.$site.themeConfig
       let { docsDir = '' } = this.$site.themeConfig
-      let path = this.$page.regularPath
+      const path = this.$page.relativePath
       if (this.$page.version) {
-        path = this.$page.originalRegularPath
         if (this.$page.version !== 'next') {
           docsDir = docsDirVersioned
         }
