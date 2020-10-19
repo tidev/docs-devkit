@@ -787,7 +787,6 @@ if ((argc = process.argv.length) > 2) {
 			case '--help' :
 				cliUsage();
 				process.exit(0);
-				break;
 			case '--addon-docs' :
 			case '-a':
 				path = process.argv[++x];
