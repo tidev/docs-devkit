@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.8.2](https://github.com/appcelerator/docs-devkit/compare/v4.8.1...v4.8.2) (2020-10-19)
+
+
+### Bug Fixes
+
+* scroll behavior and css adjustments ([c8cb639](https://github.com/appcelerator/docs-devkit/commit/c8cb639))
+* **apidocs:** mark constants as readonly ([02ff95d](https://github.com/appcelerator/docs-devkit/commit/02ff95d))
+* **apidocs:** show property default value and related constants ([b73996a](https://github.com/appcelerator/docs-devkit/commit/b73996a))
+* **theme:** add axway color variables ([df8c5b3](https://github.com/appcelerator/docs-devkit/commit/df8c5b3))
+* **theme:** try to use axway typography values for headers ([7fd1115](https://github.com/appcelerator/docs-devkit/commit/7fd1115))
+* **theme:** use axway blue colors for inline code tags ([16bb3e5](https://github.com/appcelerator/docs-devkit/commit/16bb3e5))
+* **theme:** use axway danger/success/warn colors for badges ([a543d9c](https://github.com/appcelerator/docs-devkit/commit/a543d9c))
+* **theme:** use axway danger/success/warn colors for custom blocks ([4a9cfe1](https://github.com/appcelerator/docs-devkit/commit/4a9cfe1))
+* **theme:** use page relativePath to generate edit link ([#70](https://github.com/appcelerator/docs-devkit/issues/70)) ([ca0e1c2](https://github.com/appcelerator/docs-devkit/commit/ca0e1c2)), closes [#48](https://github.com/appcelerator/docs-devkit/issues/48)
+
+
+
+
+
 ## [4.8.1](https://github.com/appcelerator/docs-devkit/compare/v4.8.0...v4.8.1) (2020-10-08)
 
 

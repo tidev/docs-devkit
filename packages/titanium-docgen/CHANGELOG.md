@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.8.2](https://github.com/appcelerator/docs-devkit/compare/v4.8.1...v4.8.2) (2020-10-19)
+
+
+### Bug Fixes
+
+* **apidocs:** show property default value and related constants ([b73996a](https://github.com/appcelerator/docs-devkit/commit/b73996a))
+
+
+
+
+
 ## [4.8.1](https://github.com/appcelerator/docs-devkit/compare/v4.8.0...v4.8.1) (2020-10-08)
 
 
