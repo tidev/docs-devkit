@@ -156,8 +156,12 @@ module.exports = (options, context) => {
         } else {
           page.path = page.regularPath = generateVersionedPath(page.path, page.version, page._localePath)
         }
+        page.originalRelativePath = page.relativePath
+        page.relativePath = path.relative(versionedSourceDir, page._filePath).replace(/\\/g, '/')
       } else if (page._filePath.startsWith(pagesSourceDir)) {
         page.unversioned = true
+        page.originalRelativePath = page.relativePath
+        page.relativePath = path.relative(pagesSourceDir, page._filePath).replace(/\\/g, '/')
       } else if (page._filePath.startsWith(context.sourceDir)) {
         page.version = 'next'
         page.originalRegularPath = page.regularPath
