@@ -43,23 +43,17 @@ class MetadataProcessor {
     if (metadata.deprecated) {
       metadata.deprecated.notes = this.renderMarkdown(metadata.deprecated.notes)
     }
+    this.splitPropertiesAndConstants(metadata)
+    this.hasConstants = metadata.constants.length
     this.transformMembersAndCollectHeaders('properties', metadata)
     this.transformMembersAndCollectHeaders('methods', metadata)
     this.transformMembersAndCollectHeaders('events', metadata)
+    this.transformMembersAndCollectHeaders('constants', metadata)
     this.markdown.renderer.rules.link_open = vueRouterLinkRule
-
-    this.splitPropertiesAndConstants(metadata)
   }
 
   appendAdditionalHeaders (page) {
     page.headers = (page.headers || []).concat(this.additionalHeaders)
-    if (this.hasConstants) {
-      page.headers.push({
-        level: 2,
-        title: 'Constants',
-        slug: 'constants'
-      })
-    }
   }
 
   filterInheritedMembers (metadata) {
@@ -99,10 +93,7 @@ class MetadataProcessor {
         memberMetadata.returns.summary = this.renderMarkdown(memberMetadata.returns.summary)
       }
 
-      if (memberType === 'properties' && this.constantNamingPattern.test(memberMetadata.name)) {
-        this.hasConstants = true
-        return
-      } else if (memberType === 'methods') {
+      if (memberType === 'methods') {
         const parameters = memberMetadata.parameters || []
         for (const parameterMeta of parameters) {
           this.renderSummaryAndDescription(parameterMeta)
@@ -126,7 +117,9 @@ class MetadataProcessor {
         title: memberType.charAt(0).toUpperCase() + memberType.slice(1),
         slug: memberType
       })
-      this.additionalHeaders = this.additionalHeaders.concat(headers)
+      if (memberType !== 'constants') {
+        this.additionalHeaders = this.additionalHeaders.concat(headers)
+      }
     }
   }
 
