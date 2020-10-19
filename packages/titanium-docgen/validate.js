@@ -1074,7 +1074,6 @@ if (argc > 2) {
 			case '--help':
 				cliUsage();
 				process.exit(0);
-				break;
 			// TODO: Remove standalone mode? It really just ignores being unable to resolve any types
 			// We should probably just make it like an auto-whitelist for commonly-referred-to types in SDK like Ti.Proxy, Ti.UI.View
 			case '--standalone':
