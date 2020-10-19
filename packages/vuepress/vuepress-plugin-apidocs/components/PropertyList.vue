@@ -15,7 +15,10 @@
       <DeprecationAlert :deprecated="property.deprecated"/>
       <div class="member-summary" v-html="property.summary"></div>
       <div class="member-description" v-html="property.description"></div>
-      <p v-if="property.defaultValue"><strong>Default:</strong> <code>{{property.defaultValue}}</code></p>
+      <valid-constants v-if="property.constants" :constants="property.constants"/>
+      <p v-if="property.default">
+        <strong>Default:</strong> <code><type-link :type="normalizeType(property.default)"/></code>
+      </p>
       <hr v-if="index < properties.length - 1">
     </div>
   </div>
@@ -25,17 +28,34 @@
 import AvailabilityInfo from './AvailabilityInfo'
 import DeprecationAlert from './DeprecationAlert'
 import PropertySignature from './PropertySignature'
+import ValidConstants from './ValidConstants'
 
 export default {
   components: {
     AvailabilityInfo,
     DeprecationAlert,
-    PropertySignature
+    PropertySignature,
+    ValidConstants
   },
   props: {
     properties: {
       type: Array,
       default: () => []
+    }
+  },
+  methods: {
+    normalizeType (type) {
+      switch (typeof type) {
+        case 'undefined':
+          return 'undefined'
+        case 'boolean':
+        case 'number':
+          return type.toString()
+        case 'string':
+          return type.replace(/^<|>$/g, '')
+        default:
+          return type
+      }
     }
   }
 }

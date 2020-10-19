@@ -215,6 +215,9 @@ function exportAPIs(api, type) {
 					if (assert(member, 'value')) {
 						annotatedMember.value = member.value;
 					}
+					if (assert(member, 'constants')) {
+						annotatedMember.constants = member.constants;
+					}
 			}
 
 			rv.push(annotatedMember);
