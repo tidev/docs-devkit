@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@vuepress/shared-utils": "^1.5.2",
-    "axios": "^0.19.0",
+    "axios": "^0.20.0",
     "fs-extra": "^8.1.0",
     "titanium-docgen": "^4.8.1",
     "vue-content-loader": "^0.2.2"
