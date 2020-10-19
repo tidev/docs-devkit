@@ -8,24 +8,22 @@
     border-left-style solid
     margin 1rem 0
   &.tip
-    background-color #EDF2F7
-    border-color #63B3ED
+    background-color $success-ltr 
+    border-color $succcess
   &.warning
-    background-color #FFF5E7
-    border-color #FFCF51
-    color darken(#FFCF51, 70%)
+    background-color $warning-ltr
+    border-color $warning
     .custom-block-title
-      color darken(#FFCF51, 50%)
+      color $warning
     a
-      color $textColor
+      color $warning-dk
   &.danger
-    background-color #FFEBEE
-    border-color #FF605A
-    color darken(red, 70%)
+    background-color $danger-ltr
+    border-color $danger
     .custom-block-title
-      color darken(red, 40%)
+      color $danger
     a
-      color $textColor
+      color $danger-dk
 
 pre.vue-container
   border-left-width: .5rem;
