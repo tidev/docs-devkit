@@ -7,7 +7,7 @@
     <div v-for="(constant, index) in constants" :key="constant.name">
       <div class="member-header">
         <h4 :id="constant.name.toLowerCase()">
-          <a :href="`#${constant.name.toLowerCase()}`" class="header-anchor">#</a> {{constant.name}} <Badge v-if="constant.deprecated" text="DEPRECATED" type="warn"/>
+          <a :href="`#${constant.name.toLowerCase()}`" class="header-anchor">#</a> {{constant.name}} <Badge text="READONLY" type="light"/><Badge v-if="constant.deprecated" text="DEPRECATED" type="warn"/>
         </h4>
         <AvailabilityInfo :platforms="constant.platforms"/>
       </div>
