@@ -29,22 +29,26 @@ export default {
   line-height 18px
   border-radius 3px
   padding 0 20px
-  color white
+  color $tertiary
   margin-right 5px
-  background-color #42b983
+  background-color $tertiary-ltr
   &.middle
     vertical-align middle
   &.top
     vertical-align top
   &.tip, &.green
-    background-color #42b983
+    color $success
+    background-color $succcess-ltr
   &.error
-    background-color #d22631 //#f66
+    color $danger
+    background-color $danger-ltr //#f66
   &.warning, &.warn, &.yellow
-    background-color darken(#ffe564, 35%)
+    color $warning
+    background-color $warning-ltr
   &.info
-    background-color #19AEEF
+    color $primary
+    background-color $primary-ltr
   &.light
-    background-color rgba(27, 31, 35, .05);
-    color $textColor
+    background-color $black-ltr
+    color $black
 </style>
