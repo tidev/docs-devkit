@@ -142,41 +142,27 @@ div[class~="language-php"]:before
 // Custom Prism.js theme based on the Palenight High Contrast theme for VSCode,
 // enhanced with the colors from our theme.
 
-.token.attr-name
-	color $warning-lt
-
-.token.attr-value
-	color $success-lt
-
-.token.boolean
-	color #F78C6C
-
-.token.comment
-	color #676E95
-
-.token.constant
-	color $danger-lt
-
-.token.function
-	color:#82AAFF
-
-.token.keyword
-	color #c792ea
-
-.token.number
-	color #F78C6C
-
-.token.operator
-	color #89DDFF
-
-.token.punctuation
-	color #89DDFF
-
-.token.string
-	color $success-lt
-
-.token.tag
-	color $danger-lt
-
-.token.variable
-	color #A6ACCD
+.token
+  &.attr-name
+    color $warning-lt
+  &.attr-value,
+  &.char,
+  &.regex,
+  &.string,
+  &.variable
+	  color $success-lt
+  &.boolean,
+  &.number
+	  color #F78C6C
+  &.comment
+	  color #676E95
+  &.constant,
+  &.tag
+	  color $danger-lt
+  &.function
+	  color:#82AAFF
+  &.keyword
+	  color #c792ea
+  &.operator,
+  &.punctuation
+    color #89DDFF
