@@ -100,7 +100,7 @@ export default {
     .action-button
       display inline-block
       font-size 1.2rem
-      color #fff
+      color $white
       background-color $accentColor
       padding 0.8rem 1.6rem
       border-radius 4px

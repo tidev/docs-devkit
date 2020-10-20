@@ -53,7 +53,7 @@ export default {
 
 <style lang="stylus">
 .footer
-  background #231f20
+  background $secondary-dk
   padding-bottom 2rem
   padding-top 2rem
   >.sitemap
@@ -69,10 +69,10 @@ export default {
         padding-left 0
         >li
          >a
-          color #999
+          color $secondary-lt
           font-size .9em
           &:hover
-            color #fff
+            color $secondary-ltr
 
   >a
     display block
@@ -87,7 +87,7 @@ export default {
       max-width 100%
   >.copyright
     text-align center
-    color #666
+    color $secondary-lt
 
 @media (max-width: $MQMobile)
   .footer

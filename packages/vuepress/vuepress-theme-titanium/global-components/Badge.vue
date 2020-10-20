@@ -41,7 +41,7 @@ export default {
     background-color $succcess-ltr
   &.error
     color $danger
-    background-color $danger-ltr //#f66
+    background-color $danger-ltr
   &.warning, &.warn, &.yellow
     color $warning
     background-color $warning-ltr

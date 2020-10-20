@@ -137,14 +137,14 @@ export default {
   .edit-link
     display inline-block
     a
-      color #006580
+      color $primary
       margin-right 0.25rem
   .last-updated
     float right
     font-size 0.9em
     .prefix
       font-weight 500
-      color #006580
+      color $primary
     .time
       font-weight 400
       color $gray-dk

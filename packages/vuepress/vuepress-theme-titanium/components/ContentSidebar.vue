@@ -98,14 +98,14 @@ export default {
     width 6px
 
     &-track
-      background #fff
+      background $white
 
     &-thumb
-      background #e2e2e2
+      background $gray
       border-radius 3px
 
     &-thumb:hover
-      background #d6d6d6
+      background $gray-dk
 
 @media (max-width: $MQMobile)
   .content-sidebar-wrapper
