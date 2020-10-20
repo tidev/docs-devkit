@@ -25,7 +25,7 @@
     border-radius 6px
     overflow auto
     code
-      color #fff
+      color $gray-lt
       padding 0
       background-color transparent
       border-radius 0
@@ -34,6 +34,7 @@ div[class*="language-"]
   position relative
   background-color $codeBgColor
   border-radius 6px
+  -webkit-font-smoothing auto
   .highlight-lines
     user-select none
     padding-top 1.3rem
@@ -137,3 +138,45 @@ div[class~="language-bash"]:before
 
 div[class~="language-php"]:before
   content "php"
+
+// Custom Prism.js theme based on the Palenight High Contrast theme for VSCode,
+// enhanced with the colors from our theme.
+
+.token.attr-name
+	color $warning-lt
+
+.token.attr-value
+	color $success-lt
+
+.token.boolean
+	color #F78C6C
+
+.token.comment
+	color #676E95
+
+.token.constant
+	color $danger-lt
+
+.token.function
+	color:#82AAFF
+
+.token.keyword
+	color #c792ea
+
+.token.number
+	color #F78C6C
+
+.token.operator
+	color #89DDFF
+
+.token.punctuation
+	color #89DDFF
+
+.token.string
+	color $success-lt
+
+.token.tag
+	color $danger-lt
+
+.token.variable
+	color #A6ACCD
