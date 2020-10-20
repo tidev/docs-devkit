@@ -147,7 +147,7 @@ export default {
       color #006580
     .time
       font-weight 400
-      color #aaa
+      color $gray-dk
 
 @media (max-width: $MQMobile)
   .page-edit

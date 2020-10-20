@@ -86,7 +86,7 @@ export default {
     letter-spacing 1px
     font-size 0.6rem
     font-weight 800
-    color #aaa
+    color $gray-dk
     padding-left 0.7rem
     margin 0.7rem 0 0 0
     border-left 1px solid $borderColor

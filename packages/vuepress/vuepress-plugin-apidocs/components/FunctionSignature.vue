@@ -29,6 +29,6 @@ export default {
 <style lang="stylus">
 .function-signature
   &>.static, .return-type
-    color: #aaaaaa
+    color: $gray-dk
 </style>
 

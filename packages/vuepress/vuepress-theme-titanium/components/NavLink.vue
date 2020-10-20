@@ -90,7 +90,7 @@ export default {
 <style lang="stylus">
 .nav-link
   .sub-text
-    color: #aaaaaa
+    color: $gray-dk
     padding-left 0.5rem
     font-size: 0.8em
 </style>

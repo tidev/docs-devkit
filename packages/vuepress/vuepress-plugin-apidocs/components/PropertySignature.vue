@@ -20,6 +20,6 @@ export default {
 <style lang="stylus">
 .property-signature
   &>.static, .return-type
-    color: #aaaaaa
+    color: $gray-dk
 </style>
 

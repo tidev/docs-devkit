@@ -38,5 +38,5 @@ export default {
 <style lang="stylus">
 .type-links
   .type-devider
-    color #aaa
+    color $gray-dk
 </style>
