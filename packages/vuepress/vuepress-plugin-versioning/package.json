@@ -21,6 +21,6 @@
   },
   "dependencies": {
     "@vuepress/shared-utils": "^1.5.2",
-    "fs-extra": "^8.1.0"
+    "fs-extra": "^9.0.1"
   }
 }
