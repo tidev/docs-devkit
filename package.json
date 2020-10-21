@@ -17,7 +17,7 @@
     "lint": "eslint packages --ext .js,.vue"
   },
   "devDependencies": {
-    "eslint": "^5.15.1",
+    "eslint": "^7.11.0",
     "eslint-config-axway": "^5.0.0",
     "eslint-plugin-vue-libs": "^3.0.0",
     "lerna": "^3.13.0"
