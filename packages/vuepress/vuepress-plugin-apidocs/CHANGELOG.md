@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.8.3](https://github.com/appcelerator/docs-devkit/compare/v4.8.2...v4.8.3) (2020-10-21)
+
+
+### Bug Fixes
+
+* use axway theme gray-dk in place of hard-coded #aaa ([7723256](https://github.com/appcelerator/docs-devkit/commit/7723256))
+* use named axway colors in place of hard-coded hex values ([961cbb1](https://github.com/appcelerator/docs-devkit/commit/961cbb1))
+
+
+
+
+
 ## [4.8.2](https://github.com/appcelerator/docs-devkit/compare/v4.8.1...v4.8.2) (2020-10-19)
 
 
