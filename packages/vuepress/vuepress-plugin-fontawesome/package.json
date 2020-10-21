@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.29",
-    "@fortawesome/vue-fontawesome": "^0.1.10"
+    "@fortawesome/vue-fontawesome": "^2.0.0"
   },
   "publishConfig": {
     "access": "public"
