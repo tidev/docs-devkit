@@ -25,7 +25,7 @@
     border-radius 6px
     overflow auto
     code
-      color $gray-lt
+      color $primary-ltr
       padding 0
       background-color transparent
       border-radius 0
@@ -143,7 +143,9 @@ div[class~="language-php"]:before
 // enhanced with the colors from our theme.
 
 .token
-  &.attr-name
+  &.attr-name,
+  &.property
+  &.selector
     color $warning-lt
   &.attr-value,
   &.char,
@@ -159,10 +161,28 @@ div[class~="language-php"]:before
   &.constant,
   &.tag
 	  color $danger-lt
+  &.atrule
   &.function
-	  color:#82AAFF
+	  color #82AAFF
   &.keyword
-	  color #c792ea
+	  color $danger-lt
   &.operator,
   &.punctuation
     color #89DDFF
+
+.language-md
+  .token
+    &.title
+      color $warning-lt
+      &.important
+        font-weight 400
+    &.content
+      padding 0
+
+.language-css,
+.language-sass,
+.language-scss,
+.language-stylus,
+  .token
+    &.property
+      color #B2CCD6
