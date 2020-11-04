@@ -6,8 +6,8 @@
  */
 'use strict';
 
-const common = require('../lib/common.js'),
-	assert = common.assertObjectKey;
+const common = require('../lib/common.js');
+const assert = common.assertObjectKey;
 let doc = {};
 
 // eslint-disable-next-line security/detect-child-process
@@ -51,7 +51,7 @@ function exportExamples(api) {
 	const rv = [];
 	if ('examples' in api && api.examples.length > 0) {
 		api.examples.forEach(function (example) {
-			let code = example.example;
+			const code = example.example;
 			rv.push({ description: example.title, code: code });
 		});
 	}
@@ -150,10 +150,10 @@ function exportPlatforms(api) {
  * @return {object[]}
  */
 function exportAPIs(api, type) {
-	var rv = [],
-		x = 0,
-		member = {},
-		annotatedMember = {};
+	var rv = [];
+	var x = 0;
+	var member = {};
+	var annotatedMember = {};
 
 	if (type in api) {
 		for (x = 0; x < api[type].length; x++) {

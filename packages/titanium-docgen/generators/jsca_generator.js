@@ -17,8 +17,8 @@ function convertLinks(text) {
 	if (matches && matches.length) {
 		matches.forEach(function (match) {
 			if (!common.REGEXP_HTML_TAG.exec(match) && !~match.indexOf(' ') && !~match.indexOf('/') && !~match.indexOf('#')) {
-				const tokens = common.REGEXP_CHEVRON_LINK.exec(match),
-					link = '<a href="' + tokens[1] + '">' + tokens[1].substring(tokens[1].lastIndexOf('.') + 1) + '</a>';
+				const tokens = common.REGEXP_CHEVRON_LINK.exec(match);
+				const link = '<a href="' + tokens[1] + '">' + tokens[1].substring(tokens[1].lastIndexOf('.') + 1) + '</a>';
 				text = text.replace(match, link);
 			}
 		});

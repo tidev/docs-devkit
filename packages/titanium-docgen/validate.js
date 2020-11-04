@@ -8,10 +8,10 @@
  */
 'use strict';
 
-const fs = require('fs'),
-	nodeappc = require('node-appc'),
-	colors = require('colors'), // eslint-disable-line no-unused-vars
-	common = require('./lib/common.js');
+const fs = require('fs');
+const nodeappc = require('node-appc');
+const colors = require('colors'); // eslint-disable-line no-unused-vars
+const common = require('./lib/common.js');
 
 let doc = {};
 let standaloneFlag = false;
@@ -713,7 +713,7 @@ function validateString(str) {
  * @returns {null|Problem} possible Problem if value isn't a string or contains non-ASCII characters
  */
 function validateASCIIString(str) {
-	let problem = validateString(str);
+	const problem = validateString(str);
 	if (problem) {
 		return problem;
 	}
@@ -729,7 +729,7 @@ function validateASCIIString(str) {
  * @returns {null|Problem} possible Problem if value isn't a string or contains non-ASCII characters
  */
 function validateLowercaseString(str) {
-	let problem = validateASCIIString(str);
+	const problem = validateASCIIString(str);
 	if (problem) {
 		return problem;
 	}
@@ -844,8 +844,8 @@ function validateObjectAgainstSyntax(obj, syntax, type, currentKey, className, f
 			// We're missing a required field. Check the parent to see if it's filled in there.
 			// Only do this check when we're overriding an event, property or method, not top-level fields like 'summary'
 			const parentClassName = doc[className]['extends'];
-			let parent = doc[parentClassName],
-				parentValue = null;
+			let parent = doc[parentClassName];
+			let parentValue = null;
 			if (type && parent) {
 				const array = parent[type];
 				if (array) {

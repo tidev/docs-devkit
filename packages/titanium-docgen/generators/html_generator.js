@@ -3,10 +3,10 @@
  */
 'use strict';
 
-const common = require('../lib/common.js'),
-	assert = common.assertObjectKey;
-let doc = {},
-	remoteURL = false;
+const common = require('../lib/common.js');
+const assert = common.assertObjectKey;
+let doc = {};
+let remoteURL = false;
 
 /**
  * Sort the array by name
@@ -51,8 +51,8 @@ function convertAPIToLink(apiName) {
 			url = exportClassFilename(apiName) + '.html';
 		}
 	} else if ((apiName.match(/\./g) || []).length) {
-		const member = apiName.split('.').pop(),
-			cls = apiName.substring(0, apiName.lastIndexOf('.'));
+		const member = apiName.split('.').pop();
+		const cls = apiName.substring(0, apiName.lastIndexOf('.'));
 
 		if (!(cls in doc) && !apiName.startsWith('Modules.')) {
 			common.log(common.LOG_WARN, 'Cannot find class: %s', cls);
@@ -112,7 +112,7 @@ function convertLinks(text) {
 	let matches = text.match(common.REGEXP_HREF_LINKS);
 	if (matches && matches.length) {
 		matches.forEach(function (match) {
-			let tokens = common.REGEXP_HREF_LINK.exec(match);
+			const tokens = common.REGEXP_HREF_LINK.exec(match);
 			if (tokens && tokens[1].indexOf('http') !== 0 && !~match.indexOf('#')) {
 				let link = convertAPIToLink(tokens[1]);
 				if (link) {
@@ -126,8 +126,8 @@ function convertLinks(text) {
 	if (matches && matches.length) {
 		matches.forEach(function (match) {
 			if (!common.REGEXP_HTML_TAG.exec(match) && !~match.indexOf(' ') && !~match.indexOf('/') && !~match.indexOf('#')) {
-				let tokens = common.REGEXP_CHEVRON_LINK.exec(match),
-					link = convertAPIToLink(tokens[1]);
+				const tokens = common.REGEXP_CHEVRON_LINK.exec(match);
+				const link = convertAPIToLink(tokens[1]);
 				if (link) {
 					text = text.replace(match, link);
 				}
@@ -358,8 +358,8 @@ function exportProxies(api) {
  * @return {string} HTML
  */
 function exportReturnTypes(api) {
-	let rv = 'void',
-		constants = [];
+	let rv = 'void';
+	let constants = [];
 	const types = [];
 	if (assert(api, 'returns')) {
 		if (!Array.isArray(api.returns)) {
@@ -406,7 +406,6 @@ function exportType(api) {
 			api.type = [ api.type ];
 		}
 		api.type.forEach(function (t) {
-
 			if (t.indexOf('Array<') === 0) {
 				t = t.substring(t.indexOf('<') + 1, t.lastIndexOf('>'));
 				if (t.indexOf('<')) {
@@ -418,7 +417,7 @@ function exportType(api) {
 				// Parse out the multiple types of args!
 				const subTypes = t.substring(t.indexOf('<') + 1, t.lastIndexOf('>'));
 				// split by ', ' then convert to link for each and join by ', '
-				const linkified = subTypes.split(',').map(t =>  {
+				const linkified = subTypes.split(',').map(t => {
 					t = t.trim();
 					if (t.startsWith('Array<')) {
 						const apiName = /Array<(.+)>/.exec(t);

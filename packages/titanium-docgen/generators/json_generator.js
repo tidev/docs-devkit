@@ -6,8 +6,8 @@
  */
 'use strict';
 
-const common = require('../lib/common.js'),
-	assert = common.assertObjectKey;
+const common = require('../lib/common.js');
+const assert = common.assertObjectKey;
 let doc = {};
 
 /**
@@ -24,8 +24,8 @@ function convertAPIToLink(apiName) {
 	if (apiName in doc) {
 		url = exportClassFilename(apiName) + '.html';
 	} else if ((apiName.match(/\./g) || []).length) {
-		const member = apiName.split('.').pop(),
-			cls = apiName.substring(0, apiName.lastIndexOf('.'));
+		const member = apiName.split('.').pop();
+		const cls = apiName.substring(0, apiName.lastIndexOf('.'));
 
 		if (!(cls in doc) && !apiName.startsWith('Modules.')) {
 			common.log(common.LOG_WARN, 'Cannot find class: %s', cls);
@@ -54,9 +54,9 @@ function convertAPIToLink(apiName) {
  * @return {string}
  */
 function convertLinks(text) {
-	var matches = text.match(common.REGEXP_HREF_LINKS),
-		tokens,
-		link;
+	var matches = text.match(common.REGEXP_HREF_LINKS);
+	var tokens;
+	var link;
 	if (matches && matches.length) {
 		matches.forEach(function (match) {
 			tokens = common.REGEXP_HREF_LINK.exec(match);
@@ -256,10 +256,10 @@ function exportPlatforms(api) {
  * @return {object[]}
  */
 function exportAPIs(api, type) {
-	var rv = [],
-		x = 0,
-		member = {},
-		annotatedMember = {};
+	var rv = [];
+	var x = 0;
+	var member = {};
+	var annotatedMember = {};
 
 	if (type in api) {
 		for (x = 0; x < api[type].length; x++) {

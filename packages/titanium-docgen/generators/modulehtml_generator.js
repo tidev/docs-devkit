@@ -12,13 +12,13 @@ const exporter = require('./html_generator.js');
  */
 exports.exportData = function exportModuleHTML (apis) {
 	const rv = {
-			proxy: [],
-			event: [],
-			method: [],
-			property: []
-		},
-		data = exporter.exportData(apis),
-		modules = apis.__modules;
+		proxy: [],
+		event: [],
+		method: [],
+		property: []
+	};
+	const data = exporter.exportData(apis);
+	const modules = apis.__modules;
 
 	for (const cls in data.proxy) {
 		if (~modules.indexOf(data.proxy[cls].name)) {

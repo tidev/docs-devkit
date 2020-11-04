@@ -1017,7 +1017,7 @@ class MemberNode {
 			return [ methodDoc ];
 		}
 
-		let parameterOverloads = [];
+		const parameterOverloads = [];
 		for (const type of parameter.type) {
 			if (arrayTypePattern.test(type)) {
 				hasRepeatableAndArray = true;
@@ -1087,15 +1087,15 @@ class NamespaceNode extends MemberNode {
 	filterProperties(propertyDoc) {
 		// If we have interface/class for this namespace, then we need here only upper cased constants
 		let onlyUpperCased = true;
-		let excluded = propertyDoc.__hide;
+		const excluded = propertyDoc.__hide;
 		if (this.relatedNode) {
 			onlyUpperCased = propertyDoc.name.toUpperCase() === propertyDoc.name;
 		}
-		return onlyUpperCased && !excluded &&  super.filterProperties(propertyDoc);
+		return onlyUpperCased && !excluded && super.filterProperties(propertyDoc);
 	}
 
 	filterMethods(methodDoc) {
-		let excluded = methodDoc.__hide;
+		const excluded = methodDoc.__hide;
 		return !excluded && super.filterMethods(methodDoc);
 	}
 

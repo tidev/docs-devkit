@@ -17,8 +17,8 @@ function convertAPIToLink(apiName) {
 	}
 
 	if ((apiName.match(/\./g) || []).length) {
-		const member = apiName.split('.').pop(),
-			cls = apiName.substring(0, apiName.lastIndexOf('.'));
+		const member = apiName.split('.').pop();
+		const cls = apiName.substring(0, apiName.lastIndexOf('.'));
 		if (!(cls in doc) && !apiName.startsWith('Modules.')) {
 			common.log(common.LOG_WARN, 'Cannot find class: %s', cls);
 			return null;
@@ -46,10 +46,10 @@ function convertAPIToLink(apiName) {
  * @return {string} markdown text with jsduck style links
  */
 function convertLinks(text) {
-	var matches = text.match(common.REGEXP_HREF_LINKS),
-		tokens,
-		replace,
-		link;
+	var matches = text.match(common.REGEXP_HREF_LINKS);
+	var tokens;
+	var replace;
+	var link;
 	if (matches && matches.length) {
 		matches.forEach(function (match) {
 			tokens = common.REGEXP_HREF_LINK.exec(match);
@@ -273,10 +273,10 @@ function exportParams(apis) {
  * @return {string}
  */
 function exportReturns(api) {
-	let types = [],
-		summary = '',
-		constants = [],
-		rv = 'void';
+	let types = [];
+	let summary = '';
+	let constants = [];
+	let rv = 'void';
 
 	if ('returns' in api && api.returns) {
 		if (!Array.isArray(api.returns)) {
@@ -302,7 +302,6 @@ function exportReturns(api) {
 		rv = '{' + exportType({ type: types }) + '}' + summary;
 	}
 	return rv;
-
 }
 
 /**
@@ -311,21 +310,21 @@ function exportReturns(api) {
  * @return {string}
  */
 function exportEditUrl(api) {
-	const file = api.__file,
-		blackList = [ 'appcelerator.https', 'ti.geofence' ]; // Don't include Edit button for these modules
-	let rv = '',
-		basePath = 'https://github.com/appcelerator/titanium_mobile/edit/master/';
+	const file = api.__file;
+	const blackList = [ 'appcelerator.https', 'ti.geofence' ]; // Don't include Edit button for these modules
+	let rv = '';
+	let basePath = 'https://github.com/appcelerator/titanium_mobile/edit/master/';
 
 	// Determine edit URL by file's folder location
 	if (file.indexOf('titanium_mobile/apidoc') !== -1) {
-		const startIndex = file.indexOf('apidoc/'),
-			path = file.substr(startIndex);
+		const startIndex = file.indexOf('apidoc/');
+		const path = file.substr(startIndex);
 		rv = basePath + path;
 	} else if (file.indexOf('titanium_modules') !== -1 || file.indexOf('appc_modules') !== -1) {
 		// URL template with placeholders for module name and path.
-		const urlTemplate = 'https://github.com/appcelerator-modules/%MODULE_NAME%/edit/master/%MODULE_PATH%',
-			re = /titanium_modules|appc_modules\/(.+)\/apidoc/,
-			match = file.match(re);
+		const urlTemplate = 'https://github.com/appcelerator-modules/%MODULE_NAME%/edit/master/%MODULE_PATH%';
+		const re = /titanium_modules|appc_modules\/(.+)\/apidoc/;
+		const match = file.match(re);
 		let modulename;
 		if (match) {
 			modulename = match[1];
@@ -345,7 +344,7 @@ function exportEditUrl(api) {
 			return urlReplacements[all] || all;
 		});
 	} else if (file.indexOf('titanium_mobile_tizen/modules/tizen/apidoc') !== -1) {
-		let index = file.indexOf('modules/tizen/apidoc/');
+		const index = file.indexOf('modules/tizen/apidoc/');
 		basePath = 'https://github.com/appcelerator/titanium_mobile_tizen/edit/master/';
 		if (index !== -1) {
 			rv = basePath + file.substr(index);
@@ -419,7 +418,6 @@ function exportAPIs(api, type) {
 
 			rv.push(annotatedMember);
 		}
-
 	}
 
 	return rv;

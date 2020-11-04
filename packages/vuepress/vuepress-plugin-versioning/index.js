@@ -52,7 +52,7 @@ module.exports = (options, context) => {
       cli
         .command('version <targetDir> <version>', 'Draft a new version')
         .allowUnknownOptions()
-        .action(async (dir, version,) => {
+        .action(async (dir, version) => {
           if (versions.includes(version)) {
             logger.error(`Version ${version} already exists in version.json. Please use a different version.`)
             return
