@@ -6,16 +6,16 @@
  */
 'use strict';
 
-const yaml = require('js-yaml'),
-	fs = require('fs'),
-	colors = require('colors'), // eslint-disable-line no-unused-vars
-	nodeappc = require('node-appc'),
-	path = require('path'),
-	MarkdownIt = require('markdown-it'),
-	ignoreList = [ 'node_modules', '.travis.yml' ],
-	LOG_INFO = 0,
-	LOG_WARN = LOG_INFO + 1,
-	LOG_ERROR = LOG_WARN + 1;
+const yaml = require('js-yaml');
+const fs = require('fs');
+const colors = require('colors'); // eslint-disable-line no-unused-vars
+const nodeappc = require('node-appc');
+const path = require('path');
+const MarkdownIt = require('markdown-it');
+const ignoreList = [ 'node_modules', '.travis.yml' ];
+const LOG_INFO = 0;
+const LOG_WARN = LOG_INFO + 1;
+const LOG_ERROR = LOG_WARN + 1;
 
 let logLevel = LOG_INFO;
 let md;
@@ -54,7 +54,7 @@ exports.SIMPLE_TYPES = [
 ];
 // Mapping from base type name to number of generic types required (0 means 0-Infinity)
 exports.COMPLEX_TYPES = new Map([
-	[ 'Array',  1 ],
+	[ 'Array', 1 ],
 	[ 'Callback', 0 ], // alias for Function
 	[ 'Dictionary', 1 ], // alias for generic JS Object
 	[ 'Function', 0 ],
@@ -198,8 +198,8 @@ exports.parseYAML = function parseYAML(rootPath) {
 	try {
 		const fsArray = fs.readdirSync(rootPath);
 		fsArray.forEach(function (fsElement) {
-			const elem = path.join(rootPath, fsElement),
-				stat = fs.statSync(elem);
+			const elem = path.join(rootPath, fsElement);
+			const stat = fs.statSync(elem);
 			currentFile = elem;
 
 			if (~ignoreList.indexOf(fsElement)) {
@@ -255,8 +255,8 @@ exports.parseYAML = function parseYAML(rootPath) {
  * @return {boolean} true if found, false otherwise
  */
 exports.findAPI = function findAPI(doc, className, memberName, type) {
-	var cls = doc[className],
-		x = 0;
+	var cls = doc[className];
+	var x = 0;
 
 	if (cls && type in cls && cls[type]) {
 		for (x = 0; x < cls[type].length; x++) {

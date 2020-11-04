@@ -10,6 +10,7 @@ if (!String.prototype.contains) {
 	 * @param {string} arg substring to search for
 	 * @return {boolean}
 	 */
+	// eslint-disable-next-line no-extend-native
 	String.prototype.contains = function (arg) {
 		return !!~this.indexOf(arg);
 	};
@@ -44,8 +45,8 @@ function sort(object) {
 function sortByKey(array, key) {
 	return array.sort(
 		function (a, b) {
-			const x = a[key],
-				y = b[key];
+			const x = a[key];
+			const y = b[key];
 			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
 		}
 	);
@@ -83,7 +84,6 @@ exports.exportData = function exportHTML(apis) {
 
 	// Iterate through proxies
 	for (const className in apis) {
-
 		// Skip platform specific proxies
 		/* if (className == 'Titanium'
 			|| className.contains('iOS') || className.contains('iPhone') || className.contains('iPad')

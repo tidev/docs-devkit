@@ -7,44 +7,44 @@
  */
 'use strict';
 
-var common = require('./lib/common.js'),
-	nodeappc = require('node-appc'),
-	ejs = require('ejs'),
-	fs = require('fs'),
-	yaml = require('js-yaml'),
-	exec = require('child_process').exec, // eslint-disable-line security/detect-child-process
-	os = require('os'),
-	pathMod = require('path'),
-	accessorsDeprecatedSince = '',
-	accessorsRemovedSince = '',
-	assert = common.assertObjectKey,
-	basePaths = [],
-	processFirst = [ 'Titanium.Proxy', 'Titanium.Module', 'Titanium.UI.View' ],
-	skipList = [ 'Titanium.Namespace.Name' ],
-	validFormats = [],
-	templatePath = './templates/',
-	formats = [ 'html' ],
-	outputPath = pathMod.join(__dirname, '..', 'dist'),
-	output = outputPath,
-	parseData = {},
-	doc = {},
-	errors = [],
-	exportData = {},
-	exporter = null,
-	processedData = {},
-	render = '',
-	fsArray = [],
-	tokens = [],
-	originalPaths = [],
-	modules = [],
-	cssPath = '',
-	cssFile = '',
-	addOnDocs = [],
-	searchPlatform = null,
-	version = '',
-	argc = 0,
-	path = '',
-	templateStr = '';
+var common = require('./lib/common.js');
+var nodeappc = require('node-appc');
+var ejs = require('ejs');
+var fs = require('fs');
+var yaml = require('js-yaml');
+var exec = require('child_process').exec; // eslint-disable-line security/detect-child-process
+var os = require('os');
+var pathMod = require('path');
+var accessorsDeprecatedSince = '';
+var accessorsRemovedSince = '';
+var assert = common.assertObjectKey;
+var basePaths = [];
+var processFirst = [ 'Titanium.Proxy', 'Titanium.Module', 'Titanium.UI.View' ];
+var skipList = [ 'Titanium.Namespace.Name' ];
+var validFormats = [];
+var templatePath = './templates/';
+var formats = [ 'html' ];
+var outputPath = pathMod.join(__dirname, '..', 'dist');
+var output = outputPath;
+var parseData = {};
+var doc = {};
+var errors = [];
+var exportData = {};
+var exporter = null;
+var processedData = {};
+var render = '';
+var fsArray = [];
+var tokens = [];
+var originalPaths = [];
+var modules = [];
+var cssPath = '';
+var cssFile = '';
+var addOnDocs = [];
+var searchPlatform = null;
+var version = '';
+var argc = 0;
+var path = '';
+var templateStr = '';
 
 /**
  * Returns a list of inherited APIs.
@@ -52,12 +52,12 @@ var common = require('./lib/common.js'),
  * @returns {Object} Object containing all API members for the class
  */
 function getInheritedAPIs (api) {
-	var inheritedAPIs = { events: [], methods: [], properties: [] },
-		removeAPIs = [],
-		copyAPIs = [],
-		matches = [],
-		index = 0,
-		x = 0;
+	var inheritedAPIs = { events: [], methods: [], properties: [] };
+	var removeAPIs = [];
+	var copyAPIs = [];
+	var matches = [];
+	var index = 0;
+	var x = 0;
 
 	if (assert(api, 'extends') && api.extends in doc) {
 		inheritedAPIs = getInheritedAPIs(doc[api.extends]);
@@ -68,7 +68,6 @@ function getInheritedAPIs (api) {
 		});
 		matches.forEach(function (element) {
 			inheritedAPIs.methods.splice(inheritedAPIs.methods.indexOf(element), 1);
-
 		});
 
 		for (const key in inheritedAPIs) {
@@ -78,7 +77,6 @@ function getInheritedAPIs (api) {
 			}
 			copyAPIs = nodeappc.util.mixObj([], api[key]);
 			inheritedAPIs[key].forEach(function (inheritedAPI) { // eslint-disable-line no-loop-func
-
 				// See if current API overwrites inherited API
 				matches = copyAPIs.filter(function (element) {
 					return (element.name === inheritedAPI.name);
@@ -110,7 +108,6 @@ function getInheritedAPIs (api) {
 			}
 			inheritedAPIs[key] = inheritedAPIs[key].concat(copyAPIs);
 		}
-
 	} else {
 		for (const key2 in inheritedAPIs) {
 			if (!(key2 in api) || !api[key2]) {
@@ -165,9 +162,9 @@ function processConstants (api) {
  * @returns {Object} Object containing platforms and versions the API supports
  */
 function processVersions (api, versions, matchVersion, addon) {
-	var defaultVersions = nodeappc.util.mixObj({}, versions),
-		platform = null,
-		key = null;
+	var defaultVersions = nodeappc.util.mixObj({}, versions);
+	var platform = null;
+	var key = null;
 
 	if (assert(api, 'platforms')) {
 		for (platform in defaultVersions) {
@@ -235,8 +232,8 @@ function processVersions (api, versions, matchVersion, addon) {
  * @returns {Array<Object>} List of processed APIs
  */
 function processAPIMembers (apis, type, defaultVersions, addon) {
-	var rv = [],
-		x = 0;
+	var rv = [];
+	var x = 0;
 	apis.forEach(function (api) {
 		api.since = processVersions(api, defaultVersions, true, addon);
 		api.platforms = Object.keys(api.since);
@@ -351,7 +348,6 @@ function getAccessorDeprecation(getOrSet, api, className) {
 function generateAccessors(apis, className, methods) {
 	const rv = [];
 	apis.forEach(function (api) {
-
 		if ('accessors' in api && api.accessors === false) {
 			return;
 		}
@@ -438,9 +434,9 @@ function getSubtype (api) {
  * @return {Object} api
  */
 function processAPIs (api) {
-	var defaultVersions = nodeappc.util.mix({}, common.DEFAULT_VERSIONS),
-		inheritedAPIs = {},
-		matches = [];
+	var defaultVersions = nodeappc.util.mix({}, common.DEFAULT_VERSIONS);
+	var inheritedAPIs = {};
+	var matches = [];
 
 	// Generate list of supported platforms and versions
 	api.since = processVersions(api, defaultVersions, false);
@@ -458,11 +454,10 @@ function processAPIs (api) {
 	api.__creatable = false;
 	if ((api.__subtype === 'view' || api.__subtype === 'proxy')
 		&& (assert(api, 'createable') || !('createable' in api))) {
-
-		const name = api.name,
-			prop = name.split('.').pop(),
-			cls = name.substring(0, name.lastIndexOf('.')),
-			methodName = 'create' + prop;
+		const name = api.name;
+		const prop = name.split('.').pop();
+		const cls = name.substring(0, name.lastIndexOf('.'));
+		const methodName = 'create' + prop;
 
 		if (cls in doc) {
 			matches = [];
@@ -586,7 +581,7 @@ function processFreeFormTextField(api, propertyName) {
 		if (endOffset === -1) {
 			endOffset = markdownContent.length;
 		}
-		let fieldMarkdown = markdownContent.substring(headingOffset + heading.length, endOffset).trim();
+		const fieldMarkdown = markdownContent.substring(headingOffset + heading.length, endOffset).trim();
 		if (propertyName === 'examples') {
 			api[propertyName] = convertExamples(fieldMarkdown);
 		} else {
@@ -648,13 +643,12 @@ function cliUsage () {
  */
 function addOnMerge(baseObj, addObj) {
 	for (const key in addObj) {
-		const base = baseObj[key],
-			add = addObj[key];
+		const base = baseObj[key];
+		const add = addObj[key];
 
 		if (Array.isArray(base)) {
 			// Array of objects
 			if (typeof base[0] === 'object') {
-
 				const tempArray = base;
 				add.forEach(function (api) { // eslint-disable-line no-loop-func
 					if ('name' in base[0]) {
@@ -1106,11 +1100,11 @@ formats.forEach(function (format) {
 				templateStr = fs.readFileSync(pathMod.join(templatePath, 'htmlejs', 'index.html'), 'utf8');
 				render = ejs.render(templateStr, { data: exportData, assert: common.assertObjectKey, css: cssFile });
 			}
-			output  = pathMod.join(output, 'index.html');
+			output = pathMod.join(output, 'index.html');
 			break;
 		case 'jsca' :
 			render = JSON.stringify(exportData, null, '    ');
-			output  = pathMod.join(outputPath, 'api.jsca');
+			output = pathMod.join(outputPath, 'api.jsca');
 			break;
 		case 'json' :
 		case 'json-raw' :
@@ -1146,5 +1140,4 @@ formats.forEach(function (format) {
 		});
 	}
 	exporter = exportData = null;
-
 });

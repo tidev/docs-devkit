@@ -6,9 +6,9 @@
  */
 'use strict';
 
-const common = require('../lib/common.js'),
-	assert = common.assertObjectKey,
-	solr_category = 'platform';
+const common = require('../lib/common.js');
+const assert = common.assertObjectKey;
+const solr_category = 'platform';
 
 /**
  * Replaces links with the label
