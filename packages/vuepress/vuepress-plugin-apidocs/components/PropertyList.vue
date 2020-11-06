@@ -16,7 +16,7 @@
       <div class="member-summary" v-html="property.summary"></div>
       <div class="member-description" v-html="property.description"></div>
       <valid-constants v-if="property.constants" :constants="property.constants"/>
-      <p v-if="property.default">
+      <p v-if="property.default !== undefined">
         <strong>Default:</strong> <code><type-link :type="normalizeType(property.default)"/></code>
       </p>
       <hr v-if="index < properties.length - 1">
@@ -45,16 +45,28 @@ export default {
   },
   methods: {
     normalizeType (type) {
-      switch (typeof type) {
-        case 'undefined':
-          return 'undefined'
+      const typeName = typeof type
+      switch (typeName) {
         case 'boolean':
         case 'number':
           return type.toString()
-        case 'string':
-          return type.replace(/^<|>$/g, '')
+        case 'string': {
+          const cleanTypeName = type.replace(/^<|>$/g, '')
+          if (cleanTypeName === 'Undefined') {
+            return 'undefined'
+          } else {
+            return cleanTypeName
+          }
+        }
+        case 'object': {
+          if (type === null) {
+            return 'null'
+          } else {
+            return typeName
+          }
+        }
         default:
-          return type
+          return typeName
       }
     }
   }

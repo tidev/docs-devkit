@@ -164,7 +164,7 @@ exports.setLogLevel = function setLogLevel(level) {
  * @return {boolean} true if the object has a value for the key (and if it's an array, it has to have at least one element)
  */
 exports.assertObjectKey = function assertObjectKey(obj, key) {
-	if (key in obj && obj[key]) {
+	if (Object.prototype.hasOwnProperty.call(obj, key)) {
 		if (Array.isArray(obj[key])) {
 			if (obj[key].length > 0) {
 				return true;
