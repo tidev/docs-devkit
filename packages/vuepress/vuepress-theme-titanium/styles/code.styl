@@ -2,6 +2,7 @@
   code
     font-size .875rem
     font-weight 400
+    -webkit-font-smoothing auto
     line-height 1.5
     color $codeColor
     display inline-block
@@ -34,7 +35,6 @@ div[class*="language-"]
   position relative
   background-color $codeBgColor
   border-radius 6px
-  -webkit-font-smoothing auto
   .highlight-lines
     user-select none
     padding-top 1.3rem
@@ -157,7 +157,7 @@ div[class~="language-php"]:before
   &.number
 	  color #F78C6C
   &.comment
-	  color #676E95
+	  color $gray-dk
   &.constant,
   &.tag
 	  color $danger-lt
@@ -178,6 +178,16 @@ div[class~="language-php"]:before
         font-weight 400
     &.content
       padding 0
+
+.content
+  pre
+    &.language-yml
+      code
+        color $success-lt
+.language-yml
+  .token
+    &.atrule
+      color $danger-lt
 
 .language-css,
 .language-sass,
