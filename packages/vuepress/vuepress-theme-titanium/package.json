@@ -19,7 +19,7 @@
     "docsearch.js": "^2.6.3",
     "lodash": "^4.17.15",
     "stylus": "^0.54.5",
-    "stylus-loader": "^4.2.0",
+    "stylus-loader": "^3.0.2",
     "vuepress-plugin-container": "^2.1.5"
   }
 }
