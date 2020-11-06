@@ -127,6 +127,9 @@ export default {
   &.depth-2
     & > .sidebar-heading
       border-left-color transparent
+    &.is-sub-group
+      & > .sidebar-heading
+        border-left 0
 
 .sidebar-heading
   color $textColor
