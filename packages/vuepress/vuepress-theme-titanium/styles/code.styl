@@ -2,6 +2,7 @@
   code
     font-size .875rem
     font-weight 400
+    -webkit-font-smoothing auto
     line-height 1.5
     color $codeColor
     display inline-block
@@ -25,7 +26,7 @@
     border-radius 6px
     overflow auto
     code
-      color #fff
+      color $primary-ltr
       padding 0
       background-color transparent
       border-radius 0
@@ -137,3 +138,61 @@ div[class~="language-bash"]:before
 
 div[class~="language-php"]:before
   content "php"
+
+// Custom Prism.js theme based on the Palenight High Contrast theme for VSCode,
+// enhanced with the colors from our theme.
+
+.token
+  &.attr-name,
+  &.property
+  &.selector
+    color $warning-lt
+  &.attr-value,
+  &.char,
+  &.regex,
+  &.string,
+  &.variable
+	  color $success-lt
+  &.boolean,
+  &.number
+	  color $warning
+  &.comment
+	  color $gray-dk
+  &.constant,
+  &.tag
+	  color $danger-lt
+  &.atrule
+  &.function
+	  color #82AAFF
+  &.keyword
+	  color $danger-lt
+  &.operator,
+  &.punctuation
+    color #89DDFF
+
+.language-md
+  .token
+    &.title
+      color $warning-lt
+      &.important
+        font-weight 400
+    &.content
+      padding 0
+
+.content
+  pre
+    &.language-yml
+      code
+        color $success-lt
+.language-yml
+  .token
+    &.atrule
+      color $danger-lt
+
+.language-css,
+.language-sass,
+.language-scss,
+.language-stylus,
+  .token
+    &.property
+      color #B2CCD6
