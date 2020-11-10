@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.9.0](https://github.com/appcelerator/docs-devkit/compare/v4.8.3...v4.9.0) (2020-11-10)
+
+
+### Bug Fixes
+
+* fix color shades, sidebar sub groups and type meta padding ([ffc5817](https://github.com/appcelerator/docs-devkit/commit/ffc581761be5331d94bd6d222c24b044925b11a8))
+* properly handle falsy default values ([9485406](https://github.com/appcelerator/docs-devkit/commit/94854061a73857cb602d206529b9346a5aeb0b74))
+* show type of constants ([a632c4a](https://github.com/appcelerator/docs-devkit/commit/a632c4ab9acff9df941b2057a8e2d1422dd2c852))
+
+
+
+
+
 ## [4.8.3](https://github.com/appcelerator/docs-devkit/compare/v4.8.2...v4.8.3) (2020-10-21)
 
 
