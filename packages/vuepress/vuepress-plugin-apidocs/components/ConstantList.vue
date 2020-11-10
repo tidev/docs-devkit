@@ -7,10 +7,11 @@
     <div v-for="(constant, index) in constants" :key="constant.name">
       <div class="member-header">
         <h4 :id="constant.name.toLowerCase()">
-          <a :href="`#${constant.name.toLowerCase()}`" class="header-anchor">#</a> {{constant.name}} <Badge text="READONLY" type="light"/><Badge v-if="constant.deprecated" text="DEPRECATED" type="warn"/>
+          <a :href="`#${constant.name.toLowerCase()}`" class="header-anchor">#</a> {{constant.name}} <Badge v-if="constant.deprecated" text="DEPRECATED" type="warn"/>
         </h4>
         <AvailabilityInfo :platforms="constant.platforms"/>
       </div>
+      <PropertySignature :name="constant.name" :type="constant.type"/>
       <DeprecationAlert :deprecated="constant.deprecated"/>
       <p v-html="constant.summary"></p>
       <p v-html="constant.description"></p>
@@ -22,11 +23,13 @@
 <script>
 import AvailabilityInfo from './AvailabilityInfo'
 import DeprecationAlert from './DeprecationAlert'
+import PropertySignature from './PropertySignature'
 
 export default {
   components: {
     AvailabilityInfo,
-    DeprecationAlert
+    DeprecationAlert,
+    PropertySignature
   },
   props: {
     constants: {
