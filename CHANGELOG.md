@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.9.1](https://github.com/appcelerator/docs-devkit/compare/v4.9.0...v4.9.1) (2020-11-12)
+
+
+### Bug Fixes
+
+* **docgen:** assertObjectKey needs to guard for null object ([8b5f51d](https://github.com/appcelerator/docs-devkit/commit/8b5f51d9b7f5b1ac923b44c45932cc93269ff94c))
+
+
+
+
+
 # [4.9.0](https://github.com/appcelerator/docs-devkit/compare/v4.8.3...v4.9.0) (2020-11-10)
 
 
