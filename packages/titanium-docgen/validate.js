@@ -285,6 +285,11 @@ function validateBoolean(bool) {
  */
 function validateClass(className) {
 	if (!(className in doc)) {
+		// is it a builtin?
+		if (common.DATA_TYPES.includes(className)) {
+			return null;
+		}
+
 		if (standaloneFlag) {
 			return new Problem(`Cannot validate class: ${className} (standalone flag is set)`, WARNING);
 		}
