@@ -164,8 +164,9 @@ class DocsParser {
 	 * @return {NamespaceNode|undefined}
 	 */
 	processApi(typeInfo) {
-		if (typeInfo.__file.indexOf(path.join('apidoc', 'Modules')) !== -1) {
-			// skip bundled documentation for modules
+		if (typeInfo.__file.includes(path.join('apidoc', 'Modules'))
+			|| typeInfo.__file.includes(path.join('apidoc', 'NodeJS'))) {
+			// skip bundled documentation for modules and Node.js shims
 			return;
 		}
 		const namespaceParts = typeInfo.name.split('.');
