@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.9.2](https://github.com/appcelerator/docs-devkit/compare/v4.9.1...v4.9.2) (2020-11-18)
+
+
+### Bug Fixes
+
+* **docgen:** skip Node.js shim docs for typescript generation ([d0955fa](https://github.com/appcelerator/docs-devkit/commit/d0955fadbaaf866c0961e67e11fe7400fe77f9dc))
+
+
+
+
+
 ## [4.9.1](https://github.com/appcelerator/docs-devkit/compare/v4.9.0...v4.9.1) (2020-11-12)
 
 
