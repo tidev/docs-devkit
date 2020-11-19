@@ -215,26 +215,46 @@ function exportDescription(api) {
  * @return {string}
  */
 function exportType(api) {
+	const rv = normalizeType(api);
+	if (rv.length > 0) {
+		return rv.join('/');
+	}
+	// no type defined, assume String
+	return 'String';
+}
+
+/**
+ * Normalize teh defined types to wrap in array, default to [ 'String' ]
+ * @param {Object} api api object
+ * @param {string[]|string} [api.type='String'] type(s) declared
+ * @returns {string[]} Array of types
+ */
+function normalizeType(api) {
 	const rv = [];
 	if ('type' in api && api.type) {
+		// wrap in array
 		let types = api.type;
 		if (!Array.isArray(api.type)) {
 			types = [ api.type ];
 		}
-		types.forEach(function (type) {
+		types.forEach(type => {
 			// Handle ArrayBuffer/Uint8Array/etc properly!
-			if (type.indexOf('Array<') === 0) {
+			if (type.startsWith('Array<')) { // unwrap complex array types
 				rv.push(exportType({ type: type.slice(type.indexOf('<') + 1, type.lastIndexOf('>')) }) + '[]');
+			} else if (type === 'any') {
+				// JSDuck doesn't support 'any', so let's assume it's a combination of Object and undefined
+				rv.push('Object');
+				rv.push('undefined');
 			} else {
 				rv.push(type);
 			}
 		});
 	}
 	if (rv.length > 0) {
-		return rv.join('/');
-	} else {
-		return 'String';
+		return rv;
 	}
+	// no type defined, assume String
+	return [ 'String' ];
 }
 
 /**
@@ -248,13 +268,8 @@ function exportType(api) {
 function exportParams(apis) {
 	const parameters = [];
 	apis.forEach(function (member) {
-	// 	let platforms = '';
-		if (!('type' in member) || !member.type) {
-			member.type = 'String';
-		}
-		if (!Array.isArray(member.type)) {
-			member.type = [ member.type ];
-		}
+		member.type = normalizeType(member);
+		// 	let platforms = '';
 		// 	if ('platforms' in member) {
 		// 		platforms = ' (' + member.platforms.join(' ') + ') ';
 		// 	}

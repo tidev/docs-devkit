@@ -224,21 +224,27 @@ function exportType(api) {
 	let rv = '';
 	if ('type' in api && api.type) {
 		if (Array.isArray(api.type)) {
-			const res = api.type.filter(function (t) {
-				return (t.toLowerCase() === 'object');
-			});
+			// if any of the types is 'Object' or 'any', assume 'Object'
+			const res = api.type.filter(t => [ 'object', 'any' ].includes(t.toLowerCase()));
 			rv = (res.length > 0) ? 'Object' : api.type[0];
 		} else {
 			rv = api.type;
 		}
 
-		if (rv.indexOf('Array') === 0 && rv.indexOf('ArrayBuffer') !== 0) {
-			rv = 'Array';
-		} else if (rv.indexOf('Callback') === 0) {
+		// Treat 'Callback' as 'Function'
+		if (rv.startsWith('Callback')) {
 			rv = 'Function';
-		} else if (rv.indexOf('Dictionary<') === 0) {
+		}
+		// Unwrap 'Dictionary<type>' as type
+		if (rv.startsWith('Dictionary<')) {
 			rv = rv.substring(rv.indexOf('<') + 1, rv.lastIndexOf('>'));
-		} else if (rv === 'Dictionary') {
+		}
+
+		// Make Array base type drop the sub-type
+		if (rv.startsWith('Array') && !rv.startsWith('ArrayBuffer')) {
+			rv = 'Array';
+		} else if (rv === 'Dictionary' || rv === 'any') {
+			// Treat 'any' and 'Dictionary' as 'Object'
 			rv = 'Object';
 		}
 	}

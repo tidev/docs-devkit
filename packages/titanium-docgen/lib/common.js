@@ -50,7 +50,8 @@ exports.SIMPLE_TYPES = [
 	'Uint16Array',
 	'Uint32Array',
 	'Uint8Array',
-	'Uint8ClampedArray'
+	'Uint8ClampedArray',
+	'any' // TODO: Add undefined?
 ];
 // Mapping from base type name to number of generic types required (0 means 0-Infinity)
 exports.COMPLEX_TYPES = new Map([

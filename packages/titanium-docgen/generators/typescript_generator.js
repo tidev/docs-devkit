@@ -656,6 +656,7 @@ class GlobalTemplateWriter {
 			case 'String':
 				return docType.toLowerCase();
 			case 'Object':
+			case 'any':
 				return 'any';
 			case 'Array':
 				return 'any[]';
