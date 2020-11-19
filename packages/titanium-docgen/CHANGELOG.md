@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.9.3](https://github.com/appcelerator/docs-devkit/compare/v4.9.2...v4.9.3) (2020-11-19)
+
+
+### Bug Fixes
+
+* **docgen:** support references to builtin types when validating class names ([9600a9f](https://github.com/appcelerator/docs-devkit/commit/9600a9f87f61f1be226363137a14476c346455cf))
+
+
+
+
+
 ## [4.9.2](https://github.com/appcelerator/docs-devkit/compare/v4.9.1...v4.9.2) (2020-11-18)
 
 
