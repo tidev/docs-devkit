@@ -1,6 +1,6 @@
 <template>
   <div class="type-signature function-signature">
-    <span class="static" v-if="!instance">(static)</span> <span>{{name}}({{parameterNames.join(', ')}})</span> <span class="return-type">→ <TypeLinks :types="returns"/></span>
+    <span class="static" v-if="!instance">(static)</span> <span>{{name}}({{parameterNames}})</span> <span class="return-type">→ <TypeLinks :types="returns"/></span>
   </div>
 </template>
 
@@ -20,7 +20,33 @@ export default {
   },
   computed: {
     parameterNames: function () {
-      return this.parameters.map(value => value.name)
+      let value = ''
+      let first = true
+      let closeCount = 0
+      for (const param of this.parameters) {
+        if (param.repeatable) {
+          // Close the others!
+          value += ']'.repeat(closeCount)
+          closeCount = 0
+        }
+        if (param.optional) {
+          value += '['
+          closeCount++
+        }
+        if (!first) {
+          value += ', '
+        }
+        if (param.repeatable) {
+          value += '...'
+        }
+        value += param.name
+        first = false
+      }
+      if (closeCount > 0) {
+        value += ']'.repeat(closeCount)
+        closeCount = 0
+      }
+      return value
     }
   }
 }
