@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.10.0](https://github.com/appcelerator/docs-devkit/compare/v4.9.3...v4.10.0) (2020-11-19)
+
+
+### Features
+
+* **plugin-apidocs:** improved method signature display ([8b4f689](https://github.com/appcelerator/docs-devkit/commit/8b4f6898f2a018011685915c21bb4d8a04b14240)), closes [#105](https://github.com/appcelerator/docs-devkit/issues/105)
+
+
+
+
+
 ## [4.9.3](https://github.com/appcelerator/docs-devkit/compare/v4.9.2...v4.9.3) (2020-11-19)
 
 **Note:** Version bump only for package vuepress-plugin-apidocs

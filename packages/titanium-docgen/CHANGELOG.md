@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.10.0](https://github.com/appcelerator/docs-devkit/compare/v4.9.3...v4.10.0) (2020-11-19)
+
+
+### Bug Fixes
+
+* **docgen:** output optional/repeatable when true for method parameters in json-raw format ([217c50f](https://github.com/appcelerator/docs-devkit/commit/217c50ff37ee1c1286c5fd8ca82cc1445f5896ac))
+
+
+### Features
+
+* **docgen:** support 'any' type ([2f52fc3](https://github.com/appcelerator/docs-devkit/commit/2f52fc3a080612651b9ca43dae518b1aa678dfd2)), closes [#103](https://github.com/appcelerator/docs-devkit/issues/103)
+
+
+
+
+
 ## [4.9.3](https://github.com/appcelerator/docs-devkit/compare/v4.9.2...v4.9.3) (2020-11-19)
 
 
