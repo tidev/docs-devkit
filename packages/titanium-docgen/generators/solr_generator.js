@@ -2,7 +2,7 @@
  * Copyright (c) 2015-2017 Appcelerator, Inc. All Rights Reserved.
  * Licensed under the terms of the Apache Public License.
  *
- * Script to generate JSON-formmatted data for consumption by the SOLR indexer
+ * Script to generate JSON-formatted data for consumption by the SOLR indexer
  */
 'use strict';
 
@@ -90,14 +90,17 @@ function exportExamples (api) {
 function exportType (api) {
 	let rv = [];
 	if (assert(api, 'type')) {
+		// wrap in Array
 		if (!Array.isArray(api.type)) {
 			api.type = [ api.type ];
 		}
-		api.type.forEach(function (t) {
-			if (t.indexOf('Dictionary<') === 0) {
+		api.type.forEach(t => {
+			if (t.startsWith('Dictionary<')) { // unwrap Dictionary<type> to type
 				rv = rv.concat(t.substring(t.indexOf('<'), t.lastIndexOf('>')).split(','));
-			} else if (t.indexOf('Array<') === 0) {
+			} else if (t.startsWith('Array<')) { // handle complex Array type
 				rv.push(t.substring(t.indexOf('<'), t.lastIndexOf('>')) + '[]');
+			} else if (t === 'any') { // treat 'any' as 'Object'
+				rv.push('Object');
 			} else {
 				rv.push(t);
 			}
