@@ -79,7 +79,13 @@ function exportParams(apis, type) {
 			}
 			annotatedMember.type = member.type || 'String';
 			if (type === 'parameters') {
-				annotatedMember.optional = member.optional || false;
+				// optional/repeatable are false if omitted
+				if (assert(member, 'optional') && member.optional) {
+					annotatedMember.optional = member.optional;
+				}
+				if (assert(member, 'repeatable') && member.repeatable) {
+					annotatedMember.repeatable = member.repeatable;
+				}
 			}
 			rv.push(annotatedMember);
 		});
