@@ -453,7 +453,7 @@ function processAPIs (api) {
 	// Generate create method
 	api.__creatable = false;
 	if ((api.__subtype === 'view' || api.__subtype === 'proxy')
-		&& (assert(api, 'createable') || !('createable' in api))) {
+		&& (!assert(api, 'createable') || api.creatable)) { // createable not specified or is truthy
 		const name = api.name;
 		const prop = name.split('.').pop();
 		const cls = name.substring(0, name.lastIndexOf('.'));
