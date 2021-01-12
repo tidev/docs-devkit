@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.10.1](https://github.com/appcelerator/docs-devkit/compare/v4.10.0...v4.10.1) (2021-01-12)
+
+
+### Bug Fixes
+
+* **docgen:** guard createable property for generated methods properly ([04a29be](https://github.com/appcelerator/docs-devkit/commit/04a29be2447cb233423153bc66903bdbbbcec750))
+
+
+
+
+
 # [4.10.0](https://github.com/appcelerator/docs-devkit/compare/v4.9.3...v4.10.0) (2020-11-19)
 
 
