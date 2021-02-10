@@ -151,10 +151,11 @@ module.exports = (options, context) => {
         const version = page._filePath.substring(versionedSourceDir.length + 1, page._filePath.indexOf('/', versionedSourceDir.length + 1))
         page.version = version
         page.originalRegularPath = page.regularPath
+        const pathWithoutLeadingVersion = page.path.replace(new RegExp(`^/${version}`), '')
         if (version === currentVersion) {
-          page.path = page.regularPath = page.path.replace(new RegExp(`^/${version}`), '')
+          page.path = page.regularPath = pathWithoutLeadingVersion
         } else {
-          page.path = page.regularPath = generateVersionedPath(page.path, page.version, page._localePath)
+          page.path = page.regularPath = generateVersionedPath(pathWithoutLeadingVersion, page.version, page._localePath)
         }
         page.originalRelativePath = page.relativePath
         page.relativePath = path.relative(versionedSourceDir, page._filePath).replace(/\\/g, '/')
