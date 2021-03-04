@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "eslint": "^7.12.1",
-    "eslint-config-axway": "^5.0.0",
+    "eslint-config-axway": "^6.0.0",
     "eslint-plugin-vue-libs": "^4.0.0",
     "lerna": "^3.13.0"
   }
