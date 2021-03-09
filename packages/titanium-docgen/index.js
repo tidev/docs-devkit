@@ -306,93 +306,6 @@ function hideAPIMembers(apis, type) {
 	return apis;
 }
 
-/**
- * Return deprecation object if required
- * @param {boolean} getOrSet True for getter, False for setter
- * @param {Object} api Property object
- * @param {string} className Name of the class
- * @return {*}
- */
-function getAccessorDeprecation(getOrSet, api, className) {
-	if (api.deprecated && api.deprecated.removed) {
-		return api.deprecated;
-	}
-	if (accessorsDeprecatedSince) {
-		const deprecated = {};
-		if (api.deprecated) {
-			Object.keys(api.deprecated).forEach(key => {
-				// `api.deprecated` contains only primitives, no need for a deep clone
-				deprecated[key] = api.deprecated[key];
-			});
-		}
-		if (accessorsRemovedSince && !deprecated.removed) {
-			deprecated.removed = accessorsRemovedSince;
-		}
-		deprecated.since = accessorsDeprecatedSince;
-		if (!deprecated.notes) {
-			deprecated.notes = `${getOrSet ? 'Access' : 'Set the value using'} <${className}.${api.name}> instead.`;
-		}
-		return deprecated;
-	} else {
-		return api.deprecated;
-	}
-}
-
-/**
- * Generates accessors from the given list of properties
- * @param {Array<Object>} apis Array of property objects
- * @param {String} className Name of the class
- * @param {Array<Object>} methods Array of defined methods on the API
- * @returns {Array<Object>} Array of methods
- */
-function generateAccessors(apis, className, methods) {
-	const rv = [];
-	apis.forEach(function (api) {
-		if ('accessors' in api && api.accessors === false) {
-			return;
-		}
-
-		const getterName = 'get' + api.name.charAt(0).toUpperCase() + api.name.slice(1);
-		const setterName = 'set' + api.name.charAt(0).toUpperCase() + api.name.slice(1);
-		// Generate getter
-		if (!('permission' in api && api.permission === 'write-only') && !api.name.match(common.REGEXP_CONSTANTS) && !methods.includes(getterName)) {
-			rv.push({
-				name: getterName,
-				summary: 'Gets the value of the <' + className + '.' + api.name + '> property.',
-				deprecated: getAccessorDeprecation(true, api, className),
-				platforms: api.platforms,
-				since: api.since,
-				returns: { type: api.type, __subtype: 'return' },
-				__accessor: true,
-				__hide: api.__hide || false,
-				__inherits: api.__inherits || null,
-				__subtype: 'method'
-			});
-		}
-
-		// Generate setter
-		if (!('permission' in api && api.permission === 'read-only') && !methods.includes(setterName)) {
-			rv.push({
-				name: setterName,
-				summary: 'Sets the value of the <' + className + '.' + api.name + '> property.',
-				deprecated: getAccessorDeprecation(false, api, className),
-				platforms: api.platforms,
-				since: api.since,
-				parameters: [ {
-					name: api.name,
-					summary: 'New value for the property.',
-					type: api.type,
-					__subtype: 'parameter'
-				} ],
-				__accessor: true,
-				__hide: api.__hide || false,
-				__inherits: api.__inherits || null,
-				__subtype: 'method'
-			});
-		}
-	});
-	return rv;
-}
 
 /**
  * Returns a subtype based on the parent class
@@ -505,26 +418,8 @@ function processAPIs (api) {
 	}
 
 	if (assert(api, 'properties')) {
-		let accessors;
 		api = hideAPIMembers(api, 'properties');
 		api.properties = processAPIMembers(api.properties, 'properties', api.since, api.__addon);
-		const methods = api.methods.map(method => method.name);
-		if (api.__subtype !== 'pseudo' && (accessors = generateAccessors(api.properties, api.name, methods))) {
-			if (assert(api, 'methods')) {
-				matches = [];
-				accessors.forEach(function (accessor) {
-					matches = api.methods.filter(function (element) {
-						return accessor.name === element.name;
-					});
-				});
-				matches.forEach(function (element) {
-					accessors.splice(accessors.indexOf(element), 1);
-				});
-				api.methods = api.methods.concat(accessors);
-			} else {
-				api.methods = accessors;
-			}
-		}
 	}
 
 	if (assert(api, 'methods')) {
