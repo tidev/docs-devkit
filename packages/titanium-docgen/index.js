@@ -795,7 +795,7 @@ if (basePaths.length === 0) {
 let version = '';
 const sdkPackageJson = pathMod.resolve(basePaths[0], '..', 'package.json');
 if (fs.existsSync(sdkPackageJson)) {
- 	version = require(sdkPackageJson).version;
+	version = require(sdkPackageJson).version; // eslint-disable-line security/detect-non-literal-require
 }
 
 // Parse YAML files
@@ -822,7 +822,7 @@ basePaths.forEach(function (basePath) {
 // Parse add-on docs and merge them with the base set
 addOnDocs.forEach(function (basePath) {
 	const resolvedPath = pathMod.resolve(basePath);
-	common.log(common.LOG_INFO, 'Parsing add-on YAML files in %s...', resolved);
+	common.log(common.LOG_INFO, 'Parsing add-on YAML files in %s...', resolvedPath);
 	const parseData = common.parseYAML(resolvedPath);
 	for (const key in parseData.data) {
 		errors.push(parseData.errors);
@@ -880,7 +880,7 @@ formats.forEach(function (format) {
 	}
 	const exportData = exporter.exportData(processedData);
 	const templatePath = pathMod.join(__dirname, 'templates');
-	
+
 	mkdirDashP(outputPath); // make the output directory
 
 	common.log(common.LOG_INFO, 'Generating %s output...', format.toUpperCase());
