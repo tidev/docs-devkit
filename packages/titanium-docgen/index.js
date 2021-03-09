@@ -15,8 +15,6 @@ var yaml = require('js-yaml');
 var exec = require('child_process').exec; // eslint-disable-line security/detect-child-process
 var os = require('os');
 var pathMod = require('path');
-var accessorsDeprecatedSince = '';
-var accessorsRemovedSince = '';
 var assert = common.assertObjectKey;
 var basePaths = [];
 var processFirst = [ 'Titanium.Proxy', 'Titanium.Module', 'Titanium.UI.View' ];
@@ -305,7 +303,6 @@ function hideAPIMembers(apis, type) {
 	}
 	return apis;
 }
-
 
 /**
  * Returns a subtype based on the parent class
@@ -804,17 +801,6 @@ if (~formats.indexOf('addon') && !searchPlatform) {
 if (basePaths.length === 0) {
 	common.log(common.LOG_ERROR, 'Specify at least one path where to look for YAML files.');
 	process.exit(1);
-}
-
-const sdkPackageJson = pathMod.resolve(basePaths[0], '..', 'package.json');
-if (fs.existsSync(sdkPackageJson)) {
-	version = require(sdkPackageJson).version;
-	if (nodeappc.version.gte(version, '8.0.0')) {
-		accessorsDeprecatedSince = '8.0.0';
-	}
-	if (nodeappc.version.gte(version, '10.0.0')) {
-		accessorsRemovedSince = '10.0.0';
-	}
 }
 
 // Parse YAML files
