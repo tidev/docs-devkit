@@ -2,7 +2,7 @@
 library 'pipeline-library'
 
 def publishableBranches = ['master']
-def nodeVersion = '10.15.0'
+def nodeVersion = '12.18.0'
 def yarnVersion = '1.16.0'
 
 timestamps {
