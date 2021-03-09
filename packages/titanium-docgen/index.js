@@ -1103,7 +1103,7 @@ formats.forEach(function (format) {
 			output = pathMod.join(output, 'index.html');
 			break;
 		case 'jsca' :
-			render = JSON.stringify(exportData, null, '    ');
+			render = JSON.stringify(exportData, null);
 			output = pathMod.join(outputPath, 'api.jsca');
 			break;
 		case 'json' :
