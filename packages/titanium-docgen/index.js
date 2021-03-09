@@ -1014,6 +1014,8 @@ formats.forEach(function (format) {
 		case 'typescript':
 			render = exportData;
 			output = pathMod.join(outputPath, 'index.d.ts');
+			delete processedData['__version']; // clean up
+			break;
 	}
 
 	if (!~[ 'addon' ].indexOf(format)) {
