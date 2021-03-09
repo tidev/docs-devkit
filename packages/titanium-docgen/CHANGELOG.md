@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.10.3](https://github.com/appcelerator/docs-devkit/compare/v4.10.2...v4.10.3) (2021-03-09)
+
+
+### Bug Fixes
+
+* **docgen:** clean up extra __version field after typescript generator runs ([e52f63a](https://github.com/appcelerator/docs-devkit/commit/e52f63ae0c592a80d003d1330ee549c755480daa))
+* **docgen:** fix html and typescript format outputs, refactor generation code ([1f3ff62](https://github.com/appcelerator/docs-devkit/commit/1f3ff628bd268e4f6c47693ed59a8dca2bb64ac5))
+
+
+
+
+
 ## [4.10.2](https://github.com/appcelerator/docs-devkit/compare/v4.10.1...v4.10.2) (2021-03-09)
 
 
