@@ -16,12 +16,12 @@ if (data.typestr == "module" && !assert(data, 'parent')) {
 }
 %>
 
-<% if (assert(data, 'parent') && data.parent.filename) { %>
+<% if (data.parent && data.parent.filename) { %>
 	<%- typestr %> of <a href="<%- data.parent.filename %>.html"><%- data.parent.name %></a>.
 <% } else { %>
 	<%- typestr %>.
 <% } %>
-<% if (assert(data, 'inherits')) {
+<% if (data.inherits) {
 	if (data.typestr == 'module' || data.typestr == 'proxy') { %>
 		Inherits from <a href="<%- data.inherits.filename %>.html"><%- data.inherits.name %></a>.
 	<% } else { %>

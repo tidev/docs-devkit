@@ -7,42 +7,29 @@
  */
 'use strict';
 
-var common = require('./lib/common.js');
-var nodeappc = require('node-appc');
-var ejs = require('ejs');
-var fs = require('fs');
-var yaml = require('js-yaml');
-var exec = require('child_process').exec; // eslint-disable-line security/detect-child-process
-var os = require('os');
-var pathMod = require('path');
-var assert = common.assertObjectKey;
-var basePaths = [];
-var processFirst = [ 'Titanium.Proxy', 'Titanium.Module', 'Titanium.UI.View' ];
+const common = require('./lib/common.js');
+const nodeappc = require('node-appc');
+const ejs = require('ejs');
+const fs = require('fs');
+const yaml = require('js-yaml');
+const exec = require('child_process').exec; // eslint-disable-line security/detect-child-process
+const os = require('os');
+const pathMod = require('path');
+const assert = common.assertObjectKey;
+
+const processFirst = [ 'Titanium.Proxy', 'Titanium.Module', 'Titanium.UI.View' ];
 var skipList = [ 'Titanium.Namespace.Name' ];
 var validFormats = [];
-var templatePath = './templates/';
 var formats = [ 'html' ];
-var outputPath = pathMod.join(__dirname, '..', 'dist');
-var output = outputPath;
-var parseData = {};
-var doc = {};
-var errors = [];
-var exportData = {};
-var exporter = null;
+// directory to place output files underneath (default, overriden by command option/flag)
+let outputPath = pathMod.join(__dirname, '..', 'dist');
+var doc = {}; // the global object where all the parsed yaml objects/docs get merged into
 var processedData = {};
-var render = '';
-var fsArray = [];
-var tokens = [];
-var originalPaths = [];
-var modules = [];
-var cssPath = '';
-var cssFile = '';
+var cssPath = pathMod.join(__dirname, 'templates/htmlejs/styles.css'); // default css file for html/modulehtml formats
+let cssFile = 'styles.css';
 var addOnDocs = [];
 var searchPlatform = null;
-var version = '';
-var argc = 0;
 var path = '';
-var templateStr = '';
 
 /**
  * Returns a list of inherited APIs.
@@ -658,16 +645,17 @@ function mkdirDashP(path) {
 // Start of Main Flow
 // Get a list of valid formats
 const generatorsPath = pathMod.join(__dirname, 'generators');
-fsArray = fs.readdirSync(generatorsPath);
-fsArray.forEach(function (file) {
-	tokens = file.split('_');
+fs.readdirSync(generatorsPath).forEach(file => {
+	const tokens = file.split('_');
 	if (tokens[1] === 'generator.js') {
 		validFormats.push(tokens[0]);
 	}
 });
 
 // Check command arguments
-if ((argc = process.argv.length) > 2) {
+const argc = process.argv.length;
+const basePaths = [];
+if (argc > 2) {
 	for (let x = 2; x < argc; x++) {
 		switch (process.argv[x]) {
 			case '--help' :
@@ -803,11 +791,21 @@ if (basePaths.length === 0) {
 	process.exit(1);
 }
 
+// Get the SDK version
+let version = '';
+const sdkPackageJson = pathMod.resolve(basePaths[0], '..', 'package.json');
+if (fs.existsSync(sdkPackageJson)) {
+ 	version = require(sdkPackageJson).version;
+}
+
 // Parse YAML files
-originalPaths = originalPaths.concat(basePaths);
+const originalPaths = basePaths;
+const modules = [];
+const errors = []; // gather parse errors (FIXME: we ignore these errors!)
 basePaths.forEach(function (basePath) {
-	common.log(common.LOG_INFO, 'Parsing YAML files in %s...', pathMod.resolve(basePath));
-	parseData = common.parseYAML(basePath);
+	const resolvedPath = pathMod.resolve(basePath);
+	common.log(common.LOG_INFO, 'Parsing YAML files in %s...', resolvedPath);
+	const parseData = common.parseYAML(resolvedPath);
 	for (const key in parseData.data) {
 		errors.push(parseData.errors);
 		if (assert(doc, key)) {
@@ -823,11 +821,10 @@ basePaths.forEach(function (basePath) {
 
 // Parse add-on docs and merge them with the base set
 addOnDocs.forEach(function (basePath) {
-	var key;
-	parseData = null;
-	common.log(common.LOG_INFO, 'Parsing add-on YAML files in %s...', pathMod.resolve(basePath));
-	parseData = common.parseYAML(basePath);
-	for (key in parseData.data) {
+	const resolvedPath = pathMod.resolve(basePath);
+	common.log(common.LOG_INFO, 'Parsing add-on YAML files in %s...', resolved);
+	const parseData = common.parseYAML(resolvedPath);
+	for (const key in parseData.data) {
 		errors.push(parseData.errors);
 		if (assert(doc, key)) {
 			common.log(common.LOG_INFO, 'Adding on to %s...', key);
@@ -872,7 +869,7 @@ formats.forEach(function (format) {
 	}
 
 	// Export data
-	exporter = require('./generators/' + format + '_generator.js'); // eslint-disable-line security/detect-non-literal-require
+	const exporter = require('./generators/' + format + '_generator.js'); // eslint-disable-line security/detect-non-literal-require
 	if (format === 'modulehtml') {
 		processedData.__modules = modules;
 	} else if (format === 'typescript') {
@@ -881,13 +878,16 @@ formats.forEach(function (format) {
 	if (searchPlatform) {
 		processedData.__platform = searchPlatform;
 	}
-	exportData = exporter.exportData(processedData);
-	templatePath = pathMod.join(__dirname, 'templates');
-	output = outputPath;
-	mkdirDashP(output);
+	const exportData = exporter.exportData(processedData);
+	const templatePath = pathMod.join(__dirname, 'templates');
+	
+	mkdirDashP(outputPath); // make the output directory
 
 	common.log(common.LOG_INFO, 'Generating %s output...', format.toUpperCase());
 
+	let render; // the rendered data
+	// (typically we'd render using ejs, but for some formats this will be the exported data itself)
+	let output = outputPath; // the final output filepath
 	switch (format) {
 		case 'addon':
 
@@ -895,7 +895,6 @@ formats.forEach(function (format) {
 			if (!fs.existsSync(output)) {
 				fs.mkdirSync(output);
 			}
-			templateStr = fs.readFileSync(pathMod.join(templatePath, 'addon.ejs'), 'utf8');
 			for (const cls in exportData) {
 				if (cls.indexOf('__') === 0) {
 					continue;
@@ -920,9 +919,10 @@ formats.forEach(function (format) {
 				common.log('No API changes found.');
 				return;
 			}
-			output = pathMod.join(output, 'changes_' + exportData.startVersion.replace(/\./g, '_') + '.html');
-			templateStr = fs.readFileSync(pathMod.join(templatePath, 'changes.ejs'), 'utf8');
-			render = ejs.render(templateStr, { data: exportData, filename: 'changes.ejs', assert: common.assertObjectKey });
+			output = pathMod.join(output, 'changes_' + processedData.__startVersion.replace(/\./g, '_') + '.html');
+			const changesTemplateFile = pathMod.join(templatePath, 'changes.ejs');
+			const changesTemplate = fs.readFileSync(changesTemplateFile, 'utf8');
+			render = ejs.render(changesTemplate, { data: exportData, assert: common.assertObjectKey }, { filename: changesTemplateFile });
 			break;
 		case 'html':
 		case 'modulehtml':
@@ -940,7 +940,7 @@ formats.forEach(function (format) {
 			// For each of the input directories, check if there's an images subdir
 			// if so, copy it over!
 			basePaths.concat(addOnDocs).forEach(p => {
-				const imgPath = pathMod.join(p, 'images');
+				const imgPath = pathMod.join(pathMod.resolve(p), 'images');
 				if (!fs.existsSync(imgPath)) {
 					return;
 				}
@@ -964,9 +964,10 @@ formats.forEach(function (format) {
 				if (type.indexOf('__') === 0) {
 					continue;
 				}
-				templateStr = fs.readFileSync(pathMod.join(templatePath, 'htmlejs', type + '.html'), 'utf8');
+				const typeTemplate = pathMod.join(templatePath, 'htmlejs', type + '.html');
+				const htmlTemplateStr = fs.readFileSync(typeTemplate, 'utf8');
 				exportData[type].forEach(function (member) { // eslint-disable-line no-loop-func
-					render = ejs.render(templateStr, { data: member, filename: pathMod.join(templatePath, 'htmlejs', type + '.html'), assert: common.assertObjectKey, css: cssFile });
+					render = ejs.render(htmlTemplateStr, { data: member, assert: common.assertObjectKey, css: cssFile }, { filename: typeTemplate });
 					const filename = pathMod.join(output, `${member.filename}.html`);
 					if (fs.writeFileSync(filename, render) <= 0) {
 						common.log(common.LOG_ERROR, 'Failed to write to file: %s', filename);
@@ -975,11 +976,13 @@ formats.forEach(function (format) {
 			}
 
 			if (format === 'modulehtml') {
-				templateStr = fs.readFileSync(pathMod.join(templatePath, 'htmlejs', 'moduleindex.html'), 'utf8');
-				render = ejs.render(templateStr, { filename: exportData.proxy[0].filename + '.html' });
+				const moduleHtmlTemplateFile = pathMod.join(templatePath, 'htmlejs', 'moduleindex.html');
+				const moduleHtmlTemplate = fs.readFileSync(moduleHtmlTemplateFile, 'utf8');
+				render = ejs.render(moduleHtmlTemplate, { filename: exportData.proxy[0].filename + '.html' });
 			} else {
-				templateStr = fs.readFileSync(pathMod.join(templatePath, 'htmlejs', 'index.html'), 'utf8');
-				render = ejs.render(templateStr, { data: exportData, assert: common.assertObjectKey, css: cssFile });
+				const htmlTemplateFile = pathMod.join(templatePath, 'htmlejs', 'index.html');
+				const htmlTemplate = fs.readFileSync(htmlTemplateFile, 'utf8');
+				render = ejs.render(htmlTemplate, { data: exportData, assert: common.assertObjectKey, css: cssFile }, { filename: htmlTemplateFile });
 			}
 			output = pathMod.join(output, 'index.html');
 			break;
@@ -993,13 +996,15 @@ formats.forEach(function (format) {
 			output = pathMod.join(outputPath, 'api.json');
 			break;
 		case 'jsduck' :
-			templateStr = fs.readFileSync(pathMod.join(templatePath, 'jsduck.ejs'), 'utf8');
-			render = ejs.render(templateStr, { doc: exportData }, { filename: pathMod.join(templatePath, 'jsduck.ejs') });
+			const jsduckTemplateFile = pathMod.join(templatePath, 'jsduck.ejs');
+			const jsduckTemplate = fs.readFileSync(jsduckTemplateFile, 'utf8');
+			render = ejs.render(jsduckTemplate, { doc: exportData }, { filename: jsduckTemplateFile });
 			output = pathMod.join(outputPath, 'titanium.js');
 			break;
 		case 'parity' :
-			templateStr = fs.readFileSync(pathMod.join(templatePath, 'parity.ejs'), 'utf8');
-			render = ejs.render(templateStr, { apis: exportData }, { filename: pathMod.join(templatePath, 'parity.ejs') });
+			const parityTemplateFile = pathMod.join(templatePath, 'parity.ejs');
+			const parityTemplate = fs.readFileSync(parityTemplateFile, 'utf8');
+			render = ejs.render(parityTemplate, { apis: exportData }, { filename: parityTemplateFile });
 			output = pathMod.join(outputPath, 'parity.html');
 			break;
 		case 'solr' :
@@ -1020,5 +1025,4 @@ formats.forEach(function (format) {
 			common.log('Generated output at %s', output);
 		});
 	}
-	exporter = exportData = null;
 });
