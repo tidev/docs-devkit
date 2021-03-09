@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.10.2](https://github.com/appcelerator/docs-devkit/compare/v4.10.1...v4.10.2) (2021-03-09)
+
+
+### Bug Fixes
+
+* some extendPageData generated path with duplicated versions ([23fab6c](https://github.com/appcelerator/docs-devkit/commit/23fab6c5cff8192b1f93e7d577f94d1946058045))
+
+
+
+
+
 # [4.9.0](https://github.com/appcelerator/docs-devkit/compare/v4.8.3...v4.9.0) (2020-11-10)
 
 **Note:** Version bump only for package vuepress-plugin-versioning

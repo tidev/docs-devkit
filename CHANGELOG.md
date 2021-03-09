@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.10.2](https://github.com/appcelerator/docs-devkit/compare/v4.10.1...v4.10.2) (2021-03-09)
+
+
+### Bug Fixes
+
+* dont pretty print the jsca file ([701d298](https://github.com/appcelerator/docs-devkit/commit/701d298d870a42922620e9055a9b728e6b819c74))
+* some extendPageData generated path with duplicated versions ([23fab6c](https://github.com/appcelerator/docs-devkit/commit/23fab6c5cff8192b1f93e7d577f94d1946058045))
+
+
+
+
+
 ## [4.10.1](https://github.com/appcelerator/docs-devkit/compare/v4.10.0...v4.10.1) (2021-01-12)
 
 

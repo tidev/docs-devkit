@@ -1,6 +1,6 @@
 {
   "name": "vuepress-plugin-versioning",
-  "version": "4.9.0",
+  "version": "4.10.2",
   "description": "Versioning plugin for VuePress",
   "main": "index.js",
   "scripts": {
