@@ -900,7 +900,7 @@ formats.forEach(function (format) {
 				if (cls.indexOf('__') === 0) {
 					continue;
 				}
-				render = yaml.safeDump(exportData[cls]);
+				render = yaml.dump(exportData[cls]);
 				if (fs.writeFileSync(output + cls + '.yml', render) <= 0) {
 					common.log(common.LOG_ERROR, 'Failed to write to file: %s', output + cls + '.yml');
 				}

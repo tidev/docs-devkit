@@ -215,7 +215,7 @@ exports.parseYAML = function parseYAML(rootPath) {
 						const fileBuffer = fs.readFileSync(elem, 'utf8');
 						// remove comments
 						fileBuffer.replace(/\w*#.*/, '');
-						yaml.safeLoadAll(fileBuffer, function (doc) {
+						yaml.loadAll(fileBuffer, function (doc) {
 							if (!doc.name) {
 								rv.errors.push({ toString: errorMessage(), __file: currentFile });
 								return;
