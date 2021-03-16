@@ -4731,9 +4731,9 @@ escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.5:
   integrity sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
 
 eslint-config-axway@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-axway/-/eslint-config-axway-6.0.0.tgz#2bebc19b1e1faffe761b397d539c9193f262079f"
-  integrity sha512-2POCdWdhXoncVkkDthhQnrazmhZUbnKvlC73kXVRr8J6EmlyUo2iD9U7l8goTDnBaWFbWBOaRGbEqo1NCEdyOg==
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-config-axway/-/eslint-config-axway-6.0.1.tgz#50e8681ad1605c01fc4571ba06d22bdf7f38d449"
+  integrity sha512-44726ChDwLN7Zy2oKx5zovitmA6cfkNZ/ICJOyoSBpGTqLKC3xnNMUrL38icz1NgBMko09M9MA5NXGmbcO+IxA==
   dependencies:
     eslint-plugin-chai-expect "^2.2.0"
     eslint-plugin-import "^2.22.1"
