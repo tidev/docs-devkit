@@ -22,7 +22,7 @@
   "dependencies": {
     "@vuepress/shared-utils": "^1.7.1",
     "axios": "^0.21.0",
-    "fs-extra": "^9.0.1",
+    "fs-extra": "^10.0.0",
     "titanium-docgen": "^4.10.3",
     "vue-content-loader": "^0.2.2"
   },
