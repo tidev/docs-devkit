@@ -4736,14 +4736,14 @@ escape-string-regexp@^4.0.0:
   integrity sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==
 
 eslint-config-axway@^6.0.0:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/eslint-config-axway/-/eslint-config-axway-6.0.1.tgz#50e8681ad1605c01fc4571ba06d22bdf7f38d449"
-  integrity sha512-44726ChDwLN7Zy2oKx5zovitmA6cfkNZ/ICJOyoSBpGTqLKC3xnNMUrL38icz1NgBMko09M9MA5NXGmbcO+IxA==
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/eslint-config-axway/-/eslint-config-axway-6.0.2.tgz#2ce7752650b2e4cec8beb9fa4cb1f8fbb05fdb80"
+  integrity sha512-+O+kCrTycij3Vyk+hJtljZy/Xa/Xz0PdkJm4c4DRed6YT7JuSVpoH4UPCST/xCT9/Nonpy8VuyuZTa3kneHdjw==
   dependencies:
     eslint-plugin-chai-expect "^2.2.0"
     eslint-plugin-import "^2.22.1"
     eslint-plugin-node "^11.1.0"
-    eslint-plugin-promise "^4.3.1"
+    eslint-plugin-promise "^5.1.0"
     eslint-plugin-security "^1.4.0"
     find-root "^1.1.0"
     semver "^7.3.4"
@@ -4808,10 +4808,10 @@ eslint-plugin-node@^11.1.0:
     resolve "^1.10.1"
     semver "^6.1.0"
 
-eslint-plugin-promise@^4.3.1:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-promise/-/eslint-plugin-promise-4.3.1.tgz#61485df2a359e03149fdafc0a68b0e030ad2ac45"
-  integrity sha512-bY2sGqyptzFBDLh/GMbAxfdJC+b0f23ME63FOE4+Jao0oZ3E1LEwFtWJX/1pGMJLiTtrSSern2CRM/g+dfc0eQ==
+eslint-plugin-promise@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-promise/-/eslint-plugin-promise-5.1.0.tgz#fb2188fb734e4557993733b41aa1a688f46c6f24"
+  integrity sha512-NGmI6BH5L12pl7ScQHbg7tvtk4wPxxj8yPHH47NvSmMtFneC077PSeY3huFj06ZWZvtbfxSPt3RuOQD5XcR4ng==
 
 eslint-plugin-security@^1.4.0:
   version "1.4.0"
