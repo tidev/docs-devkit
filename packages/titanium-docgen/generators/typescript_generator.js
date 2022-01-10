@@ -674,9 +674,6 @@ class GlobalTemplateWriter {
 			jsDoc += `${this.indent(nestingLevel)} * ${summary}\n`;
 			jsDoc += `${this.indent(nestingLevel)} */`;
 		}
-		if (node instanceof InterfaceNode && node.name === 'IOStream') {
-			jsDoc += `\n${this.indent(nestingLevel)}// tslint:disable-next-line:interface-name`;
-		}
 
 		return jsDoc;
 	}
