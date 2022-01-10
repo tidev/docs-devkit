@@ -187,19 +187,21 @@ function errorMessage() {
 
 /**
  * Recursively find, load and parse YAML files
- * @param {Object} rootPath Root path to start search
+ * @param {string} rootPath Root path to start search
+ * @param {string} subPath Current search path
  * @returns {Object} Dictionary containing the parsed data and any YAML errors
  */
-exports.parseYAML = function parseYAML(rootPath) {
+exports.parseYAML = function parseYAML(rootPath, subPath) {
 	const rv = {
 		data: {},
 		errors: []
 	};
-	let currentFile = rootPath;
+	const fullPath = subPath ? path.join(rootPath, subPath) : rootPath;
+	let currentFile = fullPath;
 	try {
-		const fsArray = fs.readdirSync(rootPath);
+		const fsArray = fs.readdirSync(fullPath);
 		fsArray.forEach(function (fsElement) {
-			const elem = path.join(rootPath, fsElement);
+			const elem = path.join(fullPath, fsElement);
 			const stat = fs.statSync(elem);
 			currentFile = elem;
 
@@ -208,7 +210,7 @@ exports.parseYAML = function parseYAML(rootPath) {
 			}
 
 			if (stat.isDirectory()) {
-				nodeappc.util.mixObj(rv, parseYAML(elem));
+				nodeappc.util.mixObj(rv, parseYAML(rootPath, subPath ? path.join(subPath, fsElement) : fsElement));
 			} else if (stat.isFile()) {
 				if (elem.split('.').pop() === 'yml') {
 					try {
@@ -224,6 +226,7 @@ exports.parseYAML = function parseYAML(rootPath) {
 							if (!rv.data[doc.name]) {
 								rv.data[doc.name] = doc;
 								rv.data[doc.name].__file = currentFile;
+								rv.data[doc.name].__path = path.join(subPath, fsElement);
 							} else {
 								rv.errors.push({
 									toString: function () {

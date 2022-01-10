@@ -1012,13 +1012,29 @@ formats.forEach(function (format) {
 			output = pathMod.join(outputPath, 'api_solr.json');
 			break;
 		case 'typescript':
-			render = exportData;
-			output = pathMod.join(outputPath, 'index.d.ts');
-			delete processedData['__version']; // clean up
+			output = pathMod.join(outputPath, 'titanium');
+			for (const [ filename, descriptor ] of exportData.entries()) {
+				let file = pathMod.join(output, filename);
+				if (!file.endsWith('.d.ts')) {
+					file += '.d.ts';
+				}
+				const dirname = pathMod.dirname(file);
+				if (!fs.existsSync(dirname)) {
+					fs.mkdirSync(dirname, { recursive: true });
+				}
+				try {
+					fs.writeFileSync(file, descriptor.toString());
+				} catch (e) {
+					common.log(common.LOG_ERROR, 'Failed to write to file: %s', file);
+					common.log(common.LOG_ERROR, e.message);
+				}
+			}
+			const typesTemplatePath = pathMod.join(templatePath, 'typescript');
+			nodeappc.fs.nonDestructiveCopyDirSyncRecursive(typesTemplatePath, output);
 			break;
 	}
 
-	if (!~[ 'addon' ].indexOf(format)) {
+	if (!~[ 'addon', 'typescript' ].indexOf(format)) {
 		fs.writeFile(output, render, function (err) {
 			if (err) {
 				common.log(common.LOG_ERROR, 'Failed to write to file: %s with error: %s', output, err);
