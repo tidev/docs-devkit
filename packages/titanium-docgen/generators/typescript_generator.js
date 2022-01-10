@@ -62,6 +62,12 @@ const renameInterfaces = {
 	'Global.String': 'Global.StringConstructor'
 };
 
+const TypeHint = {
+	UNION: 'union',
+	PARAMETER: 'parameter',
+	NONE: 'none',
+};
+
 let parser = null;
 
 exports.exportData = function exportGlobalTemplate(apis) {
@@ -570,7 +576,8 @@ class GlobalTemplateWriter {
 		}
 		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
 		const isConstant = variableNode.isConstant ? 'const' : inGlobal ? 'var' : 'let';
-		descriptor.writeToNamespace(namespaceNode.parent, `${this.indent(nestingLevel)}${inGlobal}${isConstant} ${variableNode.name}: ${this.normalizeType(variableNode.type)};\n`);
+		const type = this.normalizeType(variableNode.type, TypeHint.NONE);
+		descriptor.writeToNamespace(namespaceNode.parent, `${this.indent(nestingLevel)}${inGlobal}${isConstant} ${variableNode.name}: ${type};\n`);
 	}
 
 	/**
@@ -592,9 +599,10 @@ class GlobalTemplateWriter {
 		const isStatic = propertyNode.isStatic ? 'static ' : '';
 		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
 		const isReadOnly = propertyNode.isConstant ? 'readonly ' : '';
-		const type = this.normalizeType(propertyNode.type);
-		const isOptional = (type !== 'never' && propertyNode.optional) ? '?' : '';
-		descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}${inGlobal}${isStatic}${isReadOnly}${propertyNode.name}${isOptional}: ${type};\n`);
+		const type = this.normalizeType(propertyNode.type, TypeHint.NONE, propertyNode.optional);
+		const isOptional = type !== 'never' && propertyNode.optional;
+		const optionalSign = isOptional ? '?' : '';
+		descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}${inGlobal}${isStatic}${isReadOnly}${propertyNode.name}${optionalSign}: ${type};\n`);
 	}
 
 	/**
@@ -619,7 +627,7 @@ class GlobalTemplateWriter {
 			return;
 		}
 		const parametersString = this.prepareParameters(node.parameters);
-		const type = this.normalizeType(node.returnType);
+		const type = this.normalizeType(node.returnType, TypeHint.NONE);
 		descriptor.writeToNamespace(namespaceNode.parent, `${this.indent(nestingLevel)}${inGlobal}function ${node.name}(${parametersString}): ${type};\n`);
 	}
 
@@ -642,10 +650,10 @@ class GlobalTemplateWriter {
 			return;
 		}
 		const parametersString = this.prepareParameters(node.parameters);
-		const isOptional = node.optional ? '?' : '';
-		const type = this.normalizeType(node.returnType);
+		const type = this.normalizeType(node.returnType, TypeHint.NONE, node.optional);
+		const optionalSign = node.optional ? '?' : '';
 		const generic = node.generic;
-		descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}${isStatic}${node.name}${generic}${isOptional}(${parametersString}): ${type};\n`);
+		descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}${isStatic}${node.name}${generic}${optionalSign}(${parametersString}): ${type};\n`);
 	}
 
 	/**
@@ -687,28 +695,30 @@ class GlobalTemplateWriter {
 	 * Normalizes a given type so it can be safely used in TypeScript.
 	 *
 	 * @param {Object | String | Array <Object | String>} docType Type definition
-	 * @param {String=} usageHint A string with a hint where this type is used (undefined | 'parameter' | 'union')
+	 * @param {TypeHint} usageHint A string with a hint where this type is used
+	 * @param {boolean=} isOptional Type is optional (i.e. undefined)
 	 * @return {String} A normalized representation of the type for usage in TypeScript
 	 */
-	normalizeType(docType, usageHint) {
+	normalizeType(docType, usageHint, isOptional) {
 		if (!docType) {
 			return 'any';
 		}
 
 		if (Array.isArray(docType)) {
-			const normalizedTypes = docType.map(typeName => this.normalizeType(typeName, 'union'));
+			const normalizedTypes = docType.map(typeName => this.normalizeType(typeName, TypeHint.UNION));
 			return normalizedTypes.includes('any') ? 'any' : normalizedTypes.join(' | ');
 		}
 
+		let type = '';
 		const lessThanIndex = docType.indexOf('<');
 		if (lessThanIndex !== -1) {
 			const baseType = docType.slice(0, lessThanIndex);
 			const greaterThanIndex = docType.lastIndexOf('>');
 			const subType = docType.slice(lessThanIndex + 1, greaterThanIndex);
-			const subTypes = subType.split(',').map(type => this.normalizeType(type.trim()));
+			const subTypes = subType.split(',').map(type => this.normalizeType(type.trim(), TypeHint.NONE));
 			if (baseType === 'Array') {
-				return subTypes.map(typeName => {
-					if (usageHint === 'parameter') {
+				type = subTypes.map(typeName => {
+					if (usageHint === TypeHint.PARAMETER) {
 						return `ReadonlyArray<${typeName}>`;
 					} else if (typeName.indexOf('<') !== -1) {
 						return `Array<${typeName}>`;
@@ -724,51 +734,62 @@ class GlobalTemplateWriter {
 					func = `(${subTypes.map((type, index) => `param${index}: ${type}`).join(', ')}) => void`;
 				}
 				if (func) {
-					return usageHint === 'union' ? `(${func})` : func;
+					type = usageHint === TypeHint.UNION ? `(${func})` : func;
 				}
 			} else if (baseType === 'Dictionary') {
-				return `Dictionary<${subType}>`;
+				type = `Dictionary<${subType}>`;
 			} else if (baseType === 'Promise') {
-				return `Promise<${this.normalizeType(subType)}>`;
+				type = `Promise<${this.normalizeType(subType, TypeHint.NONE)}>`;
 			}
-		}
-
-		switch (docType) {
-			case 'bool':
-				return 'boolean'; // Windows addon only
-			case 'Boolean':
-			case 'Function':
-			case 'Number':
-			case 'String':
-				return docType.toLowerCase();
-			case 'Object':
-			case 'any':
-				return 'any';
-			case 'Array':
-				return 'any[]';
-			case 'Callback': {
-				// simple 'Callback' is considered a poorly documented type, assume any number of `any` arguments
-				// callback without arguments and return value should be documented as `Callback<void>`
-				const func = '(...args: any[]) => void';
-				return usageHint === 'union' ? `(${func})` : func;
-			}
-			default: {
-				if (docType.indexOf('.') !== -1) {
-					const lastPart = docType.substring(docType.lastIndexOf('.') + 1);
-					if (invalidTypeMap[lastPart]) {
-						return docType.replace(lastPart, invalidTypeMap[lastPart]);
+		} else {
+			switch (docType) {
+				case 'Object':
+				case 'any':
+					return 'any';
+				case 'bool':
+					type = 'boolean'; // Windows addon only
+					break;
+				case 'Boolean':
+				case 'Function':
+				case 'Number':
+				case 'String':
+					type = docType.toLowerCase();
+					break;
+				case 'Array':
+					type = 'any[]';
+					break;
+				case 'Callback': {
+					// simple 'Callback' is considered a poorly documented type, assume any number of `any` arguments
+					// callback without arguments and return value should be documented as `Callback<void>`
+					const func = '(...args: any[]) => void';
+					type = usageHint === TypeHint.UNION ? `(${func})` : func;
+					break;
+				}
+				default: {
+					if (docType.indexOf('.') !== -1) {
+						const lastPart = docType.substring(docType.lastIndexOf('.') + 1);
+						if (invalidTypeMap[lastPart]) {
+							type = docType.replace(lastPart, invalidTypeMap[lastPart]);
+						}
+						const firstPart = docType.substring(0, docType.indexOf('.'));
+						if (firstPart === 'Global') {
+							type = docType.substring(firstPart.length + 1);
+						}
 					}
-					const firstPart = docType.substring(0, docType.indexOf('.'));
-					if (firstPart === 'Global') {
-						return docType.substring(firstPart.length + 1);
+					if (!type) {
+						if (invalidTypeMap[docType]) {
+							type = invalidTypeMap[docType];
+						} else {
+							type = docType;
+						}
 					}
 				}
-				if (invalidTypeMap[docType]) {
-					return invalidTypeMap[docType];
-				}
-				return docType;
 			}
 		}
+		if (isOptional && type !== 'never' && type !== 'any') {
+			type = `${type} | undefined`;
+		}
+		return type;
 	}
 
 	/**
@@ -812,7 +833,7 @@ class GlobalTemplateWriter {
 		if (paramNode.optional && !paramNode.repeatable) {
 			parameter += '?';
 		}
-		let type = this.normalizeType(paramNode.type, paramNode.repeatable ? null : 'parameter');
+		let type = this.normalizeType(paramNode.type, paramNode.repeatable ? null : TypeHint.PARAMETER);
 		if (paramNode.repeatable && type.indexOf('Array<') !== 0 && type.indexOf('[]') !== type.length - 2) {
 			type = type.indexOf(' | ') !== -1 ? `Array<${type}>` : `${type}[]`;
 		}
