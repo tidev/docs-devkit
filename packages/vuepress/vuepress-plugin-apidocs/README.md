@@ -1,4 +1,4 @@
-# vuepres-plugin-apidocs
+# vuepress-plugin-apidocs
 
 > VuePress plugin to render API reference documentation
 
