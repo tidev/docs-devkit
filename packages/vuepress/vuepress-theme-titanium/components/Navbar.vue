@@ -36,6 +36,7 @@
       />
       <SearchBoxWrapper v-else-if="$site.themeConfig.search !== false && $page.frontmatter.search !== false" />
       <NavLinks class="can-hide" />
+      <ToggleDarkMode/>
     </div>
 
     <ContentSidebarButton v-if="$page.contentSidebar" @toggle-content-sidebar="$emit('toggle-content-sidebar')"/>
@@ -50,11 +51,13 @@ import DropdownLink from '@theme/components/DropdownLink.vue'
 import NavLinks from '@theme/components/NavLinks.vue'
 import SearchBoxWrapper from '@theme/components/SearchBoxWrapper'
 import SidebarButton from '@theme/components/SidebarButton.vue'
+import ToggleDarkMode from '@theme/components/ToggleDarkMode.vue'
 
 export default {
   components: {
     ContentSidebarButton,
     DropdownLink,
+    ToggleDarkMode,
     SidebarButton,
     NavLinks,
     SearchBoxWrapper,
