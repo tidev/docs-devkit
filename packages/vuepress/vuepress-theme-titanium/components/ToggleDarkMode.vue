@@ -21,7 +21,10 @@
 
         if (localStorage.getItem("theme")) {
           theme = localStorage.getItem("theme");
+        } else {
+          localStorage.setItem("theme", theme)
         }
+
         if (theme == "dark") {
           document.documentElement.classList.remove("light");
           document.documentElement.classList.add("dark");
@@ -32,7 +35,6 @@
       },
       toggleDarkMode() {
         var currentTheme = localStorage.getItem("theme");
-        console.log(currentTheme);
         if (currentTheme == "dark") {
           document.documentElement.classList.remove("dark");
           document.documentElement.classList.add("light");
