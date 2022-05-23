@@ -1,4 +1,4 @@
-# vuepres-theme-titanium
+# vuepress-theme-titanium
 
 > Supercharged version of the default theme for VuePress
 
