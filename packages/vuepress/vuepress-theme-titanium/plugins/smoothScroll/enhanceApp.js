@@ -34,11 +34,32 @@ module.exports = ({ Vue, options, router }) => {
           behavior: 'smooth'
         })
       }
+      window.onload = () => {
+        const element = document.getElementById(location.hash.slice(1))
+        if (element) {
+          element.scrollIntoView()
+        }
+      }
     } else {
       const html = document.querySelector('html')
       html.style.scrollBehavior = 'auto'
       window.scrollTo({ top: 0 })
       html.style.scrollBehavior = ''
+    }
+
+    if (location.hash) {
+      setTimeout(function() {
+        const element = document.getElementById(location.hash.slice(1))
+        if (element) {
+          element.scrollIntoView()
+        }
+      }, 250);
+    }
+    window.onload = () => {
+      const element = document.getElementById(location.hash.slice(1))
+      if (element) {
+        element.scrollIntoView()
+      }
     }
   }
 }
