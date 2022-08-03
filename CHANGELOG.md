@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.11.0](https://github.com/tidev/docs-devkit/compare/v4.10.3...v4.11.0) (2022-08-03)
+
+
+### Bug Fixes
+
+* anchor scroll ([4ef4b59](https://github.com/tidev/docs-devkit/commit/4ef4b5980393ef3926ff87adacde62660c9b0363))
+
+
+### Features
+
+* **all:** dark light switch ([cec7c37](https://github.com/tidev/docs-devkit/commit/cec7c377cf13ee5628372a5ae218e026ee90f349))
+
+
+
+
+
 ## [4.10.3](https://github.com/appcelerator/docs-devkit/compare/v4.10.2...v4.10.3) (2021-03-09)
 
 
