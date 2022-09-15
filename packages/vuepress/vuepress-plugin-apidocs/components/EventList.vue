@@ -5,8 +5,8 @@
     </h2>
 
     <div v-for="(event, index) in events" :key="event.name">
-      <div class="member-header">
-        <h3 :id="event.name.toLowerCase()">
+      <div class="member-header" :id="`${event.name.toLowerCase()}`">
+        <h3 :id="`events_${event.name.toLowerCase()}`">
           <a :href="`#${event.name.toLowerCase()}`" class="header-anchor">#</a> {{event.name}} <Badge v-if="event.deprecated" text="DEPRECATED" type="warn"/>
         </h3>
         <AvailabilityInfo :platforms="event.platforms"/>
