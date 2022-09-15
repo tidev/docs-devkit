@@ -58,9 +58,9 @@ class MetadataProcessor {
 
   filterInheritedMembers (metadata) {
     const filterInherited = member => {
-      if (member.inherits && member.inherits !== metadata.name) {
-        return false
-      }
+      // if (member.inherits && member.inherits !== metadata.name) {
+      //   return false
+      // }
 
       return true
     }
