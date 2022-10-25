@@ -1,6 +1,6 @@
 {
   "name": "vuepress-plugin-apidocs",
-  "version": "4.11.1",
+  "version": "4.11.2",
   "description": "Plugin for VuePress to render API reference documentation",
   "main": "index.js",
   "scripts": {
