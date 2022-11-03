@@ -4,7 +4,8 @@
       <a href="#methods" class="header-anchor">#</a> Methods
     </h2>
 
-    <div v-for="(method, index) in methods" :key="method.name">
+    <div v-for="(method, index) in methods" :key="method.name" :class="isInherited(method.inherits)">
+      <small class="inherited" v-if="method.inherits !== undefined">inherited from {{method.inherits}}</small>
       <div class="member-header" :id="`${method.name.toLowerCase()}`">
         <h3 :id="`methods_${method.name.toLowerCase()}`">
           <a :href="`#${method.name.toLowerCase()}`" class="header-anchor">#</a> {{method.name}} <Badge v-if="method.deprecated" text="DEPRECATED" type="warn"/>
@@ -63,6 +64,13 @@ export default {
     methods: {
       type: Array,
       default: () => []
+    }
+  },
+  methods: {
+    isInherited(value) {
+      if (value != undefined) {
+        return "isInherited"
+      }
     }
   }
 }

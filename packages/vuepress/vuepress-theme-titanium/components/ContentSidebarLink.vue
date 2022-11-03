@@ -38,7 +38,7 @@ function renderLink (h, to, text, active) {
 function renderChildren (h, children, path, route, maxDepth, depth = 1) {
   if (!children || depth > maxDepth) return null
   return h('ul', { class: 'content-sidebar-sub-headers' }, children.map(c => {
-    return h('li', { class: 'content-sidebar-sub-header' }, [
+    return h('li', { class: 'content-sidebar-sub-header' + (c.inherited ? ' isInherited' : '') }, [
       renderLink(h, path + '#' + c.slug, c.title, c.active),
       renderChildren(h, c.children, path, route, maxDepth, depth + 1)
     ])

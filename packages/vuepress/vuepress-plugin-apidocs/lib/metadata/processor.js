@@ -108,7 +108,8 @@ class MetadataProcessor {
       headers.push({
         level: 3,
         title: memberMetadata.name,
-        slug: memberType + "_" + memberMetadata.name.toLowerCase()
+        slug: memberType + "_" + memberMetadata.name.toLowerCase(),
+        inherited: memberMetadata.inherits != undefined
       })
     })
     if (headers.length) {

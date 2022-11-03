@@ -2,6 +2,7 @@
   <div class="content-sidebar-wrapper">
     <div ref="sidebar" class="content-sidebar">
       <p class="content-sidebar-title">{{ title }}</p>
+      <label id="inheritToggle" for="inherited">Inherited only</label><input type="checkbox" id="inherited" name="inherited" v-model="checkedValue"/>
       <ul class="content-sidebar-links" v-if="items.length">
         <li v-for="(item, i) in items" :key="i">
           <ContentSidebarLink :item="item"/>
@@ -57,6 +58,24 @@ export default {
           })
         }
       })
+    },
+    checkedValue: {
+        get() {
+          return this.currentState
+        },
+        set(newValue) {
+          this.currentState = newValue;
+          var elements = document.querySelectorAll(".isInherited");
+          if (newValue) {
+            for (const el of elements) {
+              el.style.display = "none";
+            }
+          } else {
+            for (const el of elements) {
+              el.style.display = "block";
+            }
+          }
+        }
     }
   },
 
@@ -73,6 +92,12 @@ export default {
   font-size 0.82rem
   height "calc(100vh - %s)" % ($navbarHeight + 4rem)
   overflow-y auto
+
+  #inheritToggle
+    padding 0.4rem 0.4rem 0 0.7rem
+    border-left 1px solid $borderColor
+    cursor pointer
+    display inline-block
 
   ul
     padding 0
