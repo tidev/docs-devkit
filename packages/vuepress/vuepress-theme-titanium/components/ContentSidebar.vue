@@ -2,7 +2,7 @@
   <div class="content-sidebar-wrapper">
     <div ref="sidebar" class="content-sidebar">
       <p class="content-sidebar-title">{{ title }}</p>
-      <label id="inheritToggle" for="inherited">Hide inherited</label><input type="checkbox" id="inherited" name="inherited" v-model="checkedValue"/>
+      <label id="inheritToggle" for="inherited" v-if="isAPI">Hide inherited</label><input type="checkbox" id="inherited" name="inherited" v-model="checkedValue" v-if="isAPI"/>
       <ul class="content-sidebar-links" v-if="items.length">
         <li v-for="(item, i) in items" :key="i">
           <ContentSidebarLink :item="item"/>
@@ -39,7 +39,9 @@ export default {
     title () {
       return this.$themeConfig.contentSidebarTitle || 'Contents'
     },
-
+    isAPI () {
+      return this.$route.path.includes("/api/")
+    },
     items () {
       const headers = groupHeaders(this.$page.headers || [])
       return headers.map(header => {
