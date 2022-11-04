@@ -2,7 +2,7 @@
   <div class="content-sidebar-wrapper">
     <div ref="sidebar" class="content-sidebar">
       <p class="content-sidebar-title">{{ title }}</p>
-      <label id="inheritToggle" for="inherited">Inherited only</label><input type="checkbox" id="inherited" name="inherited" v-model="checkedValue"/>
+      <label id="inheritToggle" for="inherited">Hide inherited</label><input type="checkbox" id="inherited" name="inherited" v-model="checkedValue"/>
       <ul class="content-sidebar-links" v-if="items.length">
         <li v-for="(item, i) in items" :key="i">
           <ContentSidebarLink :item="item"/>
