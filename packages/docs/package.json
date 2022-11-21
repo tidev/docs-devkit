@@ -13,7 +13,7 @@
     "createVersion": "vuepress version docs"
   },
   "dependencies": {
-    "@fortawesome/free-solid-svg-icons": "^5.13.1",
+    "@fortawesome/free-solid-svg-icons": "^6.2.1",
     "@vuepress/plugin-back-to-top": "1.8.2",
     "fs-extra": "^9.0.1",
     "vuepress": "^1.7.1",
