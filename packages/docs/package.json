@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^5.13.1",
-    "@vuepress/plugin-back-to-top": "1.8.2",
+    "@vuepress/plugin-back-to-top": "1.9.9",
     "fs-extra": "^9.0.1",
     "vuepress": "^1.7.1",
     "vuepress-plugin-apidocs": "^4.11.0",
