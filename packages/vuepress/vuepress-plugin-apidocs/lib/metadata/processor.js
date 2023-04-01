@@ -117,9 +117,7 @@ class MetadataProcessor {
         title: memberType.charAt(0).toUpperCase() + memberType.slice(1),
         slug: memberType
       })
-      if (memberType !== 'constants') {
-        this.additionalHeaders = this.additionalHeaders.concat(headers)
-      }
+      this.additionalHeaders = this.additionalHeaders.concat(headers)
     }
   }
 
