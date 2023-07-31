@@ -1,6 +1,9 @@
 'use strict';
 const common = require('../lib/common.js');
 const path = require('path');
+const INDEX_D_TS = 'index.d.ts';
+const GLOBAL_D_TS = 'globals.global.d.ts';
+const ORPHANS_D_TS = 'orphans.d.ts';
 
 /*
  * Map of invalid types and their replacement
@@ -13,13 +16,32 @@ const invalidTypeMap = {
 };
 
 const skipApis = [
+	'Global.Intl',
+	'Global.Intl.Collator',
+	'Global.Intl.DateTimeFormat',
+	'Global.Intl.NumberFormat',
+	'CollatorOptions',
+	'DateTimeFormat',
+	'DateTimeFormatOptions',
+	'DateTimeFormattedPart',
+	'NumberFormat',
+	'NumberFormatOptions',
+	'NumberFormattedPart',
 	'Dictionary',
 	'Titanium.UI.2DMatrix',
 	'Titanium.UI.3DMatrix'
 ];
 
+// skip bundled documentation for modules and Node.js shims
+const skipDirs = [
+	path.join('apidoc', 'Modules'),
+	path.join('apidoc', 'NodeJS')
+];
+
 // List of modules that need to be generated as an interface instead of a namespace.
 const forcedInterfaces = [
+	'Global.Console',
+	'Global.String',
 	'Titanium.Android.R',
 	'Titanium.App.iOS.UserDefaults'
 ];
@@ -30,12 +52,21 @@ const eventsMethods = [
 	'fireEvent'
 ];
 
-const globalIgnoreList = [
-	'Global',
-	'CollatorOptions',
-	'DateTimeFormatOptions',
-	'NumberFormatOptions'
+const ignoreGlobalProperties = [
+	'Buffer', // node 'buffer' shim, shims are not included
+	'process', // node 'process' shim
+	'global', // declared in `GLOBAL_D_TS`
 ];
+
+const renameInterfaces = {
+	'Global.String': 'Global.StringConstructor'
+};
+
+const TypeHint = {
+	UNION: 'union',
+	PARAMETER: 'parameter',
+	NONE: 'none',
+};
 
 let parser = null;
 
@@ -46,7 +77,15 @@ exports.exportData = function exportGlobalTemplate(apis) {
 	const writer = new GlobalTemplateWriter(apis.__version);
 	writer.generateTitaniumDefinition(parser.tree);
 
-	return writer.output;
+	const entry = DescriptionFile.getInstance(INDEX_D_TS);
+	for (const descriptor of DescriptionFile.files.values()) {
+		if (!descriptor.referenced) {
+			const orphans = DescriptionFile.getInstance(ORPHANS_D_TS);
+			orphans.writeRefs(descriptor.node);
+			entry.writeRefs(ORPHANS_D_TS);
+		}
+	}
+	return DescriptionFile.files;
 };
 
 /**
@@ -76,7 +115,9 @@ function isConstantsOnlyProxy(typeInfo) {
 		return propertyDoc.__inherits === typeInfo.name && propertyDoc.permission !== 'read-only';
 	});
 	const ownReadOnlyProperties = typeInfo.properties.filter(propertyDoc => propertyDoc.__inherits === typeInfo.name && propertyDoc.permission === 'read-only');
-	if (ownMethods.length === 0 && ownReadOnlyProperties.length > 0 && ownWritableProperties.length === 0) {
+	const onlyUpperCaseProperties = ownReadOnlyProperties.filter(propertyDoc => propertyDoc.name.toUpperCase() === propertyDoc.name);
+	if (ownMethods.length === 0 && ownReadOnlyProperties.length > 0 && ownWritableProperties.length === 0
+		&& ownReadOnlyProperties.length === onlyUpperCaseProperties.length) {
 		return true;
 	}
 
@@ -164,18 +205,14 @@ class DocsParser {
 	 * @return {NamespaceNode|undefined}
 	 */
 	processApi(typeInfo) {
-		if (typeInfo.__file.includes(path.join('apidoc', 'Modules'))
-			|| typeInfo.__file.includes(path.join('apidoc', 'NodeJS'))) {
-			// skip bundled documentation for modules and Node.js shims
+		const isInSkipDirList = skipDirs.filter(dir => typeInfo.__file.includes(dir)).length > 0;
+		if (isInSkipDirList) {
 			return;
 		}
-		const namespaceParts = typeInfo.name.split('.');
-		namespaceParts.pop();
 		if (skipApis.includes(typeInfo.name)) {
 			return;
 		}
-
-		const parentNamespace = this.findOrCreateNamespace(namespaceParts);
+		const parentNamespace = this.findOrCreateNamespace(typeInfo.name);
 		const isInterface = this.isInterface(typeInfo);
 		const isClass = this.isClass(typeInfo);
 		const isNamespace = this.isNamespace(typeInfo);
@@ -217,13 +254,15 @@ class DocsParser {
 	}
 
 	/**
-	 * Finds or creates a namespace node via the given namespace name parts.
+	 * Finds or creates a namespace node via the given namespace name.
 	 *
-	 * @param {Array<String>} namespaceParts Namespace name splitted with dot as delimiter
+	 * @param {string} namespace Full namespace name with dot as delimiter
 	 * @return {NamespaceNode}
 	 * @throws Error
 	 */
-	findOrCreateNamespace(namespaceParts) {
+	findOrCreateNamespace(namespace) {
+		const namespaceParts = namespace.split('.');
+		namespaceParts.pop();
 		if (namespaceParts.length === 0) {
 			return null;
 		}
@@ -232,7 +271,7 @@ class DocsParser {
 		let parentNamespace = null;
 		if (!this.tree.hasNamespace(parentNamespaceName)) {
 			if (!this.apis[parentNamespaceName]) {
-				throw new Error(`Couldn't find docs for "${parentNamespaceName}".`);
+				throw new Error(`Couldn't find docs for "${parentNamespaceName}" from ${namespace}.`);
 			}
 			parentNamespace = this.processApi(this.apis[parentNamespaceName]);
 			delete this.apis[parentNamespaceName];
@@ -241,7 +280,7 @@ class DocsParser {
 		}
 
 		if (!parentNamespace) {
-			throw new Error(`Couldn't create namespace path up to ${parentNamespaceName}.`);
+			throw new Error(`Couldn't create namespace path up to ${parentNamespaceName} from ${namespace}`);
 		}
 
 		return parentNamespace;
@@ -328,7 +367,6 @@ class GlobalTemplateWriter {
 	 * @param {String} version Version number of the typings
 	 */
 	constructor(version) {
-		this.output = '';
 		if (!version) {
 			throw new TypeError('Invalid version');
 		}
@@ -336,50 +374,50 @@ class GlobalTemplateWriter {
 	}
 
 	/**
-	 * Generates the complete Titanium TypeScript type definition as a sstring and
+	 * Generates the complete Titanium TypeScript type definition as a string and
 	 * writes it to the output property.
 	 *
-	 * @param {EmulatedSyntaxTree} tree The simplified TypeScript syntax tree to generated the definitions from
+	 * @param {EmulatedSyntaxTree} tree The simplified TypeScript syntax tree to generate the definitions from
 	 */
 	generateTitaniumDefinition(tree) {
-		this.writeHeader();
+		this.writeIndex();
 		this.writeNodes(tree.nodes);
-		this.writeTiShorthand();
+		this.writeGlobalVar();
 	}
 
 	/**
 	 * Writes the type definition header required by DefinitelyTyped.
 	 */
-	writeHeader() {
+	writeIndex() {
 		const versionSplit = this.version.split('.');
 		const majorMinor = `${versionSplit[0]}.${versionSplit[1]}`;
-		this.output += `// Type definitions for non-npm package Titanium ${majorMinor}\n`;
-		this.output += '// Project: https://github.com/appcelerator/titanium_mobile\n';
-		this.output += '// Definitions by: Axway Appcelerator <https://github.com/appcelerator>\n';
-		this.output += '//                 Jan Vennemann <https://github.com/janvennemann>\n';
-		this.output += '//                 Sergey Volkov <https://github.com/drauggres>\n';
-		this.output += '//                 Mathias Lorenzen <https://github.com/ffMathy>\n';
-		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';
-		this.output += '// TypeScript Version: 3.0\n';
-		this.output += '\n';
-		this.output += '// Base definitions that can\'t be generated yet\n';
-		this.output += '/// <reference path="base.d.ts" />\n';
-		this.output += '\n';
-		this.output += 'type _Omit<T, K extends keyof any | undefined> = Pick<T, Exclude<keyof T, K>>;\n';
-		this.output += 'type FunctionPropertyNames<T> = {\n';
-		this.output += '	// tslint:disable-next-line:ban-types\n';
-		this.output += '	[K in keyof T]: T[K] extends Function ? K : never\n';
-		this.output += '}[keyof T];\n';
-		this.output += 'type Dictionary<T> = Partial<_Omit<T, FunctionPropertyNames<Ti.Proxy>>>;';
-		this.output += '\n';
-		this.output += 'interface ProxyEventMap {}\n\n';
+		const descriptor = this.getDescriptorFile(INDEX_D_TS);
+		descriptor.markReferenced();
+		descriptor.writeHeader(`// Type definitions for non-npm package Titanium ${majorMinor}`);
+		descriptor.writeHeader('// Project: https://github.com/appcelerator/titanium_mobile');
+		descriptor.writeHeader('// Definitions by: Axway Appcelerator <https://github.com/appcelerator>');
+		descriptor.writeHeader('//                 Jan Vennemann <https://github.com/janvennemann>');
+		descriptor.writeHeader('//                 Sergey Volkov <https://github.com/drauggres>');
+		descriptor.writeHeader('//                 Mathias Lorenzen <https://github.com/ffMathy>');
+		descriptor.writeHeader('// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped');
+		descriptor.writeHeader('// TypeScript Version: 4.0');
+		descriptor.writeRefs(GLOBAL_D_TS);
+
+		descriptor.writeRaw('type _Omit<T, K extends keyof any | undefined> = Pick<T, Exclude<keyof T, K>>;');
+		descriptor.writeRaw('type FunctionPropertyNames<T> = {');
+		descriptor.writeRaw('	// tslint:disable-next-line:ban-types');
+		descriptor.writeRaw('	[K in keyof T]: T[K] extends Function ? K : never');
+		descriptor.writeRaw('}[keyof T];');
+		descriptor.writeRaw('type Dictionary<T> = Partial<_Omit<T, FunctionPropertyNames<Ti.Proxy>>>;');
+		descriptor.writeRaw('');
+		descriptor.writeRaw('interface ProxyEventMap {}');
+
+		descriptor.writeRaw('import Ti = Titanium;');
 	}
 
-	/**
-	 * Writes the "Ti" shorthand alias for the global Titanium namespace.
-	 */
-	writeTiShorthand() {
-		this.output += '\nimport Ti = Titanium;\n';
+	writeGlobalVar() {
+		const descriptor = this.getDescriptorFile(GLOBAL_D_TS);
+		descriptor.writeRaw('declare var global: typeof globalThis;');
 	}
 
 	/**
@@ -391,11 +429,6 @@ class GlobalTemplateWriter {
 		const copy = nodes.slice().sort(sortByFQN);
 		while (copy.length) {
 			const node = copy.shift();
-			if (globalIgnoreList.includes(node.name)) {
-				// @fixme: Global type definitions need special massaging so we handle them manually right now
-				// @see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/titanium/globals.d.ts
-				continue;
-			}
 			if (node instanceof InterfaceNode) {
 				this.writeInterfaceNode(node, 0);
 				if (node.relatedNode) {
@@ -419,10 +452,11 @@ class GlobalTemplateWriter {
 	/**
 	 * Renders and writes a namespace node to the output.
 	 *
-	 * @param {NamespaceNode} namespaceNode Namesapce node to write out
+	 * @param {NamespaceNode} namespaceNode Namespace node to write out
 	 * @param {Number} nestingLevel Current nesting level for indentation
 	 */
 	writeNamespaceNode(namespaceNode, nestingLevel) {
+		const descriptor = this.getDescriptorFile(namespaceNode);
 		namespaceNode.init();
 		const hasProperties = namespaceNode.properties.length > 0;
 		const hasMethods = namespaceNode.methods.length > 0;
@@ -443,21 +477,39 @@ class GlobalTemplateWriter {
 			}
 		}
 
-		const nextNestingLevel = nestingLevel + 1;
+		let nextNestingLevel = nestingLevel + 1;
+		if (namespaceNode.namespaces.length) {
+			namespaceNode.namespaces.forEach(childNamespaceNode => {
+				descriptor.writeRefs(childNamespaceNode);
+			});
+		}
+		if (namespaceNode.interfaces.length) {
+			namespaceNode.interfaces.forEach(childInterfaceNode => {
+				descriptor.writeRefs(childInterfaceNode);
+			});
+		}
 
-		this.output += this.generateJsDoc(namespaceNode, nestingLevel);
+		const jsdoc = this.generateJsDoc(namespaceNode, nestingLevel);
+		if (jsdoc) {
+			descriptor.writeToNamespace(namespaceNode.parent, jsdoc);
+		}
 
 		if (namespaceNode.removed) {
-			this.output += `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}const ${namespaceNode.name}: never;\n`;
+			descriptor.writeToNamespace(namespaceNode.parent, `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}const ${namespaceNode.name}: never;`);
 			return;
 		}
 
-		this.output += `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}namespace ${namespaceNode.name} {\n`;
+		const isGlobal = namespaceNode.fullyQualifiedName.startsWith('Global');
+		if (isGlobal) {
+			nextNestingLevel = 0;
+		} else {
+			descriptor.writeToNamespace(namespaceNode.parent, `${this.indent(nestingLevel)}${nestingLevel === 0 ? 'declare ' : ''}namespace ${namespaceNode.name} {`);
+		}
 		if (hasProperties) {
-			namespaceNode.properties.forEach(propertyNode => this.writeVariableNode(propertyNode, nextNestingLevel));
+			namespaceNode.properties.forEach(propertyNode => this.writeVariableNode(namespaceNode, propertyNode, nextNestingLevel));
 		}
 		if (hasMethods) {
-			namespaceNode.methods.forEach(methodNode => this.writeFunctionNode(methodNode, nextNestingLevel));
+			namespaceNode.methods.forEach(methodNode => this.writeFunctionNode(namespaceNode, methodNode, nextNestingLevel));
 		}
 		if (hasNamespaces) {
 			namespaceNode.namespaces.sort(sortByFQN).forEach(childNamespace => this.writeNamespaceNode(childNamespace, nextNestingLevel));
@@ -465,7 +517,9 @@ class GlobalTemplateWriter {
 		if (hasInterfaces) {
 			namespaceNode.interfaces.sort(sortByFQN).forEach(interfaceNode => this.writeInterfaceNode(interfaceNode, nextNestingLevel));
 		}
-		this.output += `${this.indent(nestingLevel)}}\n`;
+		if (!isGlobal) {
+			descriptor.writeToNamespace(namespaceNode.parent, `${this.indent(nestingLevel)}}`);
+		}
 	}
 
 	/**
@@ -475,97 +529,131 @@ class GlobalTemplateWriter {
 	 * @param {Number} nestingLevel Current nesting level for indentation
 	 */
 	writeInterfaceNode(interfaceNode, nestingLevel) {
+		const descriptor = this.getDescriptorFile(interfaceNode);
 		interfaceNode.init();
 		if (interfaceNode.events.length > 0) {
 			interfaceNode.events.forEach(eventNode =>
 				this.writeInterfaceNode(eventNode, nestingLevel));
 		}
-		this.output += this.generateJsDoc(interfaceNode, nestingLevel);
+		const jsdoc = this.generateJsDoc(interfaceNode, nestingLevel);
+		if (jsdoc) {
+			descriptor.writeToNamespace(interfaceNode.parent, jsdoc);
+		}
 		if (interfaceNode.removed) {
-			this.output += `${this.indent(nestingLevel)}const ${interfaceNode.name}: never;\n`;
+			descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}const ${interfaceNode.name}: never;`);
 			return;
 		}
 		const parent = interfaceNode.extends ? 'extends ' + interfaceNode.extends + ' ' : '';
 		const isTopLevelClass = interfaceNode instanceof ClassNode && nestingLevel === 0 ? 'declare ' : '';
-		this.output += `${this.indent(nestingLevel)}${isTopLevelClass}${interfaceNode.keyWord} ${interfaceNode.name} ${parent}{\n`;
+		descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}${isTopLevelClass}${interfaceNode.keyWord} ${interfaceNode.name} ${parent}{`);
 		if (interfaceNode.properties.length > 0) {
-			interfaceNode.properties.forEach(propertyNode => this.writePropertyNode(propertyNode, nestingLevel + 1));
+			interfaceNode.properties.forEach(propertyNode => this.writePropertyNode(interfaceNode, propertyNode, nestingLevel + 1));
 		}
 		if (interfaceNode.methods.length > 0) {
-			interfaceNode.methods.forEach(methodNode => this.writeMethodNode(methodNode, nestingLevel + 1));
+			interfaceNode.methods.forEach(methodNode => this.writeMethodNode(interfaceNode, methodNode, nestingLevel + 1));
 		}
 		if (interfaceNode.indexSignature) {
 			const { name, type, returnType } = interfaceNode.indexSignature;
-			this.output += `${this.indent(nestingLevel + 1)}[${name}: ${type}]: ${returnType};\n`;
+			descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel + 1)}[${name}: ${type}]: ${returnType};`);
 		}
-		this.output += `${this.indent(nestingLevel)}}\n`;
+		descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}}`);
 	}
 
 	/**
 	 * Renders and writes a variable node to the output.
-	 *
+	 * @param {NamespaceNode} namespaceNode Namespace node to write
 	 * @param {VariableNode} variableNode Variable node to write out
 	 * @param {Number} nestingLevel Current nesting level for indentation
 	 */
-	writeVariableNode(variableNode, nestingLevel) {
-		this.output += this.generateJsDoc(variableNode, nestingLevel);
+	writeVariableNode(namespaceNode, variableNode, nestingLevel) {
+		if (nestingLevel === 0 && ignoreGlobalProperties.includes(variableNode.name)) {
+			return;
+		}
+		const descriptor = this.getDescriptorFile(namespaceNode);
+		const jsdoc = this.generateJsDoc(variableNode, nestingLevel);
+		if (jsdoc) {
+			descriptor.writeToNamespace(namespaceNode.parent, jsdoc);
+		}
 		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
 		const isConstant = variableNode.isConstant ? 'const' : inGlobal ? 'var' : 'let';
-		this.output += `${this.indent(nestingLevel)}${inGlobal}${isConstant} ${variableNode.name}: ${this.normalizeType(variableNode.type)};\n\n`;
+		const type = this.normalizeType(variableNode.type, TypeHint.NONE);
+		descriptor.writeToNamespace(namespaceNode.parent, `${this.indent(nestingLevel)}${inGlobal}${isConstant} ${variableNode.name}: ${type};\n`);
 	}
 
 	/**
 	 * Renders and writes a variable node as a property to the output.
 	 *
+	 * @param {InterfaceNode} interfaceNode Interface node to write
 	 * @param {VariableNode} propertyNode Variable node to write out
 	 * @param {Number} nestingLevel Current nesting level for indentation
 	 */
-	writePropertyNode(propertyNode, nestingLevel) {
-		this.output += this.generateJsDoc(propertyNode, nestingLevel);
+	writePropertyNode(interfaceNode, propertyNode, nestingLevel) {
+		if (nestingLevel === 0 && ignoreGlobalProperties.includes(propertyNode.name)) {
+			return;
+		}
+		const descriptor = this.getDescriptorFile(interfaceNode);
+		const jsdoc = this.generateJsDoc(propertyNode, nestingLevel);
+		if (jsdoc) {
+			descriptor.writeToNamespace(interfaceNode.parent, jsdoc);
+		}
 		const isStatic = propertyNode.isStatic ? 'static ' : '';
 		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
 		const isReadOnly = propertyNode.isConstant ? 'readonly ' : '';
-		const type = this.normalizeType(propertyNode.type);
-		const isOptional = (type !== 'never' && propertyNode.optional) ? '?' : '';
-		this.output += `${this.indent(nestingLevel)}${inGlobal}${isStatic}${isReadOnly}${propertyNode.name}${isOptional}: ${type};\n\n`;
+		const type = this.normalizeType(propertyNode.type, TypeHint.NONE, propertyNode.optional);
+		const isOptional = type !== 'never' && propertyNode.optional;
+		const optionalSign = isOptional ? '?' : '';
+		descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}${inGlobal}${isStatic}${isReadOnly}${propertyNode.name}${optionalSign}: ${type};\n`);
 	}
 
 	/**
 	 * Renders and writes a function node to the output.
 	 *
-	 * @param {FunctionNode} functionNode Function node to write out
+	 * @param {NamespaceNode} namespaceNode Namespace node to write out
+	 * @param {FunctionNode} node Function node to write out
 	 * @param {Number} nestingLevel Current nesting level for indentation
 	 */
-	writeFunctionNode(functionNode, nestingLevel) {
-		this.output += this.generateJsDoc(functionNode, nestingLevel);
-		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
-		if (functionNode.removed) {
-			this.output += `${this.indent(nestingLevel)}${inGlobal}const ${functionNode.name}: never;\n\n`;
+	writeFunctionNode(namespaceNode, node, nestingLevel) {
+		if (nestingLevel === 0 && ignoreGlobalProperties.includes(node.name)) {
 			return;
 		}
-		const parametersString = this.prepareParameters(functionNode.parameters);
-		const type = this.normalizeType(functionNode.returnType);
-		this.output += `${this.indent(nestingLevel)}${inGlobal}function ${functionNode.name}(${parametersString}): ${type};\n\n`;
+		const descriptor = this.getDescriptorFile(namespaceNode);
+		const jsdoc = this.generateJsDoc(node, nestingLevel);
+		if (jsdoc) {
+			descriptor.writeToNamespace(namespaceNode.parent, jsdoc);
+		}
+		const inGlobal = nestingLevel === 0 ? 'declare ' : '';
+		if (node.removed) {
+			descriptor.writeToNamespace(namespaceNode.parent, `${this.indent(nestingLevel)}${inGlobal}const ${node.name}: never;\n`);
+			return;
+		}
+		const parametersString = this.prepareParameters(node.parameters);
+		const type = this.normalizeType(node.returnType, TypeHint.NONE);
+		descriptor.writeToNamespace(namespaceNode.parent, `${this.indent(nestingLevel)}${inGlobal}function ${node.name}(${parametersString}): ${type};\n`);
 	}
 
 	/**
 	 * Renders and writes a function node as a method to the output.
 	 *
-	 * @param {FunctionNode} functionNode Function node to write out
+	 * @param {InterfaceNode} interfaceNode Interface node to write out
+	 * @param {FunctionNode} node Function node to write out
 	 * @param {Number} nestingLevel Current nesting level for indentation
 	 */
-	writeMethodNode(functionNode, nestingLevel) {
-		this.output += this.generateJsDoc(functionNode, nestingLevel);
-		const isStatic = functionNode.isStatic ? 'static ' : '';
-		if (functionNode.removed) {
-			this.output += `${this.indent(nestingLevel)}${isStatic}${functionNode.name}: never;\n\n`;
+	writeMethodNode(interfaceNode, node, nestingLevel) {
+		const descriptor = this.getDescriptorFile(interfaceNode);
+		const jsdoc = this.generateJsDoc(node, nestingLevel);
+		if (jsdoc) {
+			descriptor.writeToNamespace(interfaceNode.parent, jsdoc);
+		}
+		const isStatic = node.isStatic ? 'static ' : '';
+		if (node.removed) {
+			descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}${isStatic}${node.name}: never;\n`);
 			return;
 		}
-		const parametersString = this.prepareParameters(functionNode.parameters);
-		const isOptional = functionNode.optional ? '?' : '';
-		const type = this.normalizeType(functionNode.returnType);
-		const generic = functionNode.generic;
-		this.output += `${this.indent(nestingLevel)}${isStatic}${functionNode.name}${generic}${isOptional}(${parametersString}): ${type};\n\n`;
+		const parametersString = this.prepareParameters(node.parameters);
+		const type = this.normalizeType(node.returnType, TypeHint.NONE, node.optional);
+		const optionalSign = node.optional ? '?' : '';
+		const generic = node.generic;
+		descriptor.writeToNamespace(interfaceNode.parent, `${this.indent(nestingLevel)}${isStatic}${node.name}${generic}${optionalSign}(${parametersString}): ${type};\n`);
 	}
 
 	/**
@@ -584,10 +672,7 @@ class GlobalTemplateWriter {
 		if (summary) {
 			jsDoc += `${this.indent(nestingLevel)}/**\n`;
 			jsDoc += `${this.indent(nestingLevel)} * ${summary}\n`;
-			jsDoc += `${this.indent(nestingLevel)} */\n`;
-		}
-		if (node instanceof InterfaceNode && node.name === 'IOStream') {
-			jsDoc += this.indent(nestingLevel) + '// tslint:disable-next-line:interface-name\n';
+			jsDoc += `${this.indent(nestingLevel)} */`;
 		}
 
 		return jsDoc;
@@ -607,28 +692,30 @@ class GlobalTemplateWriter {
 	 * Normalizes a given type so it can be safely used in TypeScript.
 	 *
 	 * @param {Object | String | Array <Object | String>} docType Type definition
-	 * @param {String=} usageHint A string with a hint where this type is used (null or 'parameter')
+	 * @param {TypeHint} usageHint A string with a hint where this type is used
+	 * @param {boolean=} isOptional Type is optional (i.e. undefined)
 	 * @return {String} A normalized representation of the type for usage in TypeScript
 	 */
-	normalizeType(docType, usageHint) {
+	normalizeType(docType, usageHint, isOptional) {
 		if (!docType) {
 			return 'any';
 		}
 
 		if (Array.isArray(docType)) {
-			const normalizedTypes = docType.map(typeName => this.normalizeType(typeName));
+			const normalizedTypes = docType.map(typeName => this.normalizeType(typeName, TypeHint.UNION));
 			return normalizedTypes.includes('any') ? 'any' : normalizedTypes.join(' | ');
 		}
 
+		let type = '';
 		const lessThanIndex = docType.indexOf('<');
 		if (lessThanIndex !== -1) {
 			const baseType = docType.slice(0, lessThanIndex);
 			const greaterThanIndex = docType.lastIndexOf('>');
 			const subType = docType.slice(lessThanIndex + 1, greaterThanIndex);
-			const subTypes = subType.split(',').map(type => this.normalizeType(type.trim()));
+			const subTypes = subType.split(',').map(type => this.normalizeType(type.trim(), TypeHint.NONE));
 			if (baseType === 'Array') {
-				return subTypes.map(typeName => {
-					if (usageHint === 'parameter') {
+				type = subTypes.map(typeName => {
+					if (usageHint === TypeHint.PARAMETER) {
 						return `ReadonlyArray<${typeName}>`;
 					} else if (typeName.indexOf('<') !== -1) {
 						return `Array<${typeName}>`;
@@ -637,47 +724,69 @@ class GlobalTemplateWriter {
 					}
 				}).join(' | ');
 			} else if (baseType === 'Callback') {
+				let func;
 				if (docType === 'Callback<void>') {
-					return '() => void';
+					func = '() => void';
 				} else {
-					return `(${subTypes.map((type, index) => `param${index}: ${type}`).join(', ')}) => void`;
+					func = `(${subTypes.map((type, index) => `param${index}: ${type}`).join(', ')}) => void`;
+				}
+				if (func) {
+					type = usageHint === TypeHint.UNION ? `(${func})` : func;
 				}
 			} else if (baseType === 'Dictionary') {
-				return `Dictionary<${subType}>`;
+				type = `Dictionary<${subType}>`;
+			} else if (baseType === 'Promise') {
+				type = `Promise<${this.normalizeType(subType, TypeHint.NONE)}>`;
 			}
-		}
-
-		switch (docType) {
-			case 'bool':
-				return 'boolean'; // Windows addon only
-			case 'Boolean':
-			case 'Function':
-			case 'Number':
-			case 'String':
-				return docType.toLowerCase();
-			case 'Object':
-			case 'any':
-				return 'any';
-			case 'Array':
-				return 'any[]';
-			case 'Callback': {
-				// simple 'Callback' is considered a poorly documented type, assume any number of `any` arguments
-				// callback without arguments and return value should be documented as `Callback<void>`
-				return '(...args: any[]) => void';
-			}
-			default: {
-				let typeName = docType;
-				if (typeName.indexOf('.') !== -1) {
-					typeName = docType.substring(docType.lastIndexOf('.') + 1);
-					if (invalidTypeMap[typeName]) {
-						return docType.replace(typeName, invalidTypeMap[typeName]);
-					}
-				} else if (invalidTypeMap[typeName]) {
-					return invalidTypeMap[typeName];
+		} else {
+			switch (docType) {
+				case 'Object':
+				case 'any':
+					return 'any';
+				case 'bool':
+					type = 'boolean'; // Windows addon only
+					break;
+				case 'Boolean':
+				case 'Function':
+				case 'Number':
+				case 'String':
+					type = docType.toLowerCase();
+					break;
+				case 'Array':
+					type = 'any[]';
+					break;
+				case 'Callback': {
+					// simple 'Callback' is considered a poorly documented type, assume any number of `any` arguments
+					// callback without arguments and return value should be documented as `Callback<void>`
+					const func = '(...args: any[]) => void';
+					type = usageHint === TypeHint.UNION ? `(${func})` : func;
+					break;
 				}
-				return docType;
+				default: {
+					if (docType.indexOf('.') !== -1) {
+						const lastPart = docType.substring(docType.lastIndexOf('.') + 1);
+						if (invalidTypeMap[lastPart]) {
+							type = docType.replace(lastPart, invalidTypeMap[lastPart]);
+						}
+						const firstPart = docType.substring(0, docType.indexOf('.'));
+						if (firstPart === 'Global') {
+							type = docType.substring(firstPart.length + 1);
+						}
+					}
+					if (!type) {
+						if (invalidTypeMap[docType]) {
+							type = invalidTypeMap[docType];
+						} else {
+							type = docType;
+						}
+					}
+				}
 			}
 		}
+		if (isOptional && type !== 'never' && type !== 'any') {
+			type = `${type} | undefined`;
+		}
+		return type;
 	}
 
 	/**
@@ -721,13 +830,17 @@ class GlobalTemplateWriter {
 		if (paramNode.optional && !paramNode.repeatable) {
 			parameter += '?';
 		}
-		let type = this.normalizeType(paramNode.type, paramNode.repeatable ? null : 'parameter');
+		let type = this.normalizeType(paramNode.type, paramNode.repeatable ? null : TypeHint.PARAMETER);
 		if (paramNode.repeatable && type.indexOf('Array<') !== 0 && type.indexOf('[]') !== type.length - 2) {
 			type = type.indexOf(' | ') !== -1 ? `Array<${type}>` : `${type}[]`;
 		}
 		parameter += `: ${type}`;
 
 		return parameter;
+	}
+
+	getDescriptorFile(node) {
+		return DescriptionFile.getInstance(node);
 	}
 }
 
@@ -819,14 +932,18 @@ class FunctionNode {
 }
 
 /**
- * Representation of a node in the AST that has memebers (used as a base for
- * namesapce and interface nodes).
+ * Representation of a node in the AST that has members (used as a base for
+ * namespace and interface nodes).
  */
 class MemberNode {
 	constructor(api) {
 		this.api = api;
 		this.fullyQualifiedName = api.name;
-		this.name = api.name.substring(api.name.lastIndexOf('.') + 1);
+		let fullyQualifiedName = this.fullyQualifiedName;
+		if (typeof renameInterfaces[api.name] === 'string') {
+			fullyQualifiedName = renameInterfaces[api.name];
+		}
+		this.name = fullyQualifiedName.substring(fullyQualifiedName.lastIndexOf('.') + 1);
 		this.properties = [];
 		this.methods = [];
 		this.events = [];
@@ -834,6 +951,8 @@ class MemberNode {
 		this.innerNodesMap = new Map();
 		this.membersAreStatic = false;
 		this.proxyEventMap = null;
+		this.parent = null;
+		this.filename = '';
 	}
 
 	init() {
@@ -982,11 +1101,14 @@ class MemberNode {
 			});
 		});
 		this.proxyEventMap = new InterfaceNode({
+			__file: this.api.__file,
+			__path: this.api.__path,
 			name: `${this.name}EventMap`,
 			extends: 'ProxyEventMap',
 			properties: properties,
 			summary: ''
 		});
+		this.proxyEventMap.parent = this.parent;
 		this.events.push(this.proxyEventMap);
 	}
 
@@ -1045,6 +1167,22 @@ class MemberNode {
 			return [ JSON.parse(originalMethodDocJsonString) ];
 		}
 	}
+
+	getRelativeFilePath(from) {
+		let relativePath = '';
+		if (from) {
+			if (!this.filename) {
+				this.filename = this.api.__file.replace(/\.yml$/, '.d.ts');
+			}
+			relativePath = path.relative(from, this.filename);
+		} else {
+			relativePath = this.api.__path.replace(/\.yml$/, '.d.ts');
+		}
+		if (!relativePath.startsWith('./')) {
+			relativePath = './' + relativePath;
+		}
+		return relativePath;
+	}
 }
 
 /**
@@ -1087,7 +1225,7 @@ class NamespaceNode extends MemberNode {
 	}
 
 	filterProperties(propertyDoc) {
-		// If we have interface/class for this namespace, then we need here only upper cased constants
+		// If we have interface/class for this namespace, then we need here only upper-cased constants
 		let onlyUpperCased = true;
 		const excluded = propertyDoc.__hide;
 		if (this.relatedNode) {
@@ -1103,10 +1241,12 @@ class NamespaceNode extends MemberNode {
 
 	addNamespace(namespaceNode) {
 		this.namespaces.push(namespaceNode);
+		namespaceNode.parent = this;
 	}
 
 	addInterface(interfaceNode) {
 		this.interfaces.push(interfaceNode);
+		interfaceNode.parent = this;
 	}
 
 	findDuplicates(inputNode) {
@@ -1130,6 +1270,31 @@ class NamespaceNode extends MemberNode {
 			common.log(common.LOG_WARN, `Duplicate identified "${name} on ${this.fullyQualifiedName}`);
 			this.innerNodesMap.delete(name);
 		}
+	}
+
+	wrap(string) {
+		let top = this;
+		const stack = [ this ];
+		while (top.parent) {
+			top = top.parent;
+			stack.unshift(top);
+		}
+		let open = '';
+		let close = '';
+		if (stack[0].fullyQualifiedName === 'Global') {
+			stack.shift();
+		}
+		stack.forEach((node, index) => {
+			if (index === 0) {
+				open = `declare namespace ${node.name} {\n`;
+				close = '}';
+			} else {
+				const indent = ''.padStart(index, '\t');
+				open = `${open}${indent}namespace ${node.name} {\n`;
+				close = `${indent}}\n${close}`;
+			}
+		});
+		return `${open}${string}${close}`;
 	}
 }
 
@@ -1201,14 +1366,18 @@ class InterfaceNode extends MemberNode {
  */
 InterfaceNode.createBaseEvent = function (interfaceNode) {
 	const name = interfaceNode.fullyQualifiedName;
-	return new InterfaceNode({
-		name: `${interfaceNode.name}BaseEvent`,
+	const node = new InterfaceNode({
+		__file: interfaceNode.api.__file,
+		__path: interfaceNode.api.__path,
+		name: `${name}BaseEvent`,
 		extends: 'Ti.Event',
 		summary: `Base event for class ${name}`,
 		properties: [
 			{ name: 'source', type: name, optional: false, summary: 'Source object that fired the event.' }
 		]
 	});
+	node.parent = interfaceNode.parent;
+	return node;
 };
 
 /**
@@ -1227,12 +1396,16 @@ InterfaceNode.createEvent = function (eventDoc, interfaceNode) {
 			});
 	}
 	const name = eventDoc.name.replace(':', '_');
-	return new InterfaceNode({
+	const node = new InterfaceNode({
+		__file: interfaceNode.api.__file,
+		__path: interfaceNode.api.__path,
 		name: `${interfaceNode.name}_${name}_Event`,
 		extends: `${interfaceNode.name}BaseEvent`,
 		summary: eventDoc.summary,
 		properties: properties
 	});
+	node.parent = interfaceNode.parent;
+	return node;
 };
 
 class ClassNode extends InterfaceNode {
@@ -1244,3 +1417,86 @@ class ClassNode extends InterfaceNode {
 		}
 	}
 }
+
+class DescriptionFile {
+	constructor(node, filePath) {
+		this.node = node;
+		this.filePath = filePath;
+		this.headers = [];
+		this.namespaces = new Map();
+		this.raw = [];
+		this.refsNames = new Set();
+		this.refs = [];
+		this.referenced = false;
+	}
+
+	writeRefs(node) {
+		const name = typeof node === 'string' ? node : node.name;
+		if (!this.refsNames.has(name)) {
+			let relativePath;
+			if (typeof node === 'string') {
+				relativePath = name;
+			} else {
+				let from = '';
+				if (typeof this.node !== 'string') {
+					from = path.dirname(this.node.api.__file);
+				}
+				relativePath = node.getRelativeFilePath(from);
+			}
+			this.refs.push(`/// <reference path="${relativePath}" />`);
+			this.refsNames.add(name);
+			DescriptionFile.getInstance(node).markReferenced();
+		}
+	}
+
+	writeHeader(str) {
+		this.headers.push(str);
+	}
+
+	writeToNamespace(namespaceNode, str) {
+		if (namespaceNode) {
+			const strings = this.namespaces.get(namespaceNode) || [];
+			strings.push(str);
+			this.namespaces.set(namespaceNode, strings);
+		} else {
+			this.raw.push(str);
+		}
+	}
+
+	writeRaw(str) {
+		this.raw.push(str);
+	}
+
+	markReferenced() {
+		this.referenced = true;
+	}
+
+	toString() {
+		const parts = [];
+		parts.push(this.headers.join('\n'));
+		parts.push(this.refs.sort().join('\n'));
+		this.namespaces.forEach((strings, node) => {
+			parts.push(node.wrap(strings.join('\n') + '\n'));
+		});
+		parts.push(this.raw.join('\n'));
+		let output = parts.filter(part => part.length).join('\n');
+		if (!output.endsWith('\n')) {
+			output += '\n';
+		}
+		return output;
+	}
+}
+
+DescriptionFile.files = new Map();
+
+DescriptionFile.getInstance = function (node) {
+	const file = typeof node === 'string' ? node : node.getRelativeFilePath();
+	let descriptor;
+	if (DescriptionFile.files.has(file)) {
+		descriptor = DescriptionFile.files.get(file);
+	} else {
+		descriptor = new DescriptionFile(node, file);
+		DescriptionFile.files.set(file, descriptor);
+	}
+	return descriptor;
+};
