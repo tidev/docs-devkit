@@ -357,7 +357,6 @@ class GlobalTemplateWriter {
 		this.output += '// Project: https://github.com/appcelerator/titanium_mobile\n';
 		this.output += '// Definitions by: Axway Appcelerator <https://github.com/appcelerator>\n';
 		this.output += '//                 Jan Vennemann <https://github.com/janvennemann>\n';
-		this.output += '//                 Sergey Volkov <https://github.com/drauggres>\n';
 		this.output += '//                 Mathias Lorenzen <https://github.com/ffMathy>\n';
 		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';
 		this.output += '// TypeScript Version: 3.0\n';
