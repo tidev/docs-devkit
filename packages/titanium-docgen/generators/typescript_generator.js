@@ -21,7 +21,13 @@ const skipApis = [
 // List of modules that need to be generated as an interface instead of a namespace.
 const forcedInterfaces = [
 	'Titanium.Android.R',
-	'Titanium.App.iOS.UserDefaults'
+	'Titanium.App.iOS.UserDefaults',
+	'Titanium.Media.Item',
+	'Titanium.Calendar.Attendee',
+	'Titanium.Calendar.Reminder',
+	'Titanium.Calendar.RecurrenceRule',
+	'Titanium.Platform.DisplayCaps',
+	'Titanium.XML.DocumentType'
 ];
 
 const eventsMethods = [
