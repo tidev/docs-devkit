@@ -1,12 +1,12 @@
 {
   "name": "vuepress-theme-titanium",
-  "version": "4.11.1",
+  "version": "4.11.2",
   "description": "VuePress theme for Titanium projects",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Axway Appcelerator",
+  "author": "TiDev, Inc. <npm@tidev.io>",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
