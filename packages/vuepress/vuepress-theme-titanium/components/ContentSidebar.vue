@@ -2,6 +2,7 @@
   <div class="content-sidebar-wrapper">
     <div ref="sidebar" class="content-sidebar">
       <p class="content-sidebar-title">{{ title }}</p>
+      <label id="inheritToggle" for="inherited" v-if="isAPI">Hide inherited</label><input type="checkbox" id="inherited" name="inherited" v-model="checkedValue" v-if="isAPI"/>
       <ul class="content-sidebar-links" v-if="items.length">
         <li v-for="(item, i) in items" :key="i">
           <ContentSidebarLink :item="item"/>
@@ -38,7 +39,9 @@ export default {
     title () {
       return this.$themeConfig.contentSidebarTitle || 'Contents'
     },
-
+    isAPI () {
+      return this.$route.path.includes("/api/")
+    },
     items () {
       const headers = groupHeaders(this.$page.headers || [])
       return headers.map(header => {
@@ -57,6 +60,24 @@ export default {
           })
         }
       })
+    },
+    checkedValue: {
+        get() {
+          return this.currentState
+        },
+        set(newValue) {
+          this.currentState = newValue;
+          var elements = document.querySelectorAll(".isInherited");
+          if (newValue) {
+            for (const el of elements) {
+              el.style.display = "none";
+            }
+          } else {
+            for (const el of elements) {
+              el.style.display = "block";
+            }
+          }
+        }
     }
   },
 
@@ -73,6 +94,12 @@ export default {
   font-size 0.82rem
   height "calc(100vh - %s)" % ($navbarHeight + 4rem)
   overflow-y auto
+
+  #inheritToggle
+    padding 0.4rem 0.4rem 0 0.7rem
+    border-left 1px solid $borderColor
+    cursor pointer
+    display inline-block
 
   ul
     padding 0
