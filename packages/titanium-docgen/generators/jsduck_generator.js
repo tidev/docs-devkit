@@ -338,7 +338,7 @@ function exportEditUrl(api) {
 	} else {
 		// URL template with placeholders for module name and path.
 		const urlTemplate = 'https://github.com/tidev/%MODULE_NAME%/edit/master/%MODULE_PATH%';
-		const re = /(.+)\/apidoc/;
+		const re = /tidev\/(.+)\/apidoc/;
 		const match = file.match(re);
 		let modulename;
 		if (match) {
