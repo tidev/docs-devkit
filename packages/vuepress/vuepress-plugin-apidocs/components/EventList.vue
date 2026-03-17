@@ -4,7 +4,8 @@
       <a href="#events" class="header-anchor">#</a> Events
     </h2>
 
-    <div v-for="(event, index) in events" :key="event.name">
+    <div v-for="(event, index) in events" :key="event.name" :class="isInherited(event.inherits)">
+      <small class="inherited" v-if="event.inherits !== undefined">inherited from {{event.inherits}}</small>
       <div class="member-header" :id="`${event.name.toLowerCase()}`">
         <h3 :id="`events_${event.name.toLowerCase()}`">
           <a :href="`#${event.name.toLowerCase()}`" class="header-anchor">#</a> {{event.name}} <Badge v-if="event.deprecated" text="DEPRECATED" type="warn"/>
@@ -53,6 +54,13 @@ export default {
     events: {
       type: Array,
       default: () => []
+    }
+  },
+  methods: {
+    isInherited(value) {
+      if (value != undefined) {
+        return "isInherited"
+      }
     }
   }
 }

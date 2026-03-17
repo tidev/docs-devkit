@@ -4,9 +4,10 @@
       <a href="#properties" class="header-anchor">#</a> Properties
     </h2>
 
-    <div v-for="(property, index) in properties" :key="property.name">
-      <div class="member-header" :id="`${property.name.toLowerCase()}`">
-        <h3 :id="`properties_${property.name.toLowerCase()}`">
+    <div v-for="(property, index) in properties" :key="property.name" :class="isInherited(property.inherits)">
+      <small class="inherited" v-if="property.inherits !== undefined">inherited from {{property.inherits}}</small>
+      <div class="member-header">
+        <h3 :id="property.name.toLowerCase()">
           <a :href="`#${property.name.toLowerCase()}`" class="header-anchor">#</a> {{property.name}} <Badge v-if="property.permission === 'read-only'" text="READONLY" type="light"/><Badge v-if="property.availability === 'creation'" text="CREATION ONLY" type="info"/><Badge v-if="property.deprecated" text="DEPRECATED" type="warn"/>
         </h3>
         <AvailabilityInfo :platforms="property.platforms"/>
@@ -44,6 +45,11 @@ export default {
     }
   },
   methods: {
+    isInherited(value) {
+      if (value != undefined) {
+        return "isInherited"
+      }
+    },
     normalizeType (type) {
       const typeName = typeof type
       switch (typeName) {
