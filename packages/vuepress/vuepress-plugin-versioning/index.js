@@ -96,7 +96,7 @@ module.exports = (options, context) => {
           const filePath = path.resolve(basePath, relative)
           pages.push({
             filePath,
-            relative
+            relative: relative.substring(relative.indexOf("/") + 1)
           })
         })
         return pages
