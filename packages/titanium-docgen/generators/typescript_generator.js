@@ -175,7 +175,9 @@ class DocsParser {
 			// skip bundled documentation for modules and Node.js shims
 			return;
 		}
-		const namespaceParts = typeInfo.name.split('.');
+		// Handle generic types by extracting the base type name before the first '<'
+		const typeName = typeInfo.name.split('<')[0];
+		const namespaceParts = typeName.split('.');
 		namespaceParts.pop();
 		if (skipApis.includes(typeInfo.name)) {
 			return;
@@ -622,7 +624,17 @@ class GlobalTemplateWriter {
 
 		if (Array.isArray(docType)) {
 			const normalizedTypes = docType.map(typeName => this.normalizeType(typeName));
-			return normalizedTypes.includes('any') ? 'any' : normalizedTypes.join(' | ');
+			if (normalizedTypes.includes('any')) {
+				return 'any';
+			}
+			// Parenthesize function types in unions to avoid TypeScript syntax errors
+			const parenthesizedTypes = normalizedTypes.map(type => {
+				if (type.includes(') => ')) {
+					return `(${type})`;
+				}
+				return type;
+			});
+			return parenthesizedTypes.join(' | ');
 		}
 
 		const lessThanIndex = docType.indexOf('<');
@@ -649,6 +661,9 @@ class GlobalTemplateWriter {
 				}
 			} else if (baseType === 'Dictionary') {
 				return `Dictionary<${subType}>`;
+			} else if (baseType === 'Promise') {
+				// Use standard Promise<T> generic syntax
+				return `Promise<${subTypes.join(', ')}>`;
 			}
 		}
 

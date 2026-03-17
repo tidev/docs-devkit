@@ -434,8 +434,12 @@ function validateDataType(type, fullTypeContext) {
 		// Should it have been written as a complex type?
 		if (common.COMPLEX_TYPES.has(type)) {
 			const argCount = common.COMPLEX_TYPES.get(type); // may be 0 if Function/Callback
-			// Enforce as ERROR if Promise/Set/Map doesn't have exact generic type count
-			const severity = [ 'Map', 'Set', 'Promise' ].includes(type) ? ERROR : WARNING;
+			// Skip validation for Promise to allow Promise without generics (Promise<T> not supported by build system)
+			if (type === 'Promise') {
+				return errors;
+			}
+			// Enforce as ERROR if Set/Map doesn't have exact generic type count
+			const severity = [ 'Map', 'Set' ].includes(type) ? ERROR : WARNING;
 			errors.push(new Problem(`${type} ${severity === ERROR ? 'must' : 'should'} have ${argCount || 'any number of'} generic type(s) specified, but had 0: ${fullTypeContext || type}`, severity));
 		} else if (type === 'Object') {
 			// Warn about generic Object types (Dictionary is handled above as a complex type)
