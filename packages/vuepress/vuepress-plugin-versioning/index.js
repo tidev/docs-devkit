@@ -148,7 +148,7 @@ module.exports = (options, context) => {
       }
 
       if (page._filePath.startsWith(versionedSourceDir)) {
-        const version = page._filePath.substring(versionedSourceDir.length + 1, page._filePath.indexOf('/', versionedSourceDir.length + 1))
+        const version = page._filePath.replace(versionedSourceDir, '').split(path.sep).filter(p => !!p)[0]
         page.version = version
         page.originalRegularPath = page.regularPath
         const pathWithoutLeadingVersion = page.path.replace(new RegExp(`^/${version}`), '')
