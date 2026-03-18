@@ -58,9 +58,9 @@ class MetadataProcessor {
 
   filterInheritedMembers (metadata) {
     const filterInherited = member => {
-      if (member.inherits && member.inherits !== metadata.name) {
-        return false
-      }
+      // if (member.inherits && member.inherits !== metadata.name) {
+      //   return false
+      // }
 
       return true
     }
@@ -108,7 +108,7 @@ class MetadataProcessor {
       headers.push({
         level: 3,
         title: memberMetadata.name,
-        slug: memberMetadata.name.toLowerCase()
+        slug: memberType + "_" + memberMetadata.name.toLowerCase()
       })
     })
     if (headers.length) {
@@ -117,9 +117,7 @@ class MetadataProcessor {
         title: memberType.charAt(0).toUpperCase() + memberType.slice(1),
         slug: memberType
       })
-      if (memberType !== 'constants') {
-        this.additionalHeaders = this.additionalHeaders.concat(headers)
-      }
+      this.additionalHeaders = this.additionalHeaders.concat(headers)
     }
   }
 

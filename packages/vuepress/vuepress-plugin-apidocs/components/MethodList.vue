@@ -5,8 +5,8 @@
     </h2>
 
     <div v-for="(method, index) in methods" :key="method.name">
-      <div class="member-header">
-        <h3 :id="method.name.toLowerCase()">
+      <div class="member-header" :id="`${method.name.toLowerCase()}`">
+        <h3 :id="`methods_${method.name.toLowerCase()}`">
           <a :href="`#${method.name.toLowerCase()}`" class="header-anchor">#</a> {{method.name}} <Badge v-if="method.deprecated" text="DEPRECATED" type="warn"/>
         </h3>
         <AvailabilityInfo :platforms="method.platforms"/>

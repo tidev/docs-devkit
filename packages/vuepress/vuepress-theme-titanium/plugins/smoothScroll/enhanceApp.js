@@ -35,9 +35,11 @@ module.exports = ({ Vue, options, router }) => {
         })
       }
       window.onload = () => {
-        const element = document.getElementById(location.hash.slice(1))
-        if (element) {
-          element.scrollIntoView()
+        if (location.hash.slice(1) != "") {
+          const element = document.getElementById(location.hash.slice(1))
+          if (element) {
+            element.scrollIntoView()
+          }
         }
       }
     } else {
@@ -49,16 +51,20 @@ module.exports = ({ Vue, options, router }) => {
 
     if (location.hash) {
       setTimeout(function() {
-        const element = document.getElementById(location.hash.slice(1))
-        if (element) {
-          element.scrollIntoView()
+        if (location.hash.slice(1) != "") {
+          const element = document.getElementById(location.hash.slice(1))
+          if (element) {
+            element.scrollIntoView()
+          }
         }
       }, 250);
     }
     window.onload = () => {
-      const element = document.getElementById(location.hash.slice(1))
-      if (element) {
-        element.scrollIntoView()
+      if (location.hash.slice(1) != "") {
+        const element = document.getElementById(location.hash.slice(1))
+        if (element) {
+          element.scrollIntoView()
+        }
       }
     }
   }

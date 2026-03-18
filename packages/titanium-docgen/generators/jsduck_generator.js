@@ -328,17 +328,17 @@ function exportEditUrl(api) {
 	const file = api.__file;
 	const blackList = [ 'appcelerator.https', 'ti.geofence' ]; // Don't include Edit button for these modules
 	let rv = '';
-	let basePath = 'https://github.com/appcelerator/titanium_mobile/edit/master/';
+	let basePath = 'https://github.com/tidev/titanium-sdk/edit/master/';
 
 	// Determine edit URL by file's folder location
-	if (file.indexOf('titanium_mobile/apidoc') !== -1) {
+	if (file.indexOf('titanium-sdk/apidoc') !== -1) {
 		const startIndex = file.indexOf('apidoc/');
 		const path = file.substr(startIndex);
 		rv = basePath + path;
-	} else if (file.indexOf('titanium_modules') !== -1 || file.indexOf('appc_modules') !== -1) {
+	} else {
 		// URL template with placeholders for module name and path.
-		const urlTemplate = 'https://github.com/appcelerator-modules/%MODULE_NAME%/edit/master/%MODULE_PATH%';
-		const re = /titanium_modules|appc_modules\/(.+)\/apidoc/;
+		const urlTemplate = 'https://github.com/tidev/%MODULE_NAME%/edit/master/%MODULE_PATH%';
+		const re = /tidev\/(.+)\/apidoc/;
 		const match = file.match(re);
 		let modulename;
 		if (match) {
@@ -358,15 +358,6 @@ function exportEditUrl(api) {
 		rv = urlTemplate.replace(/%\w+%/g, function (all) {
 			return urlReplacements[all] || all;
 		});
-	} else if (file.indexOf('titanium_mobile_tizen/modules/tizen/apidoc') !== -1) {
-		const index = file.indexOf('modules/tizen/apidoc/');
-		basePath = 'https://github.com/appcelerator/titanium_mobile_tizen/edit/master/';
-		if (index !== -1) {
-			rv = basePath + file.substr(index);
-		} else {
-			common.log(common.LOG_WARN, 'Error creating edit URL for:', file, '. Couldn\'t find apidoc/ folder.');
-			return rv;
-		}
 	}
 
 	return rv;

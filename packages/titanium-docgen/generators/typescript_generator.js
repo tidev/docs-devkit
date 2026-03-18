@@ -21,7 +21,13 @@ const skipApis = [
 // List of modules that need to be generated as an interface instead of a namespace.
 const forcedInterfaces = [
 	'Titanium.Android.R',
-	'Titanium.App.iOS.UserDefaults'
+	'Titanium.App.iOS.UserDefaults',
+	'Titanium.Media.Item',
+	'Titanium.Calendar.Attendee',
+	'Titanium.Calendar.Reminder',
+	'Titanium.Calendar.RecurrenceRule',
+	'Titanium.Platform.DisplayCaps',
+	'Titanium.XML.DocumentType'
 ];
 
 const eventsMethods = [
@@ -169,7 +175,9 @@ class DocsParser {
 			// skip bundled documentation for modules and Node.js shims
 			return;
 		}
-		const namespaceParts = typeInfo.name.split('.');
+		// Handle generic types by extracting the base type name before the first '<'
+		const typeName = typeInfo.name.split('<')[0];
+		const namespaceParts = typeName.split('.');
 		namespaceParts.pop();
 		if (skipApis.includes(typeInfo.name)) {
 			return;
@@ -357,7 +365,6 @@ class GlobalTemplateWriter {
 		this.output += '// Project: https://github.com/appcelerator/titanium_mobile\n';
 		this.output += '// Definitions by: Axway Appcelerator <https://github.com/appcelerator>\n';
 		this.output += '//                 Jan Vennemann <https://github.com/janvennemann>\n';
-		this.output += '//                 Sergey Volkov <https://github.com/drauggres>\n';
 		this.output += '//                 Mathias Lorenzen <https://github.com/ffMathy>\n';
 		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';
 		this.output += '// TypeScript Version: 3.0\n';
@@ -617,7 +624,17 @@ class GlobalTemplateWriter {
 
 		if (Array.isArray(docType)) {
 			const normalizedTypes = docType.map(typeName => this.normalizeType(typeName));
-			return normalizedTypes.includes('any') ? 'any' : normalizedTypes.join(' | ');
+			if (normalizedTypes.includes('any')) {
+				return 'any';
+			}
+			// Parenthesize function types in unions to avoid TypeScript syntax errors
+			const parenthesizedTypes = normalizedTypes.map(type => {
+				if (type.includes(') => ')) {
+					return `(${type})`;
+				}
+				return type;
+			});
+			return parenthesizedTypes.join(' | ');
 		}
 
 		const lessThanIndex = docType.indexOf('<');
@@ -644,6 +661,9 @@ class GlobalTemplateWriter {
 				}
 			} else if (baseType === 'Dictionary') {
 				return `Dictionary<${subType}>`;
+			} else if (baseType === 'Promise') {
+				// Use standard Promise<T> generic syntax
+				return `Promise<${subTypes.join(', ')}>`;
 			}
 		}
 

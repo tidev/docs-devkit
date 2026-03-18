@@ -5,8 +5,8 @@
     </h2>
 
     <div v-for="(constant, index) in constants" :key="constant.name">
-      <div class="member-header">
-        <h4 :id="constant.name.toLowerCase()">
+      <div class="member-header" :id="`${constant.name.toLowerCase()}`">
+        <h4 :id="`constants_${constant.name.toLowerCase()}`">
           <a :href="`#${constant.name.toLowerCase()}`" class="header-anchor">#</a> {{constant.name}} <Badge v-if="constant.deprecated" text="DEPRECATED" type="warn"/>
         </h4>
         <AvailabilityInfo :platforms="constant.platforms"/>
