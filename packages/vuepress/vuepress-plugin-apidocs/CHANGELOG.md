@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.12.0](https://github.com/appcelerator/docs-devkit/compare/v4.11.1...v4.12.0) (2026-03-18)
+
+
+### Bug Fixes
+
+* h3 copy&paste error ([aae9bc4](https://github.com/appcelerator/docs-devkit/commit/aae9bc44e73e1cfa5f97539c2d79389cae5823ba))
+
+
+### Features
+
+* shhow constants again ([6cdb99d](https://github.com/appcelerator/docs-devkit/commit/6cdb99d10f0046c1f29be49b5baa030b88f89304))
+
+
+
+
+
 # [4.11.0](https://github.com/appcelerator/docs-devkit/compare/v4.10.3...v4.11.0) (2022-08-03)
 
 **Note:** Version bump only for package vuepress-plugin-apidocs

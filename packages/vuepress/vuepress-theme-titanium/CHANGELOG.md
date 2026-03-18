@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.12.0](https://github.com/appcelerator/docs-devkit/compare/v4.11.1...v4.12.0) (2026-03-18)
+
+
+### Features
+
+* more search results ([418a479](https://github.com/appcelerator/docs-devkit/commit/418a4797e9b2dead84280d9bb47c338ff9283dd5))
+
+
+
+
+
 # [4.11.0](https://github.com/appcelerator/docs-devkit/compare/v4.10.3...v4.11.0) (2022-08-03)
 
 

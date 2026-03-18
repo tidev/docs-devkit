@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.12.0](https://github.com/appcelerator/docs-devkit/compare/v4.11.1...v4.12.0) (2026-03-18)
+
+
+### Bug Fixes
+
+* do not throw error regarding generic promises ([2afeb59](https://github.com/appcelerator/docs-devkit/commit/2afeb59c0857ce0b8286080ae9c4aa67183b9f30))
+* docgen interfaces ([35a730d](https://github.com/appcelerator/docs-devkit/commit/35a730dafb5fd4e0cff8ab6ff09abc39997ce4a0))
+* properly handle promise generics ([447428b](https://github.com/appcelerator/docs-devkit/commit/447428b5c37922444cdb1e4a8bbca6301ee6d8cc))
+
+
+
+
+
 ## [4.10.3](https://github.com/appcelerator/docs-devkit/compare/v4.10.2...v4.10.3) (2021-03-09)
 
 

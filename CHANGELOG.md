@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.12.0](https://github.com/tidev/docs-devkit/compare/v4.11.1...v4.12.0) (2026-03-18)
+
+
+### Bug Fixes
+
+* do not throw error regarding generic promises ([2afeb59](https://github.com/tidev/docs-devkit/commit/2afeb59c0857ce0b8286080ae9c4aa67183b9f30))
+* docgen interfaces ([35a730d](https://github.com/tidev/docs-devkit/commit/35a730dafb5fd4e0cff8ab6ff09abc39997ce4a0))
+* h3 copy&paste error ([aae9bc4](https://github.com/tidev/docs-devkit/commit/aae9bc44e73e1cfa5f97539c2d79389cae5823ba))
+* properly handle promise generics ([447428b](https://github.com/tidev/docs-devkit/commit/447428b5c37922444cdb1e4a8bbca6301ee6d8cc))
+
+
+### Features
+
+* more search results ([418a479](https://github.com/tidev/docs-devkit/commit/418a4797e9b2dead84280d9bb47c338ff9283dd5))
+* shhow constants again ([6cdb99d](https://github.com/tidev/docs-devkit/commit/6cdb99d10f0046c1f29be49b5baa030b88f89304))
+
+
+
+
+
 # [4.11.0](https://github.com/tidev/docs-devkit/compare/v4.10.3...v4.11.0) (2022-08-03)
 
 
