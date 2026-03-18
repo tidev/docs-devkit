@@ -1,6 +1,6 @@
 {
   "name": "vuepress-theme-titanium",
-  "version": "4.12.0",
+  "version": "5.0.0",
   "description": "VuePress theme for Titanium projects",
   "main": "index.js",
   "scripts": {
@@ -21,5 +21,6 @@
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "vuepress-plugin-container": "^2.1.5"
-  }
+  },
+  "gitHead": "466250b2ef8e0c8ebbd5a92d1b5f07ebdf1de0a0"
 }

@@ -29,5 +29,6 @@
   "peerDependencies": {
     "vuex": "^3.5.1",
     "vuex-router-sync": "^5.0.0"
-  }
+  },
+  "gitHead": "466250b2ef8e0c8ebbd5a92d1b5f07ebdf1de0a0"
 }

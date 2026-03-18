@@ -1,6 +1,6 @@
 {
   "name": "@titanium-sdk/vuepress-plugin-fontawesome",
-  "version": "4.8.3",
+  "version": "5.0.0",
   "description": "FontAwesome plugin for VuePress",
   "main": "index.js",
   "scripts": {
