@@ -245,10 +245,10 @@ function getRepoUrl(filepath) {
 		return REPO_URLS.get(filepath);
 	}
 	const stdout = exec('git config --get remote.origin.url', { cwd: filepath }).toString().trim();
-	const m = stdout.match(/^(git@|https:\/\/)github.com[:/]([\w-]+)\/([\w_\-.]+)\.git$/);
+	const m = stdout.match(/^(git@|https:\/\/)github.com[:/]([\w-]+)\/([\w_\-.]+?)(?:\.git)?$/);
 	if (!m) {
 		console.log(`Unable to pull github org/repo from url: ${stdout}`);
-		const result = 'https://github.com/appcelerator/titanium_mobile/edit/master/';
+		const result = 'https://github.com/tidev/titanium-sdk/edit/main/';
 		REPO_URLS.set(filepath, result);
 		return result;
 	}

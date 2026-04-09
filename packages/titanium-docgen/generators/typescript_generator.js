@@ -362,8 +362,8 @@ class GlobalTemplateWriter {
 		const versionSplit = this.version.split('.');
 		const majorMinor = `${versionSplit[0]}.${versionSplit[1]}`;
 		this.output += `// Type definitions for non-npm package Titanium ${majorMinor}\n`;
-		this.output += '// Project: https://github.com/appcelerator/titanium_mobile\n';
-		this.output += '// Definitions by: Axway Appcelerator <https://github.com/appcelerator>\n';
+		this.output += '// Project: https://github.com/tidev/titanium-sdk\n';
+		this.output += '// Definitions by: TiDev, Inc. <https://github.com/tidev>\n';
 		this.output += '//                 Jan Vennemann <https://github.com/janvennemann>\n';
 		this.output += '//                 Mathias Lorenzen <https://github.com/ffMathy>\n';
 		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';

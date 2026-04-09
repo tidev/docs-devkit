@@ -1,6 +1,6 @@
 {
   "name": "titanium-docgen",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Generates Titanium API documentation in different formats",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/appcelerator/docs-devkit.git",
+    "url": "https://github.com/tidev/docs-devkit.git",
     "directory": "packages/titanium-docgen"
   },
   "dependencies": {
