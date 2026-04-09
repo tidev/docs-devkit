@@ -7,7 +7,7 @@ metadataKey: SomeType
 Writing complex API documentation is often quite cumbersome in markdown. This is where the API docs plugin steps it. It provides a `<ApiDocs/>` tag which can render extensive API documentation from a metadata file.
 
 ::: warning COMPATIBILTY NOTE
-This plugin is currently limited to a specific metadata format called [TDoc](https://docs.appcelerator.com/platform/latest/#!/guide/TDoc_Specification) that is used to document our [Titanium SDK](https://github.com/appcelerator/titanium_mobile). It is optimized for our specific needs and object structure but may also be used to document any other types that can be represented in the TDoc spec.
+This plugin is currently limited to a specific metadata format called [TDoc](https://docs.appcelerator.com/platform/latest/#!/guide/TDoc_Specification) that is used to document our [Titanium SDK](https://github.com/tidev/titanium-sdk). It is optimized for our specific needs and object structure but may also be used to document any other types that can be represented in the TDoc spec.
 :::
 
 ## Getting Started

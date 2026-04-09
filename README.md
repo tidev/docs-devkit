@@ -22,7 +22,7 @@ This is a monorepo with the following packages:
 ## Contributing
 
 Open source contributions are greatly appreciated! If you have a bugfix, improvement or new feature, please create
-[an issue](https://github.com/appcelerator/docs-devkit/issues/new) first and submit a [pull request](https://github.com/appcelerator/docs-devkit/pulls/new) against master.
+[an issue](https://github.com/tidev/docs-devkit/issues/new) first and submit a [pull request](https://github.com/tidev/docs-devkit/pulls/new) against master.
 
 Before you contribute read through the following guidelines.
 
@@ -34,8 +34,8 @@ Before you contribute read through the following guidelines.
 ## Getting Help
 
 If you have questions about our documentation devkit for VuePress, feel free to reach out on Stackoverflow or the
-`#helpme` channel on [TiSlack](http://tislack.org). In case you find a bug, create a [new issue](https://github.com/appcelerator/docs-devkit/issues/new)
-or open a [new JIRA ticket](https://jira.appcelerator.org).
+`#helpme` channel on [TiSlack](http://tislack.org). In case you find a bug, create a [new issue](https://github.com/tidev/docs-devkit/issues/new)
+or open a [new ticket](https://github.com/tidev/titanium-sdk/issues/new).
 
 ## License
 

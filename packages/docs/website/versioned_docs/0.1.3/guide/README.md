@@ -4,7 +4,7 @@ sidebarDepth: 0
 
 # Introduction
 
-The Titanium Docs DevKit for VuePress is composed of a [theme](../theme/README.md) and two [plugins](../plugins/README.md). It was mainly created to modernize the documentation needs of [Titanium](https://github.com/appcelerator/titanium_mobile) and make it easier for the community to contribute to our open source projects.
+The Titanium Docs DevKit for VuePress is composed of a [theme](../theme/README.md) and two [plugins](../plugins/README.md). It was mainly created to modernize the documentation needs of [Titanium](https://github.com/tidev/titanium-sdk) and make it easier for the community to contribute to our open source projects.
 
 ::: tip
 You can see the plugins and theme in action on this very site.

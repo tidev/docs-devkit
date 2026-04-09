@@ -13,14 +13,13 @@ module.exports = context => ({
     footerLogo: '/axway-appcelerator-logo.png',
     footerSitemap: {
       'Products': [
-        { text: 'Titanium SDK', link: 'https://github.com/appcelerator/titanium_mobile' },
-        { text: 'Alloy', link: 'https://github.com/appcelerator/alloy' },
-        { text: 'Titanium Vue', link: 'https://github.com/appcelerator/titanium-vue' },
-        { text: 'Titanium Angular', link: 'https://github.com/appcelerator/titanium-angular' }
+        { text: 'Titanium SDK', link: 'https://github.com/tidev/titanium_mobile' },
+        { text: 'Alloy', link: 'https://github.com/tidev/alloy' },
+        { text: 'Titanium Vue', link: 'https://github.com/tidev/titanium-vue' },
+        { text: 'Titanium Angular', link: 'https://github.com/tidev/titanium-angular' }
       ],
       'Social': [
-        { text: 'Twitter', link: 'https://twitter.com/appcelerator' },
-        { text: 'LinkedIn', link: 'https://linkedin.com/company/axway' }
+        { text: 'Twitter', link: 'https://x.com/TitaniumSDK/' }
       ]
     },
     repo: 'appcelerator/docs-devkit',
