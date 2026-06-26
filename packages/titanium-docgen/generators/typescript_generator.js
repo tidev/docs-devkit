@@ -361,21 +361,13 @@ class GlobalTemplateWriter {
 	writeHeader() {
 		const versionSplit = this.version.split('.');
 		const majorMinor = `${versionSplit[0]}.${versionSplit[1]}`;
-		this.output += `// Type definitions for non-npm package Titanium ${majorMinor}\n`;
-		this.output += '// Project: https://github.com/appcelerator/titanium_mobile\n';
-		this.output += '// Definitions by: Axway Appcelerator <https://github.com/appcelerator>\n';
-		this.output += '//                 Jan Vennemann <https://github.com/janvennemann>\n';
-		this.output += '//                 Mathias Lorenzen <https://github.com/ffMathy>\n';
-		this.output += '// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n';
-		this.output += '// TypeScript Version: 3.0\n';
-		this.output += '\n';
 		this.output += '// Base definitions that can\'t be generated yet\n';
 		this.output += '/// <reference path="base.d.ts" />\n';
 		this.output += '\n';
 		this.output += 'type _Omit<T, K extends keyof any | undefined> = Pick<T, Exclude<keyof T, K>>;\n';
 		this.output += 'type FunctionPropertyNames<T> = {\n';
 		this.output += '	// tslint:disable-next-line:ban-types\n';
-		this.output += '	[K in keyof T]: T[K] extends Function ? K : never\n';
+		this.output += '	[K in keyof T]: T[K] extends (...args: any[]) => any ? K : never\n';
 		this.output += '}[keyof T];\n';
 		this.output += 'type Dictionary<T> = Partial<_Omit<T, FunctionPropertyNames<Ti.Proxy>>>;';
 		this.output += '\n';
