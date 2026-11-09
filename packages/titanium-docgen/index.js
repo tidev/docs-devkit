@@ -1012,13 +1012,22 @@ formats.forEach(function (format) {
 			output = pathMod.join(outputPath, 'api_solr.json');
 			break;
 		case 'typescript':
-			render = exportData;
-			output = pathMod.join(outputPath, 'index.d.ts');
+			// the generator returns a set of files, keyed by their file name
+			for (const fileName in exportData) {
+				const typesFile = pathMod.join(outputPath, fileName);
+				try {
+					fs.writeFileSync(typesFile, exportData[fileName]);
+				} catch (e) {
+					common.log(common.LOG_ERROR, 'Failed to write to file: %s with error: %s', typesFile, e);
+					process.exit(1);
+				}
+				common.log('Generated output at %s', typesFile);
+			}
 			delete processedData['__version']; // clean up
 			break;
 	}
 
-	if (!~[ 'addon' ].indexOf(format)) {
+	if (!~[ 'addon', 'typescript' ].indexOf(format)) {
 		fs.writeFile(output, render, function (err) {
 			if (err) {
 				common.log(common.LOG_ERROR, 'Failed to write to file: %s with error: %s', output, err);

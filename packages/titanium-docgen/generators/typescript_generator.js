@@ -36,12 +36,71 @@ const eventsMethods = [
 	'fireEvent'
 ];
 
+/*
+ * Types from `apidoc/Global` that are not written to `index.d.ts`.
+ *
+ * `Global` itself holds the ambient declarations (the build constants, the
+ * global functions and the `console` and `global` objects). Those cannot live
+ * inside the `Titanium` namespace, so they are generated into `globals.d.ts`
+ * and `console.d.ts` instead, which `base.d.ts` pulls in.
+ *
+ * The three `Intl` option bags are only referenced by Titanium's `Intl`
+ * documentation, which is deliberately not emitted at all. See
+ * `skippedGlobalTypes` for why.
+ */
 const globalIgnoreList = [
 	'Global',
 	'CollatorOptions',
 	'DateTimeFormatOptions',
 	'NumberFormatOptions'
 ];
+
+/*
+ * Types below `Global` that are deliberately not emitted, and the reason why.
+ *
+ * Titanium documents `Intl.Collator`, `Intl.DateTimeFormat`, `Intl.NumberFormat`
+ * and `Intl.getCanonicalLocales`, all of which restate the ECMA-402 built-ins
+ * that TypeScript already declares in its own `lib.es5.d.ts` and
+ * `lib.es2020.intl.d.ts`. Emitting them as fresh declarations would redeclare
+ * those identifiers, or silently shadow them, in every consuming project, and
+ * the documentation adds nothing over the built-ins, so they are left to
+ * TypeScript's lib files.
+ */
+const skippedGlobalTypes = {
+	'Global.Intl': 'TypeScript declares Intl.Collator, Intl.DateTimeFormat and Intl.NumberFormat in lib.es5.d.ts and lib.es2020.intl.d.ts'
+};
+
+/*
+ * Global properties whose documented type lives in `apidoc/NodeJS`, which this
+ * generator skips (see `DocsParser.processApi`). Declaring them would reference
+ * types that are not part of the output.
+ */
+const unresolvedGlobalProperties = {
+	Buffer: 'buffer.Buffer',
+	process: 'process'
+};
+
+/*
+ * Map of global API type names to the TypeScript type that represents them.
+ *
+ * The `Global` namespace is not emitted as a namespace, so references to it and
+ * to its members have to be redirected to the declarations generated into
+ * `globals.d.ts` and `console.d.ts`.
+ */
+const globalTypeMap = {
+	Global: 'Titanium.Global',
+	'Global.Console': 'Console'
+};
+
+/**
+ * Names of the files that make up the generated type definition.
+ */
+const files = {
+	index: 'index.d.ts',
+	base: 'base.d.ts',
+	globals: 'globals.d.ts',
+	console: 'console.d.ts'
+};
 
 let parser = null;
 
@@ -52,7 +111,7 @@ exports.exportData = function exportGlobalTemplate(apis) {
 	const writer = new GlobalTemplateWriter(apis.__version);
 	writer.generateTitaniumDefinition(parser.tree);
 
-	return writer.output;
+	return writer.files;
 };
 
 /**
@@ -337,6 +396,12 @@ class GlobalTemplateWriter {
 	 */
 	constructor(version) {
 		this.output = '';
+		/**
+		 * Generated files, keyed by the name they have to be written out under.
+		 *
+		 * @type {Object<string, string>}
+		 */
+		this.files = {};
 		if (!version) {
 			throw new TypeError('Invalid version');
 		}
@@ -353,6 +418,164 @@ class GlobalTemplateWriter {
 		this.writeHeader();
 		this.writeNodes(tree.nodes);
 		this.writeTiShorthand();
+		this.files[files.index] = this.output;
+
+		const globalNode = tree.nodes.find(node => node.fullyQualifiedName === 'Global');
+		if (!globalNode) {
+			throw new Error('Couldn\'t find docs for "Global".');
+		}
+		// not initialised by writeNodes above, which skips the global types
+		globalNode.init();
+
+		this.output = '';
+		this.writeGlobals(globalNode);
+		this.files[files.globals] = this.output;
+
+		this.output = '';
+		this.writeConsole(globalNode);
+		this.files[files.console] = this.output;
+
+		this.output = '';
+		this.writeBase();
+		this.files[files.base] = this.output;
+	}
+
+	/**
+	 * Writes the base definitions file, which pulls in every declaration that
+	 * cannot be nested inside the Titanium namespace.
+	 *
+	 * This is the file referenced from the header of the main definitions.
+	 */
+	writeBase() {
+		this.output += `/// <reference path="${files.globals}" />\n`;
+		this.output += `/// <reference path="${files.console}" />\n`;
+	}
+
+	/**
+	 * Writes the ambient declarations for the APIs that reside in the global
+	 * scope, generated from the `Global` type.
+	 *
+	 * Unlike every other API these have to be declared at the top level, so they
+	 * are emitted into their own file instead of the Titanium namespace.
+	 *
+	 * @param {NamespaceNode} globalNode Namespace node of the `Global` type
+	 */
+	writeGlobals(globalNode) {
+		this.output += '// Declarations for the APIs that reside in the global scope.\n';
+		this.output += '//\n';
+		this.output += '// Generated from the Global type and its sub-types, which are documented\n';
+		this.output += '// under apidoc/Global.\n';
+		this.output += '\n';
+		this.output += `/// <reference path="${files.console}" />\n`;
+		this.output += '\n';
+
+		globalNode.properties.forEach(propertyNode => {
+			const unresolvedType = unresolvedGlobalProperties[propertyNode.name];
+			if (unresolvedType) {
+				this.output += `// "${propertyNode.name}" is documented as <${unresolvedType}> under apidoc/NodeJS, which is not part of these definitions.\n\n`;
+				return;
+			}
+			this.writeVariableNode(propertyNode, 0);
+		});
+		globalNode.methods.forEach(methodNode => this.writeFunctionNode(methodNode, 0));
+
+		this.writeGlobalChildNodes(globalNode);
+		this.writeGlobalInterface(globalNode);
+	}
+
+	/**
+	 * Writes the types declared below the `Global` type, excluding the ones that
+	 * are deliberately skipped.
+	 *
+	 * @param {NamespaceNode} globalNode Namespace node of the `Global` type
+	 */
+	writeGlobalChildNodes(globalNode) {
+		// A type can have both an interface and a namespace node. The interface
+		// node is the one that holds the members of a module type, so let it win.
+		const childNodes = new Map();
+		globalNode.namespaces.concat(globalNode.interfaces).forEach(node => childNodes.set(node.fullyQualifiedName, node));
+
+		Array.from(childNodes.keys()).sort().forEach(name => {
+			const skipReason = skippedGlobalTypes[name];
+			if (skipReason) {
+				this.output += `// "${name}" is not declared here: ${skipReason}.\n\n`;
+				return;
+			}
+			if (name === 'Global.String') {
+				this.writeStringConstructor(childNodes.get(name));
+				return;
+			}
+			if (name !== 'Global.Console') {
+				// Global.Console is written to console.d.ts by writeConsole
+				common.log(common.LOG_WARN, `Global type "${name}" is not handled by the TypeScript generator and will be missing from the definitions`);
+			}
+		});
+	}
+
+	/**
+	 * Writes the Titanium specific extensions of the built-in String type.
+	 *
+	 * These are documented as static members of a `Global.String` type, but have
+	 * to augment TypeScript's own `StringConstructor` interface to be usable as
+	 * `String.format(...)`.
+	 *
+	 * @param {MemberNode} stringNode Node of the `Global.String` type
+	 */
+	writeStringConstructor(stringNode) {
+		const interfaceNode = new InterfaceNode(stringNode.api);
+		// augment the built-in interface instead of redeclaring the String type
+		interfaceNode.name = 'StringConstructor';
+		this.writeInterfaceNode(interfaceNode, 0);
+		this.output += '\n';
+	}
+
+	/**
+	 * Writes the interface of the global object itself, which is the declared
+	 * type of the `global` variable.
+	 *
+	 * @param {NamespaceNode} globalNode Namespace node of the `Global` type
+	 */
+	writeGlobalInterface(globalNode) {
+		const globalDoc = globalNode.api;
+		const interfaceDoc = Object.assign({}, globalDoc, {
+			properties: (globalDoc.properties || [])
+				.filter(propertyDoc => !propertyDoc.__hide && !unresolvedGlobalProperties[propertyDoc.name])
+				// members of the global object are always present, unlike the
+				// properties of a dictionary type
+				.map(propertyDoc => Object.assign({}, propertyDoc, { optional: false }))
+		});
+		const interfaceNode = new InterfaceNode(interfaceDoc);
+		this.output += 'declare namespace Titanium {\n';
+		this.writeInterfaceNode(interfaceNode, 1);
+		this.output += '}\n';
+	}
+
+	/**
+	 * Writes the console declarations, generated from the `Global.Console` type.
+	 *
+	 * The `Console` interface is declared globally so it merges with the one
+	 * from TypeScript's `lib.dom.d.ts`, if that is part of the compilation,
+	 * instead of becoming a second, conflicting type of the same name. The
+	 * `console` variable itself is declared in the global declarations.
+	 *
+	 * @param {NamespaceNode} globalNode Namespace node of the `Global` type
+	 */
+	writeConsole(globalNode) {
+		const consoleNode = globalNode.interfaces.find(node => node.fullyQualifiedName === 'Global.Console');
+		if (!consoleNode) {
+			throw new Error('Couldn\'t find docs for "Global.Console".');
+		}
+
+		this.output += '// Declarations for the global console object.\n';
+		this.output += '//\n';
+		this.output += '// Generated from the Global.Console type, documented under apidoc/Global.\n';
+		this.output += '//\n';
+		this.output += '// Declared as a global interface so it merges with the Console interface\n';
+		this.output += '// from lib.dom.d.ts instead of conflicting with it. The console variable\n';
+		this.output += `// itself is declared in ${files.globals}.\n`;
+		this.output += '\n';
+
+		this.writeInterfaceNode(new InterfaceNode(consoleNode.api), 0);
 	}
 
 	/**
@@ -620,6 +843,10 @@ class GlobalTemplateWriter {
 	normalizeType(docType, usageHint) {
 		if (!docType) {
 			return 'any';
+		}
+
+		if (typeof docType === 'string' && globalTypeMap[docType]) {
+			return globalTypeMap[docType];
 		}
 
 		if (Array.isArray(docType)) {
